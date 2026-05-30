@@ -1,0 +1,84 @@
+{
+  "name": "payload-plugin-products",
+  "version": "0.0.1",
+  "description": "Product catalog for Payload CMS with a Fabric.js print-area designer — a products collection whose printAreas JSON field renders as a canvas editor for laying out physically-sized, aspect-locked print areas on an uploaded mockup image",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./client": {
+      "import": "./dist/exports/client.js",
+      "types": "./dist/exports/client.d.ts",
+      "default": "./dist/exports/client.js"
+    },
+    "./types": {
+      "import": "./dist/exports/types.js",
+      "types": "./dist/exports/types.d.ts",
+      "default": "./dist/exports/types.js"
+    },
+    "./migrations": {
+      "import": "./dist/exports/migrations.js",
+      "types": "./dist/exports/migrations.d.ts",
+      "default": "./dist/exports/migrations.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "pnpm run build:types && pnpm run build:swc",
+    "build:swc": "swc ./src -d ./dist --config-file .swcrc --strip-leading-paths",
+    "build:types": "tsc --emitDeclarationOnly --outDir dist",
+    "clean": "rimraf dist *.tsbuildinfo",
+    "dev": "swc ./src -d ./dist --config-file .swcrc --strip-leading-paths --watch",
+    "typecheck": "tsc --noEmit",
+    "prepare": "pnpm run build"
+  },
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "fabric": "^6.4.0",
+    "lucide-react": "^1.16.0",
+    "tailwind-merge": "^3.6.0"
+  },
+  "peerDependencies": {
+    "@payloadcms/next": ">=3.84 <3.90",
+    "@payloadcms/translations": ">=3.84 <3.90",
+    "@payloadcms/ui": ">=3.84 <3.90",
+    "drizzle-orm": ">=0.30.0",
+    "next": ">=15 <17",
+    "payload": ">=3.84 <3.90",
+    "payload-plugin-shadcn-admin": "^0.1.0",
+    "payload-plugin-shadcn-ui": "^0.1.0",
+    "radix-ui": "^1.4.3",
+    "react": ">=19 <20",
+    "react-dom": ">=19 <20"
+  },
+  "peerDependenciesMeta": {
+    "drizzle-orm": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@payloadcms/translations": "^3.0.0",
+    "@swc/cli": "^0.4.0",
+    "@swc/core": "^1.7.0",
+    "@types/node": "24.12.3",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "drizzle-orm": "^0.30.0",
+    "payload-plugin-shadcn-admin": "workspace:*",
+    "payload-plugin-shadcn-ui": "workspace:*",
+    "rimraf": "^5.0.0",
+    "typescript": "6.0.3"
+  }
+}

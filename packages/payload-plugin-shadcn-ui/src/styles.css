@@ -1,0 +1,706 @@
+/* Payload chrome overrides: full-replacement.
+   Hide the default top header and mobile hamburger — our shadcn sidebar
+   is the only chrome. Reset Payload's flex layout so the shadcn Sidebar
+   (which uses its own width-tracking gap div) sits naturally next to
+   the content wrap.
+
+   DOM: .template-default contains [our Nav] + .template-default__wrap.
+   The wrap holds the header (hidden) and the page children. */
+.app-header,
+.template-default__nav-toggler-wrapper {
+  display: none !important;
+}
+
+/* Shadcn-themed restyle of Payload's sonner Toaster. We don't mount a second
+   <Toaster /> — Turbopack chunks sonner per-import-path so a second Toaster
+   would have its own toast queue and miss Payload's internal toast() calls.
+   We restyle the one Payload already mounts. Sonner's container-level
+   animations (stack, slide-in/out, swipe-to-dismiss) live on the inner
+   `[data-sonner-toaster]` / `[data-sonner-toast]` elements and survive intact
+   — we only touch the `.payload-toast-*` classes Payload layers on top.
+
+   Important: these rules are unlayered → they outrank Payload's
+   `@layer payload-default { .payload-toast-* { ... } }`. We therefore restate
+   every layout property (close-button absolute positioning, etc.) Payload set
+   — anything we omit falls back to UA defaults when our selector matches.
+
+   Theme integration: status colours come from the shadcn semantic tokens
+   `--success` / `--warning` / `--info` / `--destructive`, which flip per
+   theme (minimal vs vibrant, light vs dark). Payload's status icons are SVGs
+   that read from `--theme-<kind>-500` and `--theme-<kind>-50`; we remap those
+   to our tokens inside the toaster scope so the icons recolour automatically. */
+
+.payload-toast-container {
+  /* Sonner defaults to 356px; tighten slightly. */
+  --width: 22rem;
+
+  /* Remap Payload's icon tokens to our semantic ones so the success / error /
+     warning / info SVGs pick up the active theme without touching the SVG
+     source. `_50` is the inner glyph (checkmark, X, !, i) — paired with the
+     `*-foreground` half of each token. */
+  --theme-success-500: var(--success);
+  --theme-success-50: var(--success-foreground);
+  --theme-error-500: var(--destructive);
+  --theme-error-50: var(--popover);
+  --theme-warning-500: var(--warning);
+  --theme-warning-50: var(--warning-foreground);
+  /* Info uses Payload's `--theme-elevation-*` token names (their info icon is
+     neutral). Map to our `--info` so it gets a recognisable blue accent. */
+  --theme-elevation-500: var(--info);
+  --theme-elevation-50: var(--info-foreground);
+}
+
+.payload-toast-container .payload-toast-item {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  width: 100%;
+  padding: 0.75rem 2.25rem 0.75rem 0.875rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--popover);
+  color: var(--popover-foreground);
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.25rem;
+  letter-spacing: -0.005em;
+  box-shadow:
+    0 1px 2px 0 rgb(0 0 0 / 0.04),
+    0 4px 12px -2px rgb(0 0 0 / 0.08);
+}
+
+.payload-toast-container .payload-toast-item .toast-content {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+  padding-top: 0.0625rem; /* optical-align text to circular icon */
+}
+
+.payload-toast-container .payload-toast-item .toast-title {
+  margin: 0;
+  font-weight: 500;
+  font-size: 0.8125rem;
+  line-height: 1.25rem;
+  color: var(--popover-foreground);
+}
+
+.payload-toast-container .payload-toast-item .toast-description {
+  font-weight: 400;
+  font-size: 0.75rem;
+  line-height: 1.125rem;
+  color: var(--muted-foreground);
+}
+
+.payload-toast-container .payload-toast-item .toast-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.125rem;
+  height: 1.125rem;
+  flex-shrink: 0;
+}
+.payload-toast-container .payload-toast-item .toast-icon > * {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+/* Status accents — thin coloured left border. Background stays neutral so
+   toasts feel like shadcn Alerts, not noisy banners. The icon colour comes
+   from the remapped Payload tokens above (single source of truth per theme). */
+.payload-toast-container .payload-toast-item.toast-success {
+  border-left-color: var(--success);
+  border-left-width: 3px;
+}
+.payload-toast-container .payload-toast-item.toast-error {
+  border-left-color: var(--destructive);
+  border-left-width: 3px;
+}
+.payload-toast-container .payload-toast-item.toast-warning {
+  border-left-color: var(--warning);
+  border-left-width: 3px;
+}
+.payload-toast-container .payload-toast-item.toast-info {
+  border-left-color: var(--info);
+  border-left-width: 3px;
+}
+
+/* Close button — Payload's layer puts this absolute, but our unlayered rule
+   wins, so we re-state position/transform/border-reset to keep it pinned to
+   the right edge. Fades in on hover/focus for a quieter resting state. */
+.payload-toast-container .payload-toast-close-button {
+  position: absolute;
+  top: 50%;
+  inset-inline-end: 0.5rem;
+  left: unset;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--muted-foreground);
+  cursor: pointer;
+  transition:
+    color 120ms ease,
+    background-color 120ms ease,
+    opacity 120ms ease;
+  opacity: 0;
+}
+.payload-toast-container .payload-toast-item:hover .payload-toast-close-button,
+.payload-toast-container .payload-toast-item:focus-within .payload-toast-close-button {
+  opacity: 1;
+}
+.payload-toast-container .payload-toast-close-button:hover {
+  color: var(--foreground);
+  background: var(--accent);
+}
+.payload-toast-container .payload-toast-close-button:focus-visible {
+  opacity: 1;
+  outline: none;
+  box-shadow: 0 0 0 2px var(--ring);
+}
+.payload-toast-container .payload-toast-close-button svg {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+/* Hide Payload's default DocumentHeader (title + Edit/Versions/API tabs) only
+   when our shadcn edit view is mounted — it carries `.shadcn-auto-doc-view` and
+   renders the restyled tabs in its own top bar. The `:has()` parent selector
+   keeps this route-scoped (versions/api sub-views keep Payload's default header)
+   with no hydration flash. `.doc-header` is a sibling of our view inside
+   `.template-default__wrap`. */
+.template-default__wrap:has(.shadcn-auto-doc-view) .doc-header {
+  display: none !important;
+}
+
+/* Pre-auth views (login, create-first-user, forgot-password, logout,
+   unauthorized) replace Payload's default centered-card body. Payload still
+   wraps them in its passive `MinimalTemplate` (`.template-minimal__wrap`); our
+   `AuthShell` renders its own full-height centered card under
+   `.shadcn-auth-view`, so strip the wrapper's width / padding / margin to avoid
+   double-constraining it. Mirrors the `.shadcn-auto-doc-view` `:has()` scope. */
+.template-minimal:has(.shadcn-auth-view),
+.template-minimal__wrap:has(.shadcn-auth-view) {
+  max-width: none !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Version diff — elevated styling. All rules are unlayered so they win over
+   Payload's `@layer payload-default` diff CSS (whose spacing/colors don't
+   survive our `.twp` Tailwind-preflight scope anyway). Scoped to our view.
+   ────────────────────────────────────────────────────────────────────────── */
+
+/* Retune the add/remove diff palette from Payload's defaults to the plugin's
+   shadcn palette (emerald = added, red = removed) so it reads cohesively with
+   the status pills elsewhere. These vars drive the `[data-match-type]` spans. */
+.shadcn-auto-doc-view .field-diff-container {
+  --diff-create-pill-bg: rgb(16 185 129 / 0.18);
+  --diff-create-pill-color: rgb(4 120 87);
+  --diff-create-parent-bg: rgb(16 185 129 / 0.09);
+  --diff-create-parent-color: rgb(6 95 70);
+  --diff-delete-pill-bg: rgb(244 63 94 / 0.16);
+  --diff-delete-pill-color: rgb(190 18 60);
+  --diff-delete-parent-bg: rgb(244 63 94 / 0.08);
+  --diff-delete-parent-color: rgb(159 18 57);
+}
+[data-theme='dark'] .shadcn-auto-doc-view .field-diff-container {
+  --diff-create-pill-color: rgb(110 231 183);
+  --diff-create-parent-color: rgb(167 243 208);
+  --diff-delete-pill-color: rgb(253 164 175);
+  --diff-delete-parent-color: rgb(254 205 211);
+}
+
+/* Field label: refined, slightly smaller, with breathing room before the
+   before/after cells. */
+.shadcn-auto-doc-view .field-diff-label {
+  margin-bottom: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.005em;
+  color: var(--foreground);
+}
+
+/* Locale chip on a localized field's label (without this the locale code glues
+   onto the label as "enStatus"). */
+.shadcn-auto-doc-view .field-diff__locale-label {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 0.5rem;
+  padding: 0.05rem 0.35rem;
+  border-radius: calc(var(--radius) - 2px);
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  background: var(--muted, hsl(0 0% 96%));
+  color: var(--muted-foreground, hsl(0 0% 40%));
+}
+
+/* Before/after cells: render each side as its own panel with a gutter between,
+   instead of full-bleed highlight bands. The `> *` selector also catches the
+   em-dash placeholder for add/remove so both columns always align. */
+.shadcn-auto-doc-view .field-diff-content {
+  gap: 0.75rem;
+}
+.shadcn-auto-doc-view .field-diff-content > * {
+  min-width: 0;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) - 1px);
+  background: color-mix(in oklab, var(--muted) 55%, transparent);
+  font-size: 0.8rem;
+  line-height: 1.45;
+  overflow-x: auto;
+}
+.shadcn-auto-doc-view .field-diff__empty {
+  color: var(--muted-foreground);
+  opacity: 0.5;
+}
+
+/* Let our shadcn Sidebar control its own width via its gap div.
+   Payload's default flex was sized for its own nav — neutralize that. */
+.template-default {
+  display: flex;
+  min-height: 100vh;
+}
+.template-default__wrap {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* Restore the 16px root font-size that shadcn's rem-based scale assumes.
+   Payload UI sets html to 13px (12px at ≤1024px); !important is needed to
+   beat the mid-break media query in @payloadcms/ui's compiled CSS. */
+html {
+  font-size: 16px !important;
+}
+
+/* Typography baseline for the shadcn surface. Consumers set --font-sans (e.g.
+   a self-hosted Geist) in their custom.css; we fall back to a clean system
+   stack so the plugin still reads well without any font wiring. Applied on
+   .twp so it also covers Radix portals (which carry .twp). Antialiasing +
+   slight negative tracking give the crisp, modern editor feel. */
+.twp,
+.twp input,
+.twp textarea,
+.twp select,
+.twp button {
+  font-family: var(
+    --font-sans,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    sans-serif
+  );
+}
+.twp {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: -0.006em;
+  text-rendering: optimizeLegibility;
+}
+
+/* shadcn components write a bare `border` (no color utility) and assume a base
+   rule that defaults border-color to the theme token — the same `* { @apply
+   border-border }` shadcn ships in its globals. Tailwind v4 preflight no longer
+   sets one, so without this every bare border (Card, outline Button, Dialog,
+   DropdownMenu, Command, Separator, the relationship/date pickers…) falls back
+   to Tailwind v4's `currentColor` default and renders as the dark foreground,
+   mismatching the token-bordered inputs/selects. Scoped to `.twp` (plugin
+   surfaces + Radix portals carry it) and kept in @layer base so explicit
+   border-* utilities still win — border-input on inputs, border-destructive on
+   invalid fields, border-ring on focus. */
+@layer base {
+  .twp *,
+  .twp ::after,
+  .twp ::before {
+    border-color: var(--border);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Sidebar — modern chrome. Lifts the nav above the flat shadcn default with a
+   subtle brand-glow gradient and a brand-tinted, softly-elevated active pill.
+   Everything is token-driven (tracks all four themes) and only restyles
+   color/shadow — never the width/size/padding that drive collapse-to-icon, so
+   icon mode is unaffected.
+   --------------------------------------------------------------------------- */
+
+/* Gradient canvas: a faint primary glow at the top (behind the brand header)
+   melting into the flat --sidebar token. color-mix keeps it subtle per theme. */
+[data-slot='sidebar-inner'] {
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklab, var(--sidebar) 90%, var(--primary)) 0%,
+    var(--sidebar) 45%,
+    var(--sidebar) 100%
+  );
+}
+
+/* Active item — brand-tinted highlight with a soft colored lift. Overrides the
+   CVA's flat `bg-sidebar-accent`. Tint = sidebar blended toward primary, so it
+   lifts in both light and dark (where --card alone wouldn't). The shadow/ring
+   use a primary-tinted color (not black) so the lift reads on dark too. */
+[data-sidebar='menu-button'][data-active='true'],
+[data-sidebar='menu-sub-button'][data-active='true'] {
+  background: color-mix(in oklab, var(--sidebar), var(--primary) 14%);
+  color: var(--foreground);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in oklab, var(--primary) 22%, transparent),
+    0 1px 2px -1px color-mix(in oklab, var(--primary) 28%, transparent);
+}
+[data-sidebar='menu-button'][data-active='true'] > svg:first-child,
+[data-sidebar='menu-sub-button'][data-active='true'] > svg:first-child {
+  color: var(--primary);
+}
+
+/* Softer hover for inactive items (the CVA hover is a full accent fill). */
+[data-sidebar='menu-button']:hover:not([data-active='true']),
+[data-sidebar='menu-sub-button']:hover:not([data-active='true']) {
+  background: color-mix(in oklab, var(--sidebar), var(--primary) 7%);
+}
+
+/* ---------------------------------------------------------------------------
+   richText (Lexical) chrome harmonization.
+
+   Payload's bundled Lexical CSS is themed against Payload admin variables
+   (`var(--theme-*)`, `var(--base)`, `--doc-controls-height`) and lives inside
+   `@layer payload-default`. Unlayered rules win against layered ones, so
+   declarations here don't need !important. We scope everything under
+   `.rich-text-lexical` to avoid leaking into Payload's own admin views that
+   may still be in the tree (e.g. media's fallback edit view).
+   --------------------------------------------------------------------------- */
+
+/* Outer field wrapper — match shadcn <Input>'s border-radius + border color. */
+.rich-text-lexical {
+  border-radius: calc(var(--radius) - 1px); /* rounded-md */
+  border: 1px solid var(--input, hsl(0 0% 88%));
+  background: var(--background, transparent);
+  /* `visible` (not `hidden`): the slash `/` command menu and inline toolbar are
+     position:absolute children of the editor, so clipping the wrapper cuts them
+     off at the box edge. We compensate for the lost corner-clipping by rounding
+     the toolbar's own top corners below. */
+  overflow: visible;
+  font-size: 0.875rem; /* text-sm */
+  color: var(--foreground, currentColor);
+}
+
+/* Toolbar (sticky bar above the editable). Replace Payload's blurred glassy
+   double-border with a clean, flush header that matches shadcn surfaces. */
+.rich-text-lexical .fixed-toolbar {
+  position: relative; /* drop sticky — our bridge controls scroll */
+  top: 0;
+  border: 0;
+  border-bottom: 1px solid var(--border, hsl(0 0% 90%));
+  /* Subtle bar: blend muted toward the field background so it reads as a quiet
+     shadcn surface rather than a solid grey block. */
+  background: color-mix(in srgb, var(--muted, hsl(0 0% 96%)) 55%, var(--background, white));
+  padding: 0.3125rem 0.375rem;
+  min-height: 40px;
+  transform: none;
+  z-index: auto;
+  /* Round the top corners to match the wrapper now that it no longer clips
+     (overflow:visible above), so the muted bar doesn't poke past the radius. */
+  border-top-left-radius: calc(var(--radius) - 2px);
+  border-top-right-radius: calc(var(--radius) - 2px);
+}
+.rich-text-lexical .fixed-toolbar:before,
+.rich-text-lexical .fixed-toolbar:after {
+  content: none; /* kill the layered blur/opacity pseudo-elements */
+}
+
+/* Toolbar buttons — mirror shadcn ghost icon buttons: quiet muted-foreground
+   idle icons, rounded-md, accent fill on hover/active. */
+.rich-text-lexical .toolbar-popup__button {
+  border-radius: calc(var(--radius) - 1px); /* rounded-md */
+  color: var(--muted-foreground, currentColor);
+  height: 30px;
+  width: 30px;
+  transition:
+    background-color 120ms ease,
+    color 120ms ease;
+}
+.rich-text-lexical .toolbar-popup__button:hover:not(.disabled) {
+  background-color: var(--accent, hsl(0 0% 92%));
+  color: var(--accent-foreground, currentColor);
+}
+.rich-text-lexical .toolbar-popup__button.active {
+  background-color: var(--accent, hsl(0 0% 88%));
+  color: var(--accent-foreground, currentColor);
+}
+.rich-text-lexical .toolbar-popup__button .icon {
+  color: currentColor;
+}
+
+/* Toolbar dropdowns (Headings / etc.) — trigger mirrors a shadcn ghost button. */
+.rich-text-lexical .fixed-toolbar .toolbar-popup__dropdown {
+  border-radius: calc(var(--radius) - 1px); /* rounded-md */
+  color: var(--foreground, currentColor);
+}
+.rich-text-lexical .fixed-toolbar .toolbar-popup__dropdown:hover:not([disabled]) {
+  background: var(--accent, hsl(0 0% 92%));
+  color: var(--accent-foreground, currentColor);
+}
+.rich-text-lexical .fixed-toolbar .toolbar-popup__dropdown-label {
+  color: var(--foreground, currentColor);
+  font-size: 0.8125rem;
+}
+.rich-text-lexical .fixed-toolbar__group .divider {
+  background-color: var(--border, hsl(0 0% 88%));
+}
+/* Dropdown menu surface + items — mirror the shadcn dropdown-menu primitive
+   (rounded-lg popover, p-1 padding, rounded-sm text-sm items, accent hover).
+   IMPORTANT: Payload renders this menu via createPortal to <document.body>
+   (DropDown.js), so it mounts OUTSIDE `.rich-text-lexical`. These rules must NOT
+   be scoped under `.rich-text-lexical` or they won't match (the bug behind "still
+   the same"). Tokens are global (:root), so they still resolve at body level.
+   Both container class names occur: fixed-toolbar (Headings etc.) and the
+   inline/default toolbar. */
+.fixed-toolbar__dropdown-items,
+.toolbar-popup__dropdown-items {
+  background: var(--popover, var(--background, white));
+  color: var(--popover-foreground, currentColor);
+  border: 1px solid var(--border, hsl(0 0% 88%));
+  border-radius: var(--radius); /* rounded-lg */
+  padding: 0.25rem; /* p-1 */
+  box-shadow:
+    0 10px 15px -3px rgb(0 0 0 / 0.1),
+    0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+.fixed-toolbar__dropdown-items .toolbar-popup__dropdown-item,
+.toolbar-popup__dropdown-items .toolbar-popup__dropdown-item {
+  color: var(--popover-foreground, currentColor);
+  border-radius: calc(var(--radius) - 2px); /* rounded-sm */
+  padding: 0.375rem 0.5rem;
+  font-size: 0.875rem; /* text-sm */
+}
+/* Active = the current block format. Payload styles `.active` like `:hover`
+   (grey); give it a quiet accent tint so it reads as "current" in the theme
+   palette while a full-accent fill stays reserved for hover. */
+.fixed-toolbar__dropdown-items .toolbar-popup__dropdown-item.active,
+.toolbar-popup__dropdown-items .toolbar-popup__dropdown-item.active {
+  background: color-mix(in srgb, var(--accent, hsl(0 0% 92%)) 55%, transparent);
+  color: var(--accent-foreground, currentColor);
+}
+.fixed-toolbar__dropdown-items .toolbar-popup__dropdown-item:hover:not([disabled]),
+.toolbar-popup__dropdown-items .toolbar-popup__dropdown-item:hover:not([disabled]) {
+  background: var(--accent, hsl(0 0% 92%));
+  color: var(--accent-foreground, currentColor);
+}
+
+/* Font: Payload sets the editor to a serif (`--font-serif`) with extra
+   letter-spacing for a document feel; override to inherit Geist sans so the
+   editor matches the rest of the shadcn admin. Set on the container so both the
+   editable content and the placeholder pick it up. Unlayered → beats Payload's
+   layered rule. */
+.rich-text-lexical .editor-container {
+  font-family: inherit;
+  letter-spacing: normal;
+}
+
+/* Editable area — drop the gutter line, match sans font + comfortable padding. */
+.rich-text-lexical .ContentEditable__root {
+  padding: 0.75rem 0.875rem;
+  min-height: 8rem;
+  outline: none;
+  font-family: inherit;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: var(--foreground, currentColor);
+}
+/* When the block handles are active, Payload reserves a 3rem left gutter for the
+   +/drag controls — via `padding-left: 3rem` on the content and `left: 3rem` on
+   the placeholder, both in @layer payload-default. Our unlayered `padding`
+   shorthand above clobbers that padding-left, so the handles overlap the text
+   and the placeholder (still at 3rem) no longer lines up with typed text.
+   Re-assert the gutter, unlayered, so it survives. */
+.rich-text-lexical--show-gutter .ContentEditable__root {
+  padding-left: 3rem;
+}
+.rich-text-lexical.rich-text-lexical--show-gutter
+  .fixed-toolbar
+  + .editor-container
+  > .editor-scroller
+  > .editor
+  > .ContentEditable__root:before {
+  display: none; /* the dotted left-gutter line is Payload-admin-specific */
+}
+.rich-text-lexical .fixed-toolbar + .editor-container > .editor-scroller > .editor > .ContentEditable__root,
+.rich-text-lexical .fixed-toolbar + .editor-container > .editor-scroller > .editor > div > .LexicalEditorTheme__placeholder {
+  padding-top: 0.75rem;
+  top: auto;
+}
+
+/* Placeholder text colour */
+.rich-text-lexical .LexicalEditorTheme__placeholder {
+  color: var(--muted-foreground, hsl(0 0% 55%));
+  font-size: 0.875rem;
+}
+
+/* Focus ring on the editable area — match shadcn input focus. */
+.rich-text-lexical:focus-within {
+  outline: none;
+  border-color: var(--ring, hsl(217 91% 60%));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring, hsl(217 91% 60%)) 35%, transparent);
+}
+
+/* Invalid state — when our bridge marks the field row with aria-invalid,
+   tint the border + ring. */
+[aria-invalid='true'] .rich-text-lexical,
+.rich-text-lexical[aria-invalid='true'] {
+  border-color: var(--destructive, hsl(0 84% 60%));
+}
+[aria-invalid='true'] .rich-text-lexical:focus-within,
+.rich-text-lexical[aria-invalid='true']:focus-within {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--destructive, hsl(0 84% 60%)) 35%, transparent);
+}
+
+/* Inline floating toolbar — quieter background + border that matches popover. */
+.rich-text-lexical .toolbar-popup,
+.toolbar-popup {
+  background: var(--popover, var(--background, white));
+  border: 1px solid var(--border, hsl(0 0% 88%));
+  border-radius: calc(var(--radius) - 1px);
+  box-shadow:
+    0 4px 6px -1px rgb(0 0 0 / 0.08),
+    0 2px 4px -2px rgb(0 0 0 / 0.06);
+  color: var(--popover-foreground, currentColor);
+}
+
+/* Hide the Payload-specific "label row" (it duplicates our bridge's own label). */
+.rich-text-lexical .rich-text-lexical__label-row {
+  display: none;
+}
+
+/* Block handles (+ add-block / ⋮⋮ drag). Payload anchors them at the editor's
+   left edge (left:0, then a JS `transform: translate(...)`), which lands them
+   right on our 1px wrapper border. Nudge them inward; margin offsets the
+   absolute box and the JS transform stacks on top, so positioning still works. */
+.rich-text-lexical .add-block-menu,
+.rich-text-lexical .draggable-block-menu {
+  margin-left: 0.375rem;
+}
+
+/* ---------------------------------------------------------------------------
+   Slash `/` command menu — restyle from Payload's defaults to match the shadcn
+   popover/dropdown surfaces (mirrors .fixed-toolbar__dropdown-items above).
+   Classes: .slash-menu-popup + __group / __group-title / __item /
+   __item--selected / __item-text. Unlayered → beats Payload's layered theme.
+   --------------------------------------------------------------------------- */
+.slash-menu-popup {
+  background: var(--popover, white);
+  color: var(--popover-foreground, currentColor);
+  border: 1px solid var(--border, hsl(0 0% 90%));
+  border-radius: var(--radius); /* rounded-lg — shadcn dropdown */
+  padding: 0.25rem; /* p-1 */
+  font-family: inherit;
+  /* shadcn shadow-lg — a touch more lift than the toolbar buttons. */
+  box-shadow:
+    0 10px 15px -3px rgb(0 0 0 / 0.1),
+    0 4px 6px -4px rgb(0 0 0 / 0.1);
+  scrollbar-width: thin;
+  scrollbar-color: var(--border, hsl(0 0% 80%)) transparent;
+}
+.slash-menu-popup::-webkit-scrollbar {
+  width: 10px;
+}
+.slash-menu-popup::-webkit-scrollbar-thumb {
+  background: var(--border, hsl(0 0% 80%));
+  border-radius: 9999px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+}
+.slash-menu-popup__group {
+  padding-bottom: 0;
+}
+.slash-menu-popup__group:not(:first-child) {
+  margin-top: 0.25rem;
+  border-top: 1px solid var(--border, hsl(0 0% 92%));
+  padding-top: 0.25rem;
+}
+.slash-menu-popup__group-title {
+  color: var(--muted-foreground, hsl(0 0% 45%));
+  padding: 0.375rem 0.5rem 0.25rem;
+  font-size: 0.6875rem; /* ~11px */
+  font-weight: 500;
+}
+.slash-menu-popup__item {
+  border-radius: calc(var(--radius) - 2px); /* rounded-sm */
+  color: var(--popover-foreground, currentColor);
+  height: auto;
+  gap: 0.5rem;
+  padding: 0.375rem 0.5rem;
+  font-size: 0.875rem; /* text-sm */
+}
+.slash-menu-popup__item:hover,
+.slash-menu-popup__item--selected {
+  background: var(--accent, hsl(0 0% 95%));
+  color: var(--accent-foreground, currentColor);
+}
+.slash-menu-popup__item-text {
+  margin-left: 0; /* spacing comes from the item's gap now */
+}
+.slash-menu-popup__item .icon {
+  color: var(--muted-foreground, currentColor);
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+.slash-menu-popup__item:hover .icon,
+.slash-menu-popup__item--selected .icon {
+  color: currentColor;
+}
+
+/* Dark mode: shadcn flips the same CSS variables under `.dark`, so the rules
+   above re-resolve correctly. Payload's `html[data-theme=dark]` selectors
+   are inside @layer payload-default and our unlayered rules win.
+   Nothing additional needed here unless a specific Payload selector wins via
+   `!important` — none of the targeted selectors above carry !important. */
+
+/* ---------------------------------------------------------------------------
+   richText block-format restoration.
+
+   Tailwind v4 preflight is scoped under `.twp` (custom.css) and resets
+   `ol, ul { list-style:none; margin:0; padding:0 }` and
+   `h1-h6 { font-size:inherit; font-weight:inherit }`. That layer wins over
+   Payload's Lexical theme (@layer payload-default), so list markers and
+   heading sizes disappear inside the editor. List indentation survives on the
+   <li> (it isn't reset by preflight), so only markers / block-margins / heading
+   type need restoring. Values mirror Payload's bundled theme. Unlayered so they
+   beat the preflight layer; scoped to .rich-text-lexical so nothing leaks.
+
+   Checklists keep their own `list-style-type:none` on the <li>, and an explicit
+   value on the element always beats an inherited one — so the disc/decimal here
+   never leaks onto checklist items.
+   --------------------------------------------------------------------------- */
+.rich-text-lexical .LexicalEditorTheme__ul    { list-style-type: disc;        margin: 8px 0 16px; }
+.rich-text-lexical .LexicalEditorTheme__ul ul { list-style-type: circle;      margin: 0; }
+.rich-text-lexical .LexicalEditorTheme__ol1   { list-style-type: decimal;     margin: 8px 0 16px; }
+.rich-text-lexical .LexicalEditorTheme__ol2   { list-style-type: upper-alpha; }
+.rich-text-lexical .LexicalEditorTheme__ol3   { list-style-type: lower-alpha; }
+.rich-text-lexical .LexicalEditorTheme__ol4   { list-style-type: upper-roman; }
+.rich-text-lexical .LexicalEditorTheme__ol5   { list-style-type: lower-roman; }
+
+.rich-text-lexical .LexicalEditorTheme__h1 { font-size: 28px; font-weight: 700; }
+.rich-text-lexical .LexicalEditorTheme__h2 { font-size: 25px; font-weight: 700; }
+.rich-text-lexical .LexicalEditorTheme__h3 { font-size: 22px; font-weight: 700; }
+.rich-text-lexical .LexicalEditorTheme__h4 { font-size: 20px; font-weight: 700; }
+.rich-text-lexical .LexicalEditorTheme__h5 { font-size: 18px; font-weight: 700; }
+.rich-text-lexical .LexicalEditorTheme__h6 { font-size: 16px; font-weight: 700; }
+
+/* Blockquote keeps its left border under preflight; only its block margin is reset. */
+.rich-text-lexical .LexicalEditorTheme__quote { margin-block: 16px; margin-inline: 4px; }

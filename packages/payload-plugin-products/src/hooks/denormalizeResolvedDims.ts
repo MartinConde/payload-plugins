@@ -1,0 +1,88 @@
+import type { CollectionAfterReadHook } from 'payload'
+
+/* Collection afterRead: project each view's resolved physical dimensions into
+   `view.resolvedDimsMm` so the canvas / Designer can read mm without fetching
+   the referenced print-template doc itself. Batches a single payload.find
+   against the templates collection for the union of ids referenced in this
+   doc's views; for views with `printAreaSource: 'custom'` it just copies the
+   already-stored widthMm/heightMm/bleedMm. */
+export const denormalizeResolvedDims =
+  (printTemplatesSlug: string): CollectionAfterReadHook =>
+  async ({ doc, req }) => {
+    const views = Array.isArray(doc?.views) ? doc.views : []
+    if (views.length === 0) return doc
+
+    const idsToFetch = Array.from(
+      new Set(
+        views
+          .filter(
+            (v: Record<string, unknown>) =>
+              v?.printAreaSource === 'template' && v?.printAreaTemplate != null,
+          )
+          .map((v: Record<string, unknown>) => {
+            const ref = v.printAreaTemplate
+            if (ref != null && typeof ref === 'object') {
+              return (ref as Record<string, unknown>).id
+            }
+            return ref
+          })
+          .filter((id: unknown) => id != null)
+          .map((id: unknown) => String(id)),
+      ),
+    )
+
+    let byId = new Map<string, Record<string, unknown>>()
+    if (idsToFetch.length > 0) {
+      try {
+        const { docs } = await req.payload.find({
+          collection: printTemplatesSlug,
+          where: { id: { in: idsToFetch } },
+          depth: 0,
+          limit: idsToFetch.length,
+          pagination: false,
+        })
+        byId = new Map(docs.map((d) => [String(d.id), d as Record<string, unknown>]))
+      } catch {
+        // If the templates collection is missing (consumer disabled it) or the
+        // query fails, fall through with an empty map — views without resolved
+        // dims simply won't render the canvas (DesignerCanvas gates on
+        // `hasViewDims`).
+      }
+    }
+
+    doc.views = views.map((v: Record<string, unknown>) => {
+      if (v?.printAreaSource === 'template' && v?.printAreaTemplate != null) {
+        const ref = v.printAreaTemplate
+        const id =
+          ref != null && typeof ref === 'object'
+            ? String((ref as Record<string, unknown>).id)
+            : String(ref)
+        const tpl = byId.get(id)
+        if (tpl && typeof tpl.widthMm === 'number' && typeof tpl.heightMm === 'number') {
+          const dims: Record<string, number> = {
+            widthMm: tpl.widthMm,
+            heightMm: tpl.heightMm,
+          }
+          if (typeof tpl.bleedMm === 'number') dims.bleedMm = tpl.bleedMm
+          return { ...v, resolvedDimsMm: dims }
+        }
+      }
+      if (
+        v?.printAreaSource === 'custom' &&
+        typeof v.widthMm === 'number' &&
+        typeof v.heightMm === 'number' &&
+        v.widthMm > 0 &&
+        v.heightMm > 0
+      ) {
+        const dims: Record<string, number> = {
+          widthMm: v.widthMm,
+          heightMm: v.heightMm,
+        }
+        if (typeof v.bleedMm === 'number') dims.bleedMm = v.bleedMm
+        return { ...v, resolvedDimsMm: dims }
+      }
+      return v
+    })
+
+    return doc
+  }

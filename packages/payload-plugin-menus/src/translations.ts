@@ -1,0 +1,278 @@
+/* Plugin-owned admin-UI translations for the menus plugin.
+
+   Covers the generated `menus` collection's labels and the dnd-kit tree editor
+   UI. Registered into `config.i18n.translations` by `menusPlugin` (see
+   plugin.ts). Field configs reference these via the `menusT()` helper (a Payload
+   label/description function); the editor reads the threaded `t` prop.
+
+   Authored for en/fr/de/es; any other admin language falls back to English.
+   Node-safe: imports only data + types, no `@payloadcms/ui`. */
+
+import { enTranslations } from '@payloadcms/translations/languages/en'
+import type { NestedKeysStripped, TFunction } from '@payloadcms/translations'
+
+export const menusTranslations = {
+  en: {
+    pluginMenus: {
+      menuSingular: 'Menu',
+      menuPlural: 'Menus',
+      menusDesc: 'Navigation menus built as nestable trees of links.',
+      nameLabel: 'Name',
+      nameDesc: 'Internal name shown in the admin (e.g. "Main navigation").',
+      slugLabel: 'Slug',
+      slugDesc: 'Stable key the frontend fetches this menu by (e.g. "main").',
+      treeLabel: 'Items',
+      treeDesc:
+        'Drag to reorder and nest. Each item links to a document or a custom URL.',
+      addItem: 'Add item',
+      addChild: 'Add sub-item',
+      removeItem: 'Remove item',
+      duplicateItem: 'Duplicate item',
+      openDocument: 'Open linked document',
+      brokenLink: 'No link target set',
+      expandAll: 'Expand all',
+      collapseAll: 'Collapse all',
+      dragToReorder: 'Drag to reorder',
+      indent: 'Nest under previous item',
+      outdent: 'Move out one level',
+      labelLabel: 'Label',
+      labelPlaceholder: 'Menu label',
+      linkTypeLabel: 'Link type',
+      linkDocument: 'Document',
+      linkCustom: 'Custom URL',
+      documentLabel: 'Document',
+      docSelectPlaceholder: 'Select a document…',
+      docSearchPlaceholder: 'Search documents…',
+      docNoResults: 'No documents found',
+      docClear: 'Clear selection',
+      customUrlLabel: 'URL',
+      customUrlPlaceholder: 'https://… or /path',
+      openNewTab: 'Open in new tab',
+      cssClassLabel: 'CSS class',
+      cssClassPlaceholder: 'e.g. is-highlighted',
+      noItems: 'No items yet. Add your first menu item.',
+      untitled: 'Untitled item',
+      collapse: 'Collapse',
+      expand: 'Expand',
+      // locale sync
+      syncTitle: 'Sync from another language',
+      syncHint: 'Copies the saved structure of another language — save your changes first.',
+      syncSourceLabel: 'Source language',
+      syncCopyRelabel: 'Labels from linked documents (this language)',
+      syncCopyStructureOnly: 'Structure only (keep current labels)',
+      syncCopyWithLabels: 'Structure and labels (copy as-is)',
+      syncApply: 'Copy into current language',
+      syncSaveFirst: 'Save the menu once before syncing languages.',
+      syncLoading: 'Loading…',
+      syncError: 'Could not load that language. Please try again.',
+      syncEmptySource: 'The source language has no saved items. Save your changes first, then sync.',
+      syncConfirmOverwrite:
+        'Replace the current language’s items with the copied structure? This cannot be undone until you reload.',
+      syncDone: 'Copied',
+    },
+  },
+  fr: {
+    pluginMenus: {
+      menuSingular: 'Menu',
+      menuPlural: 'Menus',
+      menusDesc:
+        'Menus de navigation construits en arborescences de liens imbriquables.',
+      nameLabel: 'Nom',
+      nameDesc:
+        'Nom interne affiché dans l’admin (par ex. « Navigation principale »).',
+      slugLabel: 'Identifiant',
+      slugDesc:
+        'Clé stable utilisée par le frontend pour récupérer ce menu (par ex. « main »).',
+      treeLabel: 'Éléments',
+      treeDesc:
+        'Glissez pour réordonner et imbriquer. Chaque élément pointe vers un document ou une URL personnalisée.',
+      addItem: 'Ajouter un élément',
+      addChild: 'Ajouter un sous-élément',
+      removeItem: 'Supprimer l’élément',
+      duplicateItem: 'Dupliquer l’élément',
+      openDocument: 'Ouvrir le document lié',
+      brokenLink: 'Aucune cible de lien définie',
+      expandAll: 'Tout développer',
+      collapseAll: 'Tout réduire',
+      dragToReorder: 'Glisser pour réordonner',
+      indent: 'Imbriquer sous l’élément précédent',
+      outdent: 'Remonter d’un niveau',
+      labelLabel: 'Libellé',
+      labelPlaceholder: 'Libellé du menu',
+      linkTypeLabel: 'Type de lien',
+      linkDocument: 'Document',
+      linkCustom: 'URL personnalisée',
+      documentLabel: 'Document',
+      docSelectPlaceholder: 'Sélectionner un document…',
+      docSearchPlaceholder: 'Rechercher des documents…',
+      docNoResults: 'Aucun document trouvé',
+      docClear: 'Effacer la sélection',
+      customUrlLabel: 'URL',
+      customUrlPlaceholder: 'https://… ou /chemin',
+      openNewTab: 'Ouvrir dans un nouvel onglet',
+      cssClassLabel: 'Classe CSS',
+      cssClassPlaceholder: 'par ex. is-highlighted',
+      noItems: 'Aucun élément. Ajoutez votre premier élément de menu.',
+      untitled: 'Élément sans titre',
+      collapse: 'Réduire',
+      expand: 'Développer',
+      syncTitle: 'Synchroniser depuis une autre langue',
+      syncHint:
+        'Copie la structure enregistrée d’une autre langue — enregistrez d’abord vos modifications.',
+      syncSourceLabel: 'Langue source',
+      syncCopyRelabel: 'Libellés depuis les documents liés (cette langue)',
+      syncCopyStructureOnly: 'Structure uniquement (garder les libellés actuels)',
+      syncCopyWithLabels: 'Structure et libellés (copier tel quel)',
+      syncApply: 'Copier dans la langue actuelle',
+      syncSaveFirst:
+        'Enregistrez le menu une fois avant de synchroniser les langues.',
+      syncLoading: 'Chargement…',
+      syncError: 'Impossible de charger cette langue. Veuillez réessayer.',
+      syncEmptySource:
+        'La langue source n’a aucun élément enregistré. Enregistrez d’abord vos modifications, puis synchronisez.',
+      syncConfirmOverwrite:
+        'Remplacer les éléments de la langue actuelle par la structure copiée ? Cette action est irréversible jusqu’au rechargement.',
+      syncDone: 'Copié',
+    },
+  },
+  de: {
+    pluginMenus: {
+      menuSingular: 'Menü',
+      menuPlural: 'Menüs',
+      menusDesc: 'Navigationsmenüs als verschachtelbare Linkbäume.',
+      nameLabel: 'Name',
+      nameDesc:
+        'Interner Name, im Admin angezeigt (z. B. „Hauptnavigation“).',
+      slugLabel: 'Slug',
+      slugDesc:
+        'Stabiler Schlüssel, über den das Frontend dieses Menü abruft (z. B. „main“).',
+      treeLabel: 'Einträge',
+      treeDesc:
+        'Zum Umsortieren und Verschachteln ziehen. Jeder Eintrag verweist auf ein Dokument oder eine benutzerdefinierte URL.',
+      addItem: 'Eintrag hinzufügen',
+      addChild: 'Untereintrag hinzufügen',
+      removeItem: 'Eintrag entfernen',
+      duplicateItem: 'Eintrag duplizieren',
+      openDocument: 'Verknüpftes Dokument öffnen',
+      brokenLink: 'Kein Linkziel festgelegt',
+      expandAll: 'Alle ausklappen',
+      collapseAll: 'Alle einklappen',
+      dragToReorder: 'Zum Umsortieren ziehen',
+      indent: 'Unter vorigem Eintrag verschachteln',
+      outdent: 'Eine Ebene nach außen',
+      labelLabel: 'Beschriftung',
+      labelPlaceholder: 'Menübeschriftung',
+      linkTypeLabel: 'Linktyp',
+      linkDocument: 'Dokument',
+      linkCustom: 'Benutzerdefinierte URL',
+      documentLabel: 'Dokument',
+      docSelectPlaceholder: 'Dokument auswählen…',
+      docSearchPlaceholder: 'Dokumente suchen…',
+      docNoResults: 'Keine Dokumente gefunden',
+      docClear: 'Auswahl löschen',
+      customUrlLabel: 'URL',
+      customUrlPlaceholder: 'https://… oder /pfad',
+      openNewTab: 'In neuem Tab öffnen',
+      cssClassLabel: 'CSS-Klasse',
+      cssClassPlaceholder: 'z. B. is-highlighted',
+      noItems: 'Noch keine Einträge. Fügen Sie Ihren ersten Menüeintrag hinzu.',
+      untitled: 'Eintrag ohne Titel',
+      collapse: 'Einklappen',
+      expand: 'Ausklappen',
+      syncTitle: 'Aus einer anderen Sprache synchronisieren',
+      syncHint:
+        'Kopiert die gespeicherte Struktur einer anderen Sprache — speichern Sie zuerst Ihre Änderungen.',
+      syncSourceLabel: 'Quellsprache',
+      syncCopyRelabel: 'Beschriftungen aus verknüpften Dokumenten (diese Sprache)',
+      syncCopyStructureOnly: 'Nur Struktur (aktuelle Beschriftungen behalten)',
+      syncCopyWithLabels: 'Struktur und Beschriftungen (unverändert kopieren)',
+      syncApply: 'In aktuelle Sprache kopieren',
+      syncSaveFirst:
+        'Speichern Sie das Menü einmal, bevor Sie Sprachen synchronisieren.',
+      syncLoading: 'Wird geladen…',
+      syncError:
+        'Diese Sprache konnte nicht geladen werden. Bitte erneut versuchen.',
+      syncEmptySource:
+        'Die Quellsprache hat keine gespeicherten Einträge. Speichern Sie zuerst Ihre Änderungen und synchronisieren Sie dann.',
+      syncConfirmOverwrite:
+        'Die Einträge der aktuellen Sprache durch die kopierte Struktur ersetzen? Dies kann bis zum Neuladen nicht rückgängig gemacht werden.',
+      syncDone: 'Kopiert',
+    },
+  },
+  es: {
+    pluginMenus: {
+      menuSingular: 'Menú',
+      menuPlural: 'Menús',
+      menusDesc:
+        'Menús de navegación construidos como árboles de enlaces anidables.',
+      nameLabel: 'Nombre',
+      nameDesc:
+        'Nombre interno mostrado en el admin (p. ej. «Navegación principal»).',
+      slugLabel: 'Identificador',
+      slugDesc:
+        'Clave estable con la que el frontend obtiene este menú (p. ej. «main»).',
+      treeLabel: 'Elementos',
+      treeDesc:
+        'Arrastra para reordenar y anidar. Cada elemento enlaza a un documento o a una URL personalizada.',
+      addItem: 'Añadir elemento',
+      addChild: 'Añadir subelemento',
+      removeItem: 'Eliminar elemento',
+      duplicateItem: 'Duplicar elemento',
+      openDocument: 'Abrir el documento vinculado',
+      brokenLink: 'Sin destino de enlace',
+      expandAll: 'Expandir todo',
+      collapseAll: 'Contraer todo',
+      dragToReorder: 'Arrastrar para reordenar',
+      indent: 'Anidar bajo el elemento anterior',
+      outdent: 'Subir un nivel',
+      labelLabel: 'Etiqueta',
+      labelPlaceholder: 'Etiqueta del menú',
+      linkTypeLabel: 'Tipo de enlace',
+      linkDocument: 'Documento',
+      linkCustom: 'URL personalizada',
+      documentLabel: 'Documento',
+      docSelectPlaceholder: 'Seleccionar un documento…',
+      docSearchPlaceholder: 'Buscar documentos…',
+      docNoResults: 'No se encontraron documentos',
+      docClear: 'Borrar selección',
+      customUrlLabel: 'URL',
+      customUrlPlaceholder: 'https://… o /ruta',
+      openNewTab: 'Abrir en una pestaña nueva',
+      cssClassLabel: 'Clase CSS',
+      cssClassPlaceholder: 'p. ej. is-highlighted',
+      noItems: 'Aún no hay elementos. Añade tu primer elemento de menú.',
+      untitled: 'Elemento sin título',
+      collapse: 'Contraer',
+      expand: 'Expandir',
+      syncTitle: 'Sincronizar desde otro idioma',
+      syncHint:
+        'Copia la estructura guardada de otro idioma — guarda primero tus cambios.',
+      syncSourceLabel: 'Idioma de origen',
+      syncCopyRelabel: 'Etiquetas desde los documentos vinculados (este idioma)',
+      syncCopyStructureOnly: 'Solo estructura (mantener etiquetas actuales)',
+      syncCopyWithLabels: 'Estructura y etiquetas (copiar tal cual)',
+      syncApply: 'Copiar al idioma actual',
+      syncSaveFirst:
+        'Guarda el menú una vez antes de sincronizar idiomas.',
+      syncLoading: 'Cargando…',
+      syncError: 'No se pudo cargar ese idioma. Inténtalo de nuevo.',
+      syncEmptySource:
+        'El idioma de origen no tiene elementos guardados. Guarda primero tus cambios y luego sincroniza.',
+      syncConfirmOverwrite:
+        '¿Reemplazar los elementos del idioma actual con la estructura copiada? No se puede deshacer hasta recargar.',
+      syncDone: 'Copiado',
+    },
+  },
+}
+
+export type MenusTranslationsObject = (typeof menusTranslations)['en'] &
+  typeof enTranslations
+export type MenusTranslationsKeys = NestedKeysStripped<MenusTranslationsObject>
+
+/* Field-config helper. Returns a Payload label/description function that
+   resolves a `pluginMenus:` key with the request's `t` (typed to our key
+   union). Node-safe. */
+export const menusT =
+  (key: MenusTranslationsKeys) =>
+  ({ t }: { t: TFunction }): string =>
+    (t as TFunction<MenusTranslationsKeys>)(key)

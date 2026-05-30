@@ -1,0 +1,82 @@
+{
+  "name": "payload-plugin-seo",
+  "version": "0.0.1",
+  "description": "shadcn/ui-themed SEO plugin for Payload CMS — per-document meta + SERP preview, site-wide SEO defaults global, and a redirects collection",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./client": {
+      "import": "./dist/exports/client.js",
+      "types": "./dist/exports/client.d.ts",
+      "default": "./dist/exports/client.js"
+    },
+    "./rsc": {
+      "import": "./dist/exports/rsc.js",
+      "types": "./dist/exports/rsc.d.ts",
+      "default": "./dist/exports/rsc.js"
+    },
+    "./types": {
+      "import": "./dist/exports/types.js",
+      "types": "./dist/exports/types.d.ts",
+      "default": "./dist/exports/types.js"
+    },
+    "./schema": {
+      "import": "./dist/exports/schema.js",
+      "types": "./dist/exports/schema.d.ts",
+      "default": "./dist/exports/schema.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "pnpm run build:types && pnpm run build:swc",
+    "build:swc": "swc ./src -d ./dist --config-file .swcrc --strip-leading-paths",
+    "build:types": "tsc --emitDeclarationOnly --outDir dist",
+    "clean": "rimraf dist *.tsbuildinfo",
+    "dev": "swc ./src -d ./dist --config-file .swcrc --strip-leading-paths --watch",
+    "typecheck": "tsc --noEmit",
+    "prepare": "pnpm run build"
+  },
+  "dependencies": {
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.16.0",
+    "tailwind-merge": "^3.6.0"
+  },
+  "peerDependencies": {
+    "@payloadcms/next": ">=3.84 <3.90",
+    "@payloadcms/translations": ">=3.84 <3.90",
+    "@payloadcms/ui": ">=3.84 <3.90",
+    "next": ">=15 <17",
+    "payload": ">=3.84 <3.90",
+    "payload-plugin-shadcn-admin": "^0.1.0",
+    "payload-plugin-shadcn-ui": "^0.1.0",
+    "radix-ui": "^1.4.3",
+    "react": ">=19 <20",
+    "react-dom": ">=19 <20"
+  },
+  "devDependencies": {
+    "@payloadcms/translations": "^3.0.0",
+    "@swc/cli": "^0.4.0",
+    "@swc/core": "^1.7.0",
+    "@types/node": "24.12.3",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "payload-plugin-shadcn-admin": "workspace:*",
+    "payload-plugin-shadcn-ui": "workspace:*",
+    "rimraf": "^5.0.0",
+    "typescript": "6.0.3"
+  }
+}
