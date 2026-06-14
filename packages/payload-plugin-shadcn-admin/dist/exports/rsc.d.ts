@@ -1,0 +1,17 @@
+export { NavShell } from '../features/nav/NavShell.js';
+export { extractCollection } from 'payload-plugin-shadcn-ui';
+export { CollectionListView, type CollectionListViewProps, } from '../features/list-view/CollectionListView.js';
+export { AutoCollectionListView } from '../features/list-view/AutoCollectionListView.js';
+export { AutoCollectionDocView } from '../features/doc-form/AutoCollectionDocView.js';
+export { AutoVersionsView } from '../features/doc-form/versions/AutoVersionsView.js';
+export { AutoVersionView } from '../features/doc-form/versions/AutoVersionView.js';
+export { AutoApiView } from '../features/doc-form/api/AutoApiView.js';
+export { default as DefaultNav } from '../features/nav/DefaultNav.js';
+export { AutoAccountView } from '../features/account/AutoAccountView.js';
+export { AutoLoginView } from '../features/auth/AutoLoginView.js';
+export { AutoCreateFirstUserView } from '../features/auth/AutoCreateFirstUserView.js';
+export { AutoForgotPasswordView } from '../features/auth/AutoForgotPasswordView.js';
+export { AutoLogoutView, AutoLogoutInactivityView, } from '../features/auth/AutoLogoutView.js';
+export { AutoUnauthorizedView } from '../features/auth/AutoUnauthorizedView.js';
+export { AutoBrowseByFolderView } from '../features/folder-view/AutoBrowseByFolderView.js';
+export { AutoDashboardView } from '../features/dashboard/AutoDashboardView.js';

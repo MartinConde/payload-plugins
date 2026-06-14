@@ -1,0 +1,16 @@
+import type { ExtractedField } from 'payload-plugin-shadcn-ui';
+export declare const PLUGIN_NAMESPACE = "plugin-shadcn-admin";
+export declare const SYSTEM_FIELD_NAMES: Set<string>;
+export declare const labelOf: (field: ExtractedField) => string;
+export declare const isFieldRenderable: (field: ExtractedField) => boolean;
+export declare const TRANSPARENT_STRUCTURAL: Set<string>;
+export declare const isUiOverride: (field: ExtractedField) => boolean;
+export declare const isRenderableHere: (field: ExtractedField) => boolean;
+export declare const isObject: (v: unknown) => v is Record<string, unknown>;
+export declare const parsePathSegments: (path: string) => (string | number)[];
+export declare const getByPath: (root: unknown, path: string) => unknown;
+export declare const setByPath: (root: Record<string, unknown>, path: string, next: unknown) => Record<string, unknown>;
+export declare const topLevelOf: (path: string) => string;
+export declare const stripPathIndices: (path: string) => string;
+export declare const collectLocalizedSchemaPaths: (fields: ExtractedField[], prefix: string, out: Set<string>) => void;
+export declare const projectLocaleAtLeaves: (values: Record<string, unknown>, fields: ExtractedField[], activeLocale: string) => Record<string, unknown>;

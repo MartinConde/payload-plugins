@@ -46,8 +46,7 @@
     "build:types": "tsc --emitDeclarationOnly --outDir dist",
     "clean": "rimraf dist *.tsbuildinfo",
     "dev": "swc ./src -d ./dist --config-file .swcrc --strip-leading-paths --watch",
-    "typecheck": "tsc --noEmit",
-    "prepare": "pnpm run build"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "class-variance-authority": "^0.7.1",
@@ -61,8 +60,8 @@
     "@payloadcms/ui": ">=3.84 <3.90",
     "next": ">=15 <17",
     "payload": ">=3.84 <3.90",
-    "payload-plugin-shadcn-admin": "^0.1.0",
-    "payload-plugin-shadcn-ui": "^0.1.0",
+    "payload-plugin-shadcn-admin": ">=0.0.1",
+    "payload-plugin-shadcn-ui": ">=0.0.1",
     "radix-ui": "^1.4.3",
     "react": ">=19 <20",
     "react-dom": ">=19 <20"

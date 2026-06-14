@@ -41,8 +41,7 @@
     "build:types": "tsc --emitDeclarationOnly --outDir dist",
     "clean": "rimraf dist *.tsbuildinfo",
     "dev": "swc ./src -d ./dist --config-file .swcrc --strip-leading-paths --watch",
-    "typecheck": "tsc --noEmit",
-    "prepare": "pnpm run build"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "clsx": "^2.1.1",
@@ -57,8 +56,8 @@
     "drizzle-orm": ">=0.30.0",
     "next": ">=15 <17",
     "payload": ">=3.84 <3.90",
-    "payload-plugin-shadcn-admin": "^0.1.0",
-    "payload-plugin-shadcn-ui": "^0.1.0",
+    "payload-plugin-shadcn-admin": ">=0.0.1",
+    "payload-plugin-shadcn-ui": ">=0.0.1",
     "radix-ui": "^1.4.3",
     "react": ">=19 <20",
     "react-dom": ">=19 <20"
