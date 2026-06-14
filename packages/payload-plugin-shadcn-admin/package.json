@@ -57,11 +57,11 @@
     "@tanstack/react-table": "^8.21.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "cmdk": "^1.0.4",
-    "lucide-react": "^1.16.0",
+    "cmdk": "^1.1.1",
+    "lucide-react": "^1.18.0",
     "payload-plugin-shadcn-ui": "workspace:*",
     "qs-esm": "^8.0.1",
-    "react-day-picker": "^9.4.4",
+    "react-day-picker": "^10.0.1",
     "tailwind-merge": "^3.6.0"
   },
   "peerDependencies": {
@@ -81,14 +81,14 @@
     }
   },
   "devDependencies": {
-    "@payloadcms/translations": "^3.0.0",
-    "@swc/cli": "^0.4.0",
-    "@swc/core": "^1.7.0",
-    "@types/node": "24.12.3",
-    "@types/react": "19.2.14",
+    "@payloadcms/translations": "^3.85.1",
+    "@swc/cli": "^0.8.1",
+    "@swc/core": "^1.15.41",
+    "@types/node": "25.9.3",
+    "@types/react": "19.2.17",
     "@types/react-dom": "19.2.3",
     "copyfiles": "^2.4.1",
-    "rimraf": "^5.0.0",
+    "rimraf": "^6.1.3",
     "typescript": "6.0.3"
   }
 }
