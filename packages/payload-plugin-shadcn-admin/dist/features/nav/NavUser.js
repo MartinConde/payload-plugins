@@ -1,7 +1,7 @@
 'use client';
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import * as React from 'react';
-import { ChevronsUpDown, LogOut } from 'lucide-react';
+import { ChevronsUpDown, LogOut, User } from 'lucide-react';
 import { useTranslation } from '../../internal/payloadAdapter.js';
 import { Avatar, AvatarFallback, AvatarImage } from 'payload-plugin-shadcn-ui';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from 'payload-plugin-shadcn-ui';
@@ -12,7 +12,7 @@ function initials(name) {
     if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
-export function NavUser({ user, logoutHref = '/admin/logout', extraItems }) {
+export function NavUser({ user, accountHref = '/admin/account', logoutHref = '/admin/logout', extraItems }) {
     const { isMobile } = useSidebar();
     const { t } = useTranslation();
     const fallback = initials(user.name || user.email || '?');
@@ -97,6 +97,23 @@ export function NavUser({ user, logoutHref = '/admin/logout', extraItems }) {
                                         })
                                     ]
                                 })
+                            }),
+                            accountHref && /*#__PURE__*/ _jsxs(_Fragment, {
+                                children: [
+                                    /*#__PURE__*/ _jsx(DropdownMenuSeparator, {}),
+                                    /*#__PURE__*/ _jsx(DropdownMenuGroup, {
+                                        children: /*#__PURE__*/ _jsx(DropdownMenuItem, {
+                                            asChild: true,
+                                            children: /*#__PURE__*/ _jsxs("a", {
+                                                href: accountHref,
+                                                children: [
+                                                    /*#__PURE__*/ _jsx(User, {}),
+                                                    t('authentication:account')
+                                                ]
+                                            })
+                                        })
+                                    })
+                                ]
                             }),
                             extraItems && /*#__PURE__*/ _jsxs(_Fragment, {
                                 children: [

@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { ChevronsUpDown, LogOut } from 'lucide-react'
+import { ChevronsUpDown, LogOut, User } from 'lucide-react'
 import { useTranslation } from '../../internal/payloadAdapter.js'
 
 import { Avatar, AvatarFallback, AvatarImage } from 'payload-plugin-shadcn-ui'
@@ -29,9 +29,11 @@ export type NavUserUser = {
 
 type NavUserProps = {
   user: NavUserUser
+  /** Defaults to `/admin/account`. Set to null to hide the account item. */
+  accountHref?: string | null
   /** Defaults to `/admin/logout`. Set to null to hide the logout item. */
   logoutHref?: string | null
-  /** Extra menu items rendered between the user label and the logout row. */
+  /** Extra menu items rendered between the account link and the logout row. */
   extraItems?: React.ReactNode
 }
 
@@ -42,7 +44,7 @@ function initials(name: string) {
   return (parts[0]![0]! + parts[parts.length - 1]![0]!).toUpperCase()
 }
 
-export function NavUser({ user, logoutHref = '/admin/logout', extraItems }: NavUserProps) {
+export function NavUser({ user, accountHref = '/admin/account', logoutHref = '/admin/logout', extraItems }: NavUserProps) {
   const { isMobile } = useSidebar()
   const { t } = useTranslation()
   const fallback = initials(user.name || user.email || '?')
@@ -85,6 +87,19 @@ export function NavUser({ user, logoutHref = '/admin/logout', extraItems }: NavU
                 </div>
               </div>
             </DropdownMenuLabel>
+            {accountHref && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuGroup>
+                  <DropdownMenuItem asChild>
+                    <a href={accountHref}>
+                      <User />
+                      {t('authentication:account')}
+                    </a>
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+              </>
+            )}
             {extraItems && (
               <>
                 <DropdownMenuSeparator />
