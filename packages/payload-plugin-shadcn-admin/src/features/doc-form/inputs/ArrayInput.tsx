@@ -52,6 +52,7 @@ import {
   Collapsible,
   CollapsibleContent,
 } from 'payload-plugin-shadcn-ui'
+import { cn } from 'payload-plugin-shadcn-ui'
 import type { ExtractedField } from 'payload-plugin-shadcn-ui'
 
 import {
@@ -252,56 +253,77 @@ function SortableRow({
   }
   return (
     <Card ref={setNodeRef} style={style}>
-      <CardContent className="flex flex-row items-stretch gap-2 p-2">
+      {/* When collapsed: center everything vertically (compact row).
+          When expanded: stretch so side buttons align to top of tall content. */}
+      <CardContent
+        className={cn(
+          'flex flex-row gap-2 p-2',
+          collapsed ? 'items-center' : 'items-stretch',
+        )}
+      >
         <button
           type="button"
           {...attributes}
           {...listeners}
           disabled={disabled}
-          className="flex shrink-0 cursor-grab items-start pt-2 text-muted-foreground hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
+          className={cn(
+            'flex shrink-0 cursor-grab text-muted-foreground hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50',
+            collapsed ? 'items-center' : 'items-start pt-2',
+          )}
           aria-label={t('shadcnAdmin:dragToReorder')}
         >
           <GripVerticalIcon className="size-4" />
         </button>
-        <div className="flex flex-1 flex-col gap-3">
-          {/* Header: chevron toggle + index + optional summary + block badge */}
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={onToggleCollapse}
-              className="flex flex-1 items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
-              aria-label={
-                collapsed
-                  ? t('shadcnAdmin:expandRow')
-                  : t('shadcnAdmin:collapseRow')
-              }
-            >
-              {collapsed ? (
-                <ChevronRightIcon className="size-3.5 shrink-0" />
-              ) : (
-                <ChevronDownIcon className="size-3.5 shrink-0" />
-              )}
-              <span className="shrink-0">#{index + 1}</span>
-              {collapsed && summary && (
-                <span className="max-w-xs truncate text-muted-foreground/70">
-                  {summary}
-                </span>
-              )}
-            </button>
+
+        <div className="flex flex-1 flex-col">
+          {/* Header: chevron + index + badge (right after #N) + preview summary.
+              Badge is inside the toggle button so it sits next to the number
+              instead of being pushed to the far right. The gap between this
+              button and CollapsibleContent is absent when collapsed (no gap-N on
+              the parent flex) — avoiding extra whitespace from a height-0
+              CollapsibleContent still occupying a flex slot. */}
+          <button
+            type="button"
+            onClick={onToggleCollapse}
+            className="flex w-full items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+            aria-label={
+              collapsed
+                ? t('shadcnAdmin:expandRow')
+                : t('shadcnAdmin:collapseRow')
+            }
+          >
+            {collapsed ? (
+              <ChevronRightIcon className="size-4 shrink-0" />
+            ) : (
+              <ChevronDownIcon className="size-4 shrink-0" />
+            )}
+            <span className="shrink-0 font-medium">#{index + 1}</span>
             {header}
-          </div>
-          {/* Subfields — hidden when collapsed */}
+            {collapsed && summary && (
+              <span className="truncate text-muted-foreground/60">
+                {summary}
+              </span>
+            )}
+          </button>
+
+          {/* Subfields — pt-3 provides breathing room below the header only
+              when content is actually visible; avoids a phantom gap from a
+              height-0 CollapsibleContent still occupying a flex row slot. */}
           <Collapsible open={!collapsed}>
             <CollapsibleContent>
-              <div className="flex flex-col gap-3">{children}</div>
+              <div className="flex flex-col gap-3 pt-3">{children}</div>
             </CollapsibleContent>
           </Collapsible>
         </div>
+
         <button
           type="button"
           onClick={onRemove}
           disabled={disabled}
-          className="flex shrink-0 cursor-pointer items-start pt-2 text-muted-foreground hover:text-destructive disabled:cursor-not-allowed disabled:opacity-50"
+          className={cn(
+            'flex shrink-0 cursor-pointer text-muted-foreground hover:text-destructive disabled:cursor-not-allowed disabled:opacity-50',
+            collapsed ? 'items-center' : 'items-start pt-2',
+          )}
           aria-label={t('shadcnAdmin:removeRow')}
         >
           <TrashIcon className="size-4" />

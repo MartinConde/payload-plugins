@@ -21,6 +21,7 @@ import { useTranslation } from '../../../internal/payloadAdapter.js';
 import { Button } from 'payload-plugin-shadcn-ui';
 import { Card, CardContent } from 'payload-plugin-shadcn-ui';
 import { Collapsible, CollapsibleContent } from 'payload-plugin-shadcn-ui';
+import { cn } from 'payload-plugin-shadcn-ui';
 import { deriveRowPreview, RowCollapseControls, useRowCollapse } from './rowCollapse.js';
 const ensureRowId = (row)=>{
     const id = typeof row.id === 'string' ? row.id : typeof row.id === 'number' ? String(row.id) : globalThis.crypto?.randomUUID?.() ?? `row-${Math.random().toString(36).slice(2, 10)}`;
@@ -151,57 +152,52 @@ function SortableRow({ row, index, collapsed, onToggleCollapse, summary, disable
         ref: setNodeRef,
         style: style,
         children: /*#__PURE__*/ _jsxs(CardContent, {
-            className: "flex flex-row items-stretch gap-2 p-2",
+            className: cn('flex flex-row gap-2 p-2', collapsed ? 'items-center' : 'items-stretch'),
             children: [
                 /*#__PURE__*/ _jsx("button", {
                     type: "button",
                     ...attributes,
                     ...listeners,
                     disabled: disabled,
-                    className: "flex shrink-0 cursor-grab items-start pt-2 text-muted-foreground hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50",
+                    className: cn('flex shrink-0 cursor-grab text-muted-foreground hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50', collapsed ? 'items-center' : 'items-start pt-2'),
                     "aria-label": t('shadcnAdmin:dragToReorder'),
                     children: /*#__PURE__*/ _jsx(GripVerticalIcon, {
                         className: "size-4"
                     })
                 }),
                 /*#__PURE__*/ _jsxs("div", {
-                    className: "flex flex-1 flex-col gap-3",
+                    className: "flex flex-1 flex-col",
                     children: [
-                        /*#__PURE__*/ _jsxs("div", {
-                            className: "flex items-center gap-2",
+                        /*#__PURE__*/ _jsxs("button", {
+                            type: "button",
+                            onClick: onToggleCollapse,
+                            className: "flex w-full items-center gap-2 text-sm text-muted-foreground hover:text-foreground",
+                            "aria-label": collapsed ? t('shadcnAdmin:expandRow') : t('shadcnAdmin:collapseRow'),
                             children: [
-                                /*#__PURE__*/ _jsxs("button", {
-                                    type: "button",
-                                    onClick: onToggleCollapse,
-                                    className: "flex flex-1 items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground",
-                                    "aria-label": collapsed ? t('shadcnAdmin:expandRow') : t('shadcnAdmin:collapseRow'),
+                                collapsed ? /*#__PURE__*/ _jsx(ChevronRightIcon, {
+                                    className: "size-4 shrink-0"
+                                }) : /*#__PURE__*/ _jsx(ChevronDownIcon, {
+                                    className: "size-4 shrink-0"
+                                }),
+                                /*#__PURE__*/ _jsxs("span", {
+                                    className: "shrink-0 font-medium",
                                     children: [
-                                        collapsed ? /*#__PURE__*/ _jsx(ChevronRightIcon, {
-                                            className: "size-3.5 shrink-0"
-                                        }) : /*#__PURE__*/ _jsx(ChevronDownIcon, {
-                                            className: "size-3.5 shrink-0"
-                                        }),
-                                        /*#__PURE__*/ _jsxs("span", {
-                                            className: "shrink-0",
-                                            children: [
-                                                "#",
-                                                index + 1
-                                            ]
-                                        }),
-                                        collapsed && summary && /*#__PURE__*/ _jsx("span", {
-                                            className: "max-w-xs truncate text-muted-foreground/70",
-                                            children: summary
-                                        })
+                                        "#",
+                                        index + 1
                                     ]
                                 }),
-                                header
+                                header,
+                                collapsed && summary && /*#__PURE__*/ _jsx("span", {
+                                    className: "truncate text-muted-foreground/60",
+                                    children: summary
+                                })
                             ]
                         }),
                         /*#__PURE__*/ _jsx(Collapsible, {
                             open: !collapsed,
                             children: /*#__PURE__*/ _jsx(CollapsibleContent, {
                                 children: /*#__PURE__*/ _jsx("div", {
-                                    className: "flex flex-col gap-3",
+                                    className: "flex flex-col gap-3 pt-3",
                                     children: children
                                 })
                             })
@@ -212,7 +208,7 @@ function SortableRow({ row, index, collapsed, onToggleCollapse, summary, disable
                     type: "button",
                     onClick: onRemove,
                     disabled: disabled,
-                    className: "flex shrink-0 cursor-pointer items-start pt-2 text-muted-foreground hover:text-destructive disabled:cursor-not-allowed disabled:opacity-50",
+                    className: cn('flex shrink-0 cursor-pointer text-muted-foreground hover:text-destructive disabled:cursor-not-allowed disabled:opacity-50', collapsed ? 'items-center' : 'items-start pt-2'),
                     "aria-label": t('shadcnAdmin:removeRow'),
                     children: /*#__PURE__*/ _jsx(TrashIcon, {
                         className: "size-4"
