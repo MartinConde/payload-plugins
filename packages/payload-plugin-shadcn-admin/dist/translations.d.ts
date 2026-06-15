@@ -124,6 +124,11 @@ export declare const shadcnAdminTranslations: {
             fileRowUploading: string;
             uploadSubmit: string;
             uploadFilesCount: string;
+            chooseFromLibrary: string;
+            mediaLibrary: string;
+            loadMore: string;
+            selectCount_one: string;
+            selectCount_other: string;
         };
     };
     fr: {
@@ -249,6 +254,11 @@ export declare const shadcnAdminTranslations: {
             fileRowUploading: string;
             uploadSubmit: string;
             uploadFilesCount: string;
+            chooseFromLibrary: string;
+            mediaLibrary: string;
+            loadMore: string;
+            selectCount_one: string;
+            selectCount_other: string;
         };
     };
     de: {
@@ -374,6 +384,11 @@ export declare const shadcnAdminTranslations: {
             fileRowUploading: string;
             uploadSubmit: string;
             uploadFilesCount: string;
+            chooseFromLibrary: string;
+            mediaLibrary: string;
+            loadMore: string;
+            selectCount_one: string;
+            selectCount_other: string;
         };
     };
     es: {
@@ -499,6 +514,11 @@ export declare const shadcnAdminTranslations: {
             fileRowUploading: string;
             uploadSubmit: string;
             uploadFilesCount: string;
+            chooseFromLibrary: string;
+            mediaLibrary: string;
+            loadMore: string;
+            selectCount_one: string;
+            selectCount_other: string;
         };
     };
 };

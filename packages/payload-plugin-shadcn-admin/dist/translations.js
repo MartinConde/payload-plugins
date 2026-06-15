@@ -144,7 +144,12 @@
             fileRowUploaded: 'File {{number}} · uploaded',
             fileRowUploading: 'File {{number}} · uploading…',
             uploadSubmit: 'Upload',
-            uploadFilesCount: 'Upload {{count}} files'
+            uploadFilesCount: 'Upload {{count}} files',
+            chooseFromLibrary: 'Choose from library',
+            mediaLibrary: 'Media library',
+            loadMore: 'Load more',
+            selectCount_one: 'Select {{count}} item',
+            selectCount_other: 'Select {{count}} items'
         }
     },
     fr: {
@@ -270,7 +275,12 @@
             fileRowUploaded: 'Fichier {{number}} · téléversé',
             fileRowUploading: 'Fichier {{number}} · téléversement…',
             uploadSubmit: 'Téléverser',
-            uploadFilesCount: 'Téléverser {{count}} fichiers'
+            uploadFilesCount: 'Téléverser {{count}} fichiers',
+            chooseFromLibrary: 'Choisir dans la bibliothèque',
+            mediaLibrary: 'Bibliothèque de médias',
+            loadMore: 'Charger plus',
+            selectCount_one: 'Sélectionner {{count}} élément',
+            selectCount_other: 'Sélectionner {{count}} éléments'
         }
     },
     de: {
@@ -396,7 +406,12 @@
             fileRowUploaded: 'Datei {{number}} · hochgeladen',
             fileRowUploading: 'Datei {{number}} · wird hochgeladen…',
             uploadSubmit: 'Hochladen',
-            uploadFilesCount: '{{count}} Dateien hochladen'
+            uploadFilesCount: '{{count}} Dateien hochladen',
+            chooseFromLibrary: 'Aus Medienbibliothek wählen',
+            mediaLibrary: 'Medienbibliothek',
+            loadMore: 'Mehr laden',
+            selectCount_one: '{{count}} Element auswählen',
+            selectCount_other: '{{count}} Elemente auswählen'
         }
     },
     es: {
@@ -522,7 +537,12 @@
             fileRowUploaded: 'Archivo {{number}} · subido',
             fileRowUploading: 'Archivo {{number}} · subiendo…',
             uploadSubmit: 'Subir',
-            uploadFilesCount: 'Subir {{count}} archivos'
+            uploadFilesCount: 'Subir {{count}} archivos',
+            chooseFromLibrary: 'Elegir de la biblioteca',
+            mediaLibrary: 'Biblioteca de medios',
+            loadMore: 'Cargar más',
+            selectCount_one: 'Seleccionar {{count}} elemento',
+            selectCount_other: 'Seleccionar {{count}} elementos'
         }
     }
 };

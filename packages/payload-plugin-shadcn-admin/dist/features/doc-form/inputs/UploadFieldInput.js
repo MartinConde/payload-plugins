@@ -20,7 +20,7 @@ import { Badge } from 'payload-plugin-shadcn-ui';
 import { Button } from 'payload-plugin-shadcn-ui';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from 'payload-plugin-shadcn-ui';
 import { cn } from 'payload-plugin-shadcn-ui';
-import { RelationshipPicker } from '../../../shared/RelationshipPicker.js';
+import { MediaPickerDialog } from '../upload/MediaPickerDialog.js';
 import { UploadNewDialog } from '../upload/UploadNewDialog.js';
 const normalizeNonPoly = (value, hasMany)=>{
     if (value === null || value === undefined) return hasMany ? [] : null;
@@ -171,18 +171,17 @@ export function UploadFieldInput({ relationTo, hasMany = false, useAsTitleBySlug
     }, [
         idsKey
     ]);
-    // Inner picker is always single-slug, scoped to activeSlug.
-    // In non-poly + non-hasMany mode, surface the current selection through
-    // the picker so the user can see the chip there. Otherwise pass null to
-    // act as an "add" affordance.
-    const innerPickerValue = (()=>{
+    // Value surfaced to MediaPickerDialog for the active-slug picker.
+    // Non-poly hasMany: pass the full selection array so the dialog can
+    //   pre-mark already-selected tiles (single mode: pass one id or null).
+    // Poly: single → active-slug entry's id or null; hasMany → null (add-only).
+    const mediaPickerValue = (()=>{
         if (isPoly) {
-            // Show the active-slug entry inline only when single mode
             if (hasMany) return null;
             const first = polyEntries[0];
             return first && first.relationTo === activeSlug ? first.value : null;
         }
-        if (hasMany) return null;
+        if (hasMany) return collectIds(nonPolyNormalized);
         return collectIds(nonPolyNormalized)[0] ?? null;
     })();
     const handlePick = (picked)=>{
@@ -352,13 +351,14 @@ export function UploadFieldInput({ relationTo, hasMany = false, useAsTitleBySlug
                         ]
                     }) : null,
                     /*#__PURE__*/ _jsx("div", {
-                        className: "flex-1",
-                        children: activeSlug ? /*#__PURE__*/ _jsx(RelationshipPicker, {
+                        className: "flex-none",
+                        children: activeSlug ? /*#__PURE__*/ _jsx(MediaPickerDialog, {
                             relatedSlug: activeSlug,
                             useAsTitle: useAsTitle,
                             multi: !isPoly && Boolean(hasMany),
-                            value: innerPickerValue,
-                            onChange: (next)=>handlePick(next)
+                            value: mediaPickerValue,
+                            onChange: (next)=>handlePick(next),
+                            disabled: disabled
                         }) : null
                     }),
                     /*#__PURE__*/ _jsxs(Button, {

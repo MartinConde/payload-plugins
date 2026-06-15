@@ -34,7 +34,7 @@ import {
 } from 'payload-plugin-shadcn-ui'
 import { cn } from 'payload-plugin-shadcn-ui'
 import type { ExtractedCollection } from 'payload-plugin-shadcn-ui'
-import { RelationshipPicker } from '../../../shared/RelationshipPicker.js'
+import { MediaPickerDialog } from '../upload/MediaPickerDialog.js'
 import {
   UploadNewDialog,
   type UploadCreated,
@@ -243,18 +243,17 @@ export function UploadFieldInput({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [idsKey])
 
-  // Inner picker is always single-slug, scoped to activeSlug.
-  // In non-poly + non-hasMany mode, surface the current selection through
-  // the picker so the user can see the chip there. Otherwise pass null to
-  // act as an "add" affordance.
-  const innerPickerValue: string | null = (() => {
+  // Value surfaced to MediaPickerDialog for the active-slug picker.
+  // Non-poly hasMany: pass the full selection array so the dialog can
+  //   pre-mark already-selected tiles (single mode: pass one id or null).
+  // Poly: single → active-slug entry's id or null; hasMany → null (add-only).
+  const mediaPickerValue: string | string[] | null = (() => {
     if (isPoly) {
-      // Show the active-slug entry inline only when single mode
       if (hasMany) return null
       const first = polyEntries[0]
       return first && first.relationTo === activeSlug ? first.value : null
     }
-    if (hasMany) return null
+    if (hasMany) return collectIds(nonPolyNormalized)
     return collectIds(nonPolyNormalized)[0] ?? null
   })()
 
@@ -419,14 +418,15 @@ export function UploadFieldInput({
             </SelectContent>
           </Select>
         ) : null}
-        <div className="flex-1">
+        <div className="flex-none">
           {activeSlug ? (
-            <RelationshipPicker
+            <MediaPickerDialog
               relatedSlug={activeSlug}
               useAsTitle={useAsTitle}
               multi={!isPoly && Boolean(hasMany)}
-              value={innerPickerValue}
+              value={mediaPickerValue}
               onChange={(next) => handlePick(next)}
+              disabled={disabled}
             />
           ) : null}
         </div>
