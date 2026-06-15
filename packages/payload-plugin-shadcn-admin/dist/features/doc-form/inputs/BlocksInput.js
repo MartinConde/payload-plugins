@@ -1,9 +1,12 @@
 'use client';
-import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 /* Blocks field input. Payload stores blocks as [{ id, blockType, ...subfields }]
    on disk and REST PATCH replaces the entire blocks array (same as array — no
    per-row partial). Each row's blockType picks which of field.blocks[] to
-   render its subfields from. */ import * as React from 'react';
+   render its subfields from.
+
+   Rows start collapsed on initial render; newly-added blocks open expanded.
+   A "Collapse all / Expand all" pair appears above the list when >1 row. */ import * as React from 'react';
 import { PlusIcon } from 'lucide-react';
 import { DndContext, KeyboardSensor, PointerSensor, closestCenter, useSensor, useSensors } from '@dnd-kit/core';
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
@@ -13,6 +16,7 @@ import { Button } from 'payload-plugin-shadcn-ui';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from 'payload-plugin-shadcn-ui';
 import { Badge } from 'payload-plugin-shadcn-ui';
 import { SortableRow } from './ArrayInput.js';
+import { deriveRowPreview, RowCollapseControls, useRowCollapse } from './rowCollapse.js';
 const newRow = (block)=>{
     const row = {
         id: globalThis.crypto?.randomUUID?.() ?? `block-${Math.random().toString(36).slice(2, 10)}`,
@@ -53,6 +57,7 @@ export function BlocksInput({ id, field, value, onChange, nestedPath, renderChil
         blocks
     ]);
     const [pickerSlug, setPickerSlug] = React.useState(blocks[0]?.slug ?? '');
+    const { isCollapsed, toggle, collapseAll, expandAll, markExpanded } = useRowCollapse(rows.map((r)=>r.id));
     const sensors = useSensors(useSensor(PointerSensor, {
         activationConstraint: {
             distance: 4
@@ -71,9 +76,11 @@ export function BlocksInput({ id, field, value, onChange, nestedPath, renderChil
     const addBlock = ()=>{
         const block = blockBySlug[pickerSlug];
         if (!block) return;
+        const row = newRow(block);
+        markExpanded(row.id);
         onChange([
             ...rows,
-            newRow(block)
+            row
         ]);
     };
     const removeRow = (rowId)=>{
@@ -86,42 +93,53 @@ export function BlocksInput({ id, field, value, onChange, nestedPath, renderChil
             rows.length === 0 ? /*#__PURE__*/ _jsx("p", {
                 className: "text-xs text-muted-foreground",
                 children: t('shadcnAdmin:noBlocks')
-            }) : /*#__PURE__*/ _jsx(DndContext, {
-                sensors: sensors,
-                collisionDetection: closestCenter,
-                modifiers: [
-                    restrictToVerticalAxis
-                ],
-                onDragEnd: handleDragEnd,
-                children: /*#__PURE__*/ _jsx(SortableContext, {
-                    items: rows.map((r)=>r.id),
-                    strategy: verticalListSortingStrategy,
-                    children: /*#__PURE__*/ _jsx("div", {
-                        className: "flex flex-col gap-2",
-                        children: rows.map((row, idx)=>{
-                            const block = blockBySlug[row.blockType];
-                            return /*#__PURE__*/ _jsx(SortableRow, {
-                                row: row,
-                                index: idx,
-                                disabled: disabled,
-                                onRemove: ()=>removeRow(row.id),
-                                header: /*#__PURE__*/ _jsx(Badge, {
-                                    variant: "outline",
-                                    className: "text-[10px] uppercase",
-                                    children: block ? blockLabelOf(block) : row.blockType || 'Unknown'
-                                }),
-                                children: block ? block.fields.map((sub)=>{
-                                    // Per-block sub-perms: blocks[slug].fields gates
-                                    // each block's subfields independently.
-                                    const perBlockPerms = blockPerms ? blockPerms.blocks?.[row.blockType] : undefined;
-                                    return renderChild(sub, `${nestedPath}.${idx}.`, perBlockPerms, // Cascade a read-only/disabled blocks field to its
-                                    // block subfields (see ArrayInput for rationale).
-                                    disabled);
-                                }) : null
-                            }, row.id);
+            }) : /*#__PURE__*/ _jsxs(_Fragment, {
+                children: [
+                    rows.length > 1 && /*#__PURE__*/ _jsx(RowCollapseControls, {
+                        onCollapseAll: collapseAll,
+                        onExpandAll: expandAll
+                    }),
+                    /*#__PURE__*/ _jsx(DndContext, {
+                        sensors: sensors,
+                        collisionDetection: closestCenter,
+                        modifiers: [
+                            restrictToVerticalAxis
+                        ],
+                        onDragEnd: handleDragEnd,
+                        children: /*#__PURE__*/ _jsx(SortableContext, {
+                            items: rows.map((r)=>r.id),
+                            strategy: verticalListSortingStrategy,
+                            children: /*#__PURE__*/ _jsx("div", {
+                                className: "flex flex-col gap-2",
+                                children: rows.map((row, idx)=>{
+                                    const block = blockBySlug[row.blockType];
+                                    return /*#__PURE__*/ _jsx(SortableRow, {
+                                        row: row,
+                                        index: idx,
+                                        collapsed: isCollapsed(row.id),
+                                        onToggleCollapse: ()=>toggle(row.id),
+                                        summary: block ? deriveRowPreview(block.fields, row) : undefined,
+                                        disabled: disabled,
+                                        onRemove: ()=>removeRow(row.id),
+                                        header: /*#__PURE__*/ _jsx(Badge, {
+                                            variant: "outline",
+                                            className: "text-[10px] uppercase",
+                                            children: block ? blockLabelOf(block) : row.blockType || 'Unknown'
+                                        }),
+                                        children: block ? block.fields.map((sub)=>{
+                                            // Per-block sub-perms: blocks[slug].fields gates
+                                            // each block's subfields independently.
+                                            const perBlockPerms = blockPerms ? blockPerms.blocks?.[row.blockType] : undefined;
+                                            return renderChild(sub, `${nestedPath}.${idx}.`, perBlockPerms, // Cascade a read-only/disabled blocks field to its
+                                            // block subfields (see ArrayInput for rationale).
+                                            disabled);
+                                        }) : null
+                                    }, row.id);
+                                })
+                            })
                         })
                     })
-                })
+                ]
             }),
             /*#__PURE__*/ _jsxs("div", {
                 className: "flex flex-row items-center gap-2",

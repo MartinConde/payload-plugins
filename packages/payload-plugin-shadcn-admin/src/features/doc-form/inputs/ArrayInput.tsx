@@ -8,10 +8,19 @@
    Each row is a shadcn-styled card with a drag handle (dnd-kit), delete
    button, and the row's subfields rendered via the bridge's renderChild
    callback (which dispatches each subfield back through FieldInput, allowing
-   nested arrays/blocks/group/tabs to recurse). */
+   nested arrays/blocks/group/tabs to recurse).
+
+   Rows start collapsed on initial render; new rows are added expanded.
+   A "Collapse all / Expand all" pair appears above the list when >1 row. */
 
 import * as React from 'react'
-import { GripVerticalIcon, TrashIcon, PlusIcon } from 'lucide-react'
+import {
+  ChevronDownIcon,
+  ChevronRightIcon,
+  GripVerticalIcon,
+  PlusIcon,
+  TrashIcon,
+} from 'lucide-react'
 import {
   DndContext,
   type DragEndEvent,
@@ -39,7 +48,17 @@ import type {
 } from '../../../translations.js'
 import { Button } from 'payload-plugin-shadcn-ui'
 import { Card, CardContent } from 'payload-plugin-shadcn-ui'
+import {
+  Collapsible,
+  CollapsibleContent,
+} from 'payload-plugin-shadcn-ui'
 import type { ExtractedField } from 'payload-plugin-shadcn-ui'
+
+import {
+  deriveRowPreview,
+  RowCollapseControls,
+  useRowCollapse,
+} from './rowCollapse.js'
 
 type Row = { id: string; [key: string]: unknown }
 
@@ -109,6 +128,9 @@ export function ArrayInput({
     )
   }, [value])
 
+  const { isCollapsed, toggle, collapseAll, expandAll, markExpanded } =
+    useRowCollapse(rows.map((r) => r.id))
+
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -124,7 +146,9 @@ export function ArrayInput({
   }
 
   const addRow = () => {
-    onChange([...rows, seedRowDefaults(subfields)])
+    const newRow = seedRowDefaults(subfields)
+    markExpanded(newRow.id)
+    onChange([...rows, newRow])
   }
   const removeRow = (rowId: string) => {
     onChange(rows.filter((r) => r.id !== rowId))
@@ -135,38 +159,49 @@ export function ArrayInput({
       {rows.length === 0 ? (
         <p className="text-xs text-muted-foreground">No rows.</p>
       ) : (
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          modifiers={[restrictToVerticalAxis]}
-          onDragEnd={handleDragEnd}
-        >
-          <SortableContext
-            items={rows.map((r) => r.id)}
-            strategy={verticalListSortingStrategy}
+        <>
+          {rows.length > 1 && (
+            <RowCollapseControls
+              onCollapseAll={collapseAll}
+              onExpandAll={expandAll}
+            />
+          )}
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            modifiers={[restrictToVerticalAxis]}
+            onDragEnd={handleDragEnd}
           >
-            <div className="flex flex-col gap-2">
-              {rows.map((row, idx) => (
-                <SortableRow
-                  key={row.id}
-                  row={row}
-                  index={idx}
-                  disabled={disabled}
-                  onRemove={() => removeRow(row.id)}
-                >
-                  {subfields.map((sub) =>
-                    // Cascade the array's `disabled` to its row subfields so
-                    // their inputs are disabled too (not just add/remove/
-                    // reorder). `disabled` here covers both readOnly fields and
-                    // the form-wide submitting state — children should be
-                    // non-editable in either case.
-                    renderChild(sub, `${nestedPath}.${idx}.`, rowPerms, disabled),
-                  )}
-                </SortableRow>
-              ))}
-            </div>
-          </SortableContext>
-        </DndContext>
+            <SortableContext
+              items={rows.map((r) => r.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              <div className="flex flex-col gap-2">
+                {rows.map((row, idx) => (
+                  <SortableRow
+                    key={row.id}
+                    row={row}
+                    index={idx}
+                    collapsed={isCollapsed(row.id)}
+                    onToggleCollapse={() => toggle(row.id)}
+                    summary={deriveRowPreview(subfields, row)}
+                    disabled={disabled}
+                    onRemove={() => removeRow(row.id)}
+                  >
+                    {subfields.map((sub) =>
+                      // Cascade the array's `disabled` to its row subfields so
+                      // their inputs are disabled too (not just add/remove/
+                      // reorder). `disabled` here covers both readOnly fields and
+                      // the form-wide submitting state — children should be
+                      // non-editable in either case.
+                      renderChild(sub, `${nestedPath}.${idx}.`, rowPerms, disabled),
+                    )}
+                  </SortableRow>
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
+        </>
       )}
       <Button
         type="button"
@@ -186,6 +221,9 @@ export function ArrayInput({
 function SortableRow({
   row,
   index,
+  collapsed,
+  onToggleCollapse,
+  summary,
   disabled,
   onRemove,
   children,
@@ -193,6 +231,9 @@ function SortableRow({
 }: {
   row: Row
   index: number
+  collapsed: boolean
+  onToggleCollapse: () => void
+  summary?: string
   disabled?: boolean
   onRemove: () => void
   children: React.ReactNode
@@ -223,11 +264,38 @@ function SortableRow({
           <GripVerticalIcon className="size-4" />
         </button>
         <div className="flex flex-1 flex-col gap-3">
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span>#{index + 1}</span>
+          {/* Header: chevron toggle + index + optional summary + block badge */}
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={onToggleCollapse}
+              className="flex flex-1 items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+              aria-label={
+                collapsed
+                  ? t('shadcnAdmin:expandRow')
+                  : t('shadcnAdmin:collapseRow')
+              }
+            >
+              {collapsed ? (
+                <ChevronRightIcon className="size-3.5 shrink-0" />
+              ) : (
+                <ChevronDownIcon className="size-3.5 shrink-0" />
+              )}
+              <span className="shrink-0">#{index + 1}</span>
+              {collapsed && summary && (
+                <span className="max-w-xs truncate text-muted-foreground/70">
+                  {summary}
+                </span>
+              )}
+            </button>
             {header}
           </div>
-          <div className="flex flex-col gap-3">{children}</div>
+          {/* Subfields — hidden when collapsed */}
+          <Collapsible open={!collapsed}>
+            <CollapsibleContent>
+              <div className="flex flex-col gap-3">{children}</div>
+            </CollapsibleContent>
+          </Collapsible>
         </div>
         <button
           type="button"

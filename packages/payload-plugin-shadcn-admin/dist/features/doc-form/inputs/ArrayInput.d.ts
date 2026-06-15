@@ -17,9 +17,12 @@ export type ArrayInputProps = {
     rowPerms?: unknown;
 };
 export declare function ArrayInput({ id, field, value, onChange, nestedPath, renderChild, disabled, rowPerms, }: ArrayInputProps): React.ReactElement;
-declare function SortableRow({ row, index, disabled, onRemove, children, header, }: {
+declare function SortableRow({ row, index, collapsed, onToggleCollapse, summary, disabled, onRemove, children, header, }: {
     row: Row;
     index: number;
+    collapsed: boolean;
+    onToggleCollapse: () => void;
+    summary?: string;
     disabled?: boolean;
     onRemove: () => void;
     children: React.ReactNode;

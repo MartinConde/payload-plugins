@@ -3,7 +3,10 @@
 /* Blocks field input. Payload stores blocks as [{ id, blockType, ...subfields }]
    on disk and REST PATCH replaces the entire blocks array (same as array — no
    per-row partial). Each row's blockType picks which of field.blocks[] to
-   render its subfields from. */
+   render its subfields from.
+
+   Rows start collapsed on initial render; newly-added blocks open expanded.
+   A "Collapse all / Expand all" pair appears above the list when >1 row. */
 
 import * as React from 'react'
 import { PlusIcon } from 'lucide-react'
@@ -45,6 +48,11 @@ import type {
 } from 'payload-plugin-shadcn-ui'
 import { SortableRow } from './ArrayInput.js'
 import type { Perms } from '../access-control/fieldPermissions.js'
+import {
+  deriveRowPreview,
+  RowCollapseControls,
+  useRowCollapse,
+} from './rowCollapse.js'
 
 type BlockRow = { id: string; blockType: string; [key: string]: unknown }
 
@@ -133,6 +141,9 @@ export function BlocksInput({
 
   const [pickerSlug, setPickerSlug] = React.useState<string>(blocks[0]?.slug ?? '')
 
+  const { isCollapsed, toggle, collapseAll, expandAll, markExpanded } =
+    useRowCollapse(rows.map((r) => r.id))
+
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -150,7 +161,9 @@ export function BlocksInput({
   const addBlock = () => {
     const block = blockBySlug[pickerSlug]
     if (!block) return
-    onChange([...rows, newRow(block)])
+    const row = newRow(block)
+    markExpanded(row.id)
+    onChange([...rows, row])
   }
   const removeRow = (rowId: string) => {
     onChange(rows.filter((r) => r.id !== rowId))
@@ -163,57 +176,72 @@ export function BlocksInput({
           {t('shadcnAdmin:noBlocks')}
         </p>
       ) : (
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          modifiers={[restrictToVerticalAxis]}
-          onDragEnd={handleDragEnd}
-        >
-          <SortableContext
-            items={rows.map((r) => r.id)}
-            strategy={verticalListSortingStrategy}
+        <>
+          {rows.length > 1 && (
+            <RowCollapseControls
+              onCollapseAll={collapseAll}
+              onExpandAll={expandAll}
+            />
+          )}
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            modifiers={[restrictToVerticalAxis]}
+            onDragEnd={handleDragEnd}
           >
-            <div className="flex flex-col gap-2">
-              {rows.map((row, idx) => {
-                const block = blockBySlug[row.blockType]
-                return (
-                  <SortableRow
-                    key={row.id}
-                    row={row}
-                    index={idx}
-                    disabled={disabled}
-                    onRemove={() => removeRow(row.id)}
-                    header={
-                      <Badge variant="outline" className="text-[10px] uppercase">
-                        {block ? blockLabelOf(block) : row.blockType || 'Unknown'}
-                      </Badge>
-                    }
-                  >
-                    {block
-                      ? block.fields.map((sub) => {
-                          // Per-block sub-perms: blocks[slug].fields gates
-                          // each block's subfields independently.
-                          const perBlockPerms = blockPerms
-                            ? (blockPerms as {
-                                blocks?: Record<string, unknown>
-                              }).blocks?.[row.blockType]
-                            : undefined
-                          return renderChild(
-                            sub,
-                            `${nestedPath}.${idx}.`,
-                            perBlockPerms,
-                            // Cascade a read-only/disabled blocks field to its
-                            // block subfields (see ArrayInput for rationale).
-                            disabled,
-                          )
-                        })
-                      : null}
-                  </SortableRow>
-                )
-              })}
-            </div>
-          </SortableContext>
-        </DndContext>
+            <SortableContext
+              items={rows.map((r) => r.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              <div className="flex flex-col gap-2">
+                {rows.map((row, idx) => {
+                  const block = blockBySlug[row.blockType]
+                  return (
+                    <SortableRow
+                      key={row.id}
+                      row={row}
+                      index={idx}
+                      collapsed={isCollapsed(row.id)}
+                      onToggleCollapse={() => toggle(row.id)}
+                      summary={
+                        block
+                          ? deriveRowPreview(block.fields, row)
+                          : undefined
+                      }
+                      disabled={disabled}
+                      onRemove={() => removeRow(row.id)}
+                      header={
+                        <Badge variant="outline" className="text-[10px] uppercase">
+                          {block ? blockLabelOf(block) : row.blockType || 'Unknown'}
+                        </Badge>
+                      }
+                    >
+                      {block
+                        ? block.fields.map((sub) => {
+                            // Per-block sub-perms: blocks[slug].fields gates
+                            // each block's subfields independently.
+                            const perBlockPerms = blockPerms
+                              ? (blockPerms as {
+                                  blocks?: Record<string, unknown>
+                                }).blocks?.[row.blockType]
+                              : undefined
+                            return renderChild(
+                              sub,
+                              `${nestedPath}.${idx}.`,
+                              perBlockPerms,
+                              // Cascade a read-only/disabled blocks field to its
+                              // block subfields (see ArrayInput for rationale).
+                              disabled,
+                            )
+                          })
+                        : null}
+                    </SortableRow>
+                  )
+                })}
+              </div>
+            </SortableContext>
+          </DndContext>
+        </>
       )}
       <div className="flex flex-row items-center gap-2">
         <Select

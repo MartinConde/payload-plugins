@@ -80,6 +80,10 @@ export declare const shadcnAdminTranslations: {
             addRow: string;
             dragToReorder: string;
             removeRow: string;
+            collapseAll: string;
+            expandAll: string;
+            collapseRow: string;
+            expandRow: string;
             noOptions: string;
             filterField: string;
             filterCondition: string;
@@ -201,6 +205,10 @@ export declare const shadcnAdminTranslations: {
             addRow: string;
             dragToReorder: string;
             removeRow: string;
+            collapseAll: string;
+            expandAll: string;
+            collapseRow: string;
+            expandRow: string;
             noOptions: string;
             filterField: string;
             filterCondition: string;
@@ -322,6 +330,10 @@ export declare const shadcnAdminTranslations: {
             addRow: string;
             dragToReorder: string;
             removeRow: string;
+            collapseAll: string;
+            expandAll: string;
+            collapseRow: string;
+            expandRow: string;
             noOptions: string;
             filterField: string;
             filterCondition: string;
@@ -443,6 +455,10 @@ export declare const shadcnAdminTranslations: {
             addRow: string;
             dragToReorder: string;
             removeRow: string;
+            collapseAll: string;
+            expandAll: string;
+            collapseRow: string;
+            expandRow: string;
             noOptions: string;
             filterField: string;
             filterCondition: string;
