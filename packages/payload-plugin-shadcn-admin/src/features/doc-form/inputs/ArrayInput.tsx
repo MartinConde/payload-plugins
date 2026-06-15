@@ -48,10 +48,6 @@ import type {
 } from '../../../translations.js'
 import { Button } from 'payload-plugin-shadcn-ui'
 import { Card, CardContent } from 'payload-plugin-shadcn-ui'
-import {
-  Collapsible,
-  CollapsibleContent,
-} from 'payload-plugin-shadcn-ui'
 import { cn } from 'payload-plugin-shadcn-ui'
 import type { ExtractedField } from 'payload-plugin-shadcn-ui'
 
@@ -257,7 +253,7 @@ function SortableRow({
           When expanded: stretch so side buttons align to top of tall content. */}
       <CardContent
         className={cn(
-          'flex flex-row gap-2 p-2',
+          'flex flex-row gap-2 px-2 py-1',
           collapsed ? 'items-center' : 'items-stretch',
         )}
       >
@@ -285,7 +281,7 @@ function SortableRow({
           <button
             type="button"
             onClick={onToggleCollapse}
-            className="flex w-full items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+            className="flex w-full items-center gap-2 text-base text-muted-foreground hover:text-foreground"
             aria-label={
               collapsed
                 ? t('shadcnAdmin:expandRow')
@@ -306,14 +302,19 @@ function SortableRow({
             )}
           </button>
 
-          {/* Subfields — pt-3 provides breathing room below the header only
-              when content is actually visible; avoids a phantom gap from a
-              height-0 CollapsibleContent still occupying a flex row slot. */}
-          <Collapsible open={!collapsed}>
-            <CollapsibleContent>
+          {/* Grid-rows transition: animates height via grid-template-rows 0fr↔1fr.
+              No keyframes needed; the inner div's min-h-0 lets it collapse fully. */}
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateRows: collapsed ? '0fr' : '1fr',
+              transition: 'grid-template-rows 0.2s ease',
+            }}
+          >
+            <div className="min-h-0 overflow-hidden">
               <div className="flex flex-col gap-3 pt-3">{children}</div>
-            </CollapsibleContent>
-          </Collapsible>
+            </div>
+          </div>
         </div>
 
         <button

@@ -20,7 +20,6 @@ import { CSS } from '@dnd-kit/utilities';
 import { useTranslation } from '../../../internal/payloadAdapter.js';
 import { Button } from 'payload-plugin-shadcn-ui';
 import { Card, CardContent } from 'payload-plugin-shadcn-ui';
-import { Collapsible, CollapsibleContent } from 'payload-plugin-shadcn-ui';
 import { cn } from 'payload-plugin-shadcn-ui';
 import { deriveRowPreview, RowCollapseControls, useRowCollapse } from './rowCollapse.js';
 const ensureRowId = (row)=>{
@@ -152,7 +151,7 @@ function SortableRow({ row, index, collapsed, onToggleCollapse, summary, disable
         ref: setNodeRef,
         style: style,
         children: /*#__PURE__*/ _jsxs(CardContent, {
-            className: cn('flex flex-row gap-2 p-2', collapsed ? 'items-center' : 'items-stretch'),
+            className: cn('flex flex-row gap-2 px-2 py-1', collapsed ? 'items-center' : 'items-stretch'),
             children: [
                 /*#__PURE__*/ _jsx("button", {
                     type: "button",
@@ -171,7 +170,7 @@ function SortableRow({ row, index, collapsed, onToggleCollapse, summary, disable
                         /*#__PURE__*/ _jsxs("button", {
                             type: "button",
                             onClick: onToggleCollapse,
-                            className: "flex w-full items-center gap-2 text-sm text-muted-foreground hover:text-foreground",
+                            className: "flex w-full items-center gap-2 text-base text-muted-foreground hover:text-foreground",
                             "aria-label": collapsed ? t('shadcnAdmin:expandRow') : t('shadcnAdmin:collapseRow'),
                             children: [
                                 collapsed ? /*#__PURE__*/ _jsx(ChevronRightIcon, {
@@ -193,9 +192,14 @@ function SortableRow({ row, index, collapsed, onToggleCollapse, summary, disable
                                 })
                             ]
                         }),
-                        /*#__PURE__*/ _jsx(Collapsible, {
-                            open: !collapsed,
-                            children: /*#__PURE__*/ _jsx(CollapsibleContent, {
+                        /*#__PURE__*/ _jsx("div", {
+                            style: {
+                                display: 'grid',
+                                gridTemplateRows: collapsed ? '0fr' : '1fr',
+                                transition: 'grid-template-rows 0.2s ease'
+                            },
+                            children: /*#__PURE__*/ _jsx("div", {
+                                className: "min-h-0 overflow-hidden",
                                 children: /*#__PURE__*/ _jsx("div", {
                                     className: "flex flex-col gap-3 pt-3",
                                     children: children
