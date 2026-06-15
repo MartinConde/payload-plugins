@@ -151,7 +151,7 @@ export function FieldInput(props) {
                         /*#__PURE__*/ _jsx("label", {
                             htmlFor: elementId,
                             className: "text-sm text-muted-foreground",
-                            children: checked ? 'true' : 'false'
+                            children: checked ? t('general:true') : t('general:false')
                         })
                     ]
                 });

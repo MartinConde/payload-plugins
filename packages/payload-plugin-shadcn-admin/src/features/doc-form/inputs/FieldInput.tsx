@@ -285,7 +285,7 @@ export function FieldInput(props: FieldInputProps): React.ReactElement {
             htmlFor={elementId}
             className="text-sm text-muted-foreground"
           >
-            {checked ? 'true' : 'false'}
+            {checked ? t('general:true') : t('general:false')}
           </label>
         </div>
       )
