@@ -251,7 +251,7 @@ function StatusPill({ status, t }) {
                                 options: comparisonOptions,
                                 selected: versionFromIDParam
                             }),
-                            localeInfo && localeInfo.locales.length > 0 ? /*#__PURE__*/ _jsx(SelectLocales, {
+                            localeInfo && localeInfo.locales.length > 1 ? /*#__PURE__*/ _jsx(SelectLocales, {
                                 locales: localeInfo.locales.map((l)=>({
                                         code: l.code,
                                         label: l.label

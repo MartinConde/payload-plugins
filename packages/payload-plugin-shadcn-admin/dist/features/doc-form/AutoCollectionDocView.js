@@ -109,14 +109,19 @@ const singularLabel = (collection)=>stringifyLabel(collection.labels?.singular) 
     // Globals are singletons → always edit-mode (upsert). Collections split
     // create/edit on docID presence.
     const mode = isGlobal || docID !== undefined ? 'edit' : 'create';
-    // v3.8 — when localization is configured AND we're in edit mode, supplement
-    // Payload's upstream single-locale fetch with a `?locale=all` refetch so
-    // initialValues carry every locale's value as `{en, fr, …}` per localized
-    // field. Pre-rendered richText `customComponents.Field` elements stay on
-    // their original (URL-active) locale; the bridge pays a getFormState
-    // round-trip on the first locale switch to refresh them.
+    // v3.8 — when localization is configured with MORE THAN ONE locale AND we're
+    // in edit mode, supplement Payload's upstream single-locale fetch with a
+    // `?locale=all` refetch so initialValues carry every locale's value as
+    // `{en, fr, …}` per localized field. Pre-rendered richText
+    // `customComponents.Field` elements stay on their original (URL-active)
+    // locale; the bridge pays a getFormState round-trip on the first locale
+    // switch to refresh them.
+    //
+    // Single-locale sites: skip the refetch — the plain locale-resolved `doc`
+    // already in initialValues is sufficient, and `locale:'all'` would return
+    // locale-keyed objects that the bridge (activeLocale=null) can't unwrap.
     let initialValues = mode === 'edit' && doc && typeof doc === 'object' ? doc : {};
-    if (mode === 'edit' && localizationConfig && payload) {
+    if (mode === 'edit' && localizationConfig && payload && locales && locales.length > 1) {
         try {
             // CRITICAL: when drafts are enabled, pass `draft: true` so the refetch
             // returns the latest draft values (matching what Payload's own

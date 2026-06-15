@@ -72,12 +72,20 @@ export const useDocFormValues = (): DocFormValuesContextValue =>
 
 /** Read one field's value by dotted path, projecting a localized leaf
  *  (`{ locale: value }`) to the active locale's slice. Returns `undefined`
- *  outside a doc form or when the path is absent. */
+ *  outside a doc form or when the path is absent.
+ *
+ *  When `activeLocale` is null (single-locale sites where localizationEnabled
+ *  is false) we still defensively unwrap a locale-keyed object by falling back
+ *  to its first key — prevents `.input` overrides from receiving a raw
+ *  `{ de: '…' }` object if the RSC ever produces locale-keyed initialValues. */
 export const useDocFormFieldValue = (path: string): unknown => {
   const { values, activeLocale } = React.useContext(DocFormValuesContext)
   const raw = getByPath(values, path)
-  if (activeLocale && isObject(raw) && activeLocale in raw) {
-    return (raw as Record<string, unknown>)[activeLocale]
+  if (isObject(raw)) {
+    const key = activeLocale ?? Object.keys(raw as Record<string, unknown>)[0]
+    if (key && key in (raw as Record<string, unknown>)) {
+      return (raw as Record<string, unknown>)[key]
+    }
   }
   return raw
 }

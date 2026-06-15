@@ -277,7 +277,7 @@ export async function AutoVersionView(serverProps: DocumentViewServerProps) {
             options={comparisonOptions}
             selected={versionFromIDParam}
           />
-          {localeInfo && localeInfo.locales.length > 0 ? (
+          {localeInfo && localeInfo.locales.length > 1 ? (
             <SelectLocales
               locales={localeInfo.locales.map((l) => ({
                 code: l.code,

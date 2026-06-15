@@ -15,7 +15,12 @@ export declare const DocFormValuesProvider: React.Provider<DocFormValuesContextV
 export declare const useDocFormValues: () => DocFormValuesContextValue;
 /** Read one field's value by dotted path, projecting a localized leaf
  *  (`{ locale: value }`) to the active locale's slice. Returns `undefined`
- *  outside a doc form or when the path is absent. */
+ *  outside a doc form or when the path is absent.
+ *
+ *  When `activeLocale` is null (single-locale sites where localizationEnabled
+ *  is false) we still defensively unwrap a locale-keyed object by falling back
+ *  to its first key — prevents `.input` overrides from receiving a raw
+ *  `{ de: '…' }` object if the RSC ever produces locale-keyed initialValues. */
 export declare const useDocFormFieldValue: (path: string) => unknown;
 /** Stable write callback for the doc form. `.input` overrides on a `ui` (or
  *  any) field can use this to drive sibling/descendant paths — the same
