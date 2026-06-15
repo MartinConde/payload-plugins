@@ -251,7 +251,8 @@ function AsyncRelationshipPicker({
 
   return (
     <div className="flex flex-col gap-2">
-      {selectedIds.length > 0 && (
+      {/* Chips only for multi-select; single-select shows the value in the trigger itself */}
+      {multi && selectedIds.length > 0 && (
         <div className="flex flex-wrap gap-1">
           {selectedIds.map((id, i) => (
             <Badge
@@ -272,57 +273,74 @@ function AsyncRelationshipPicker({
           ))}
         </div>
       )}
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="justify-start"
-          >
-            {selectedIds.length === 0
-              ? `${t('general:select')}…`
-              : multi
-                ? `${t('shadcnAdmin:addMore')}…`
-                : t('shadcnAdmin:pickerChange')}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-72 p-0" align="start">
-          <Command shouldFilter={false}>
-            <CommandInput
-              placeholder={t('shadcnAdmin:searchPlaceholder')}
-              value={search}
-              onValueChange={setSearch}
-            />
-            <CommandList>
-              {!loading && results.length === 0 && (
-                <CommandEmpty>{t('general:noResultsFound')}</CommandEmpty>
+      <div className="flex items-center gap-1">
+        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className={cn(
+                'justify-start',
+                !multi && selectedIds.length > 0 && 'flex-1 min-w-0',
               )}
-              <CommandGroup>
-                {results.map((r) => {
-                  const id = String(r.id)
-                  const isSelected = selectedIds.includes(id)
-                  return (
-                    <CommandItem
-                      key={id}
-                      value={id}
-                      onSelect={() => handleSelect(id)}
-                    >
-                      <span className="flex-1 truncate">{r.title}</span>
-                      <CheckIcon
-                        className={cn(
-                          'size-4',
-                          isSelected ? 'opacity-100' : 'opacity-0',
-                        )}
-                      />
-                    </CommandItem>
-                  )
-                })}
-              </CommandGroup>
-            </CommandList>
-          </Command>
-        </PopoverContent>
-      </Popover>
+            >
+              {selectedIds.length === 0
+                ? `${t('general:select')}…`
+                : multi
+                  ? `${t('shadcnAdmin:addMore')}…`
+                  : <span className="truncate">{selectedTitles[0]}</span>
+              }
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-72 p-0" align="start">
+            <Command shouldFilter={false}>
+              <CommandInput
+                placeholder={t('shadcnAdmin:searchPlaceholder')}
+                value={search}
+                onValueChange={setSearch}
+              />
+              <CommandList>
+                {!loading && results.length === 0 && (
+                  <CommandEmpty>{t('general:noResultsFound')}</CommandEmpty>
+                )}
+                <CommandGroup>
+                  {results.map((r) => {
+                    const id = String(r.id)
+                    const isSelected = selectedIds.includes(id)
+                    return (
+                      <CommandItem
+                        key={id}
+                        value={id}
+                        onSelect={() => handleSelect(id)}
+                      >
+                        <span className="flex-1 truncate">{r.title}</span>
+                        <CheckIcon
+                          className={cn(
+                            'size-4',
+                            isSelected ? 'opacity-100' : 'opacity-0',
+                          )}
+                        />
+                      </CommandItem>
+                    )
+                  })}
+                </CommandGroup>
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </Popover>
+        {/* Clear button for single-select — outside the trigger so it doesn't open the popover */}
+        {!multi && selectedIds.length > 0 && (
+          <button
+            type="button"
+            onClick={() => removeOne(selectedIds[0]!)}
+            className="shrink-0 text-muted-foreground hover:text-foreground"
+            aria-label={t('general:remove')}
+          >
+            <XIcon className="size-4" />
+          </button>
+        )}
+      </div>
     </div>
   )
 }

@@ -196,7 +196,7 @@ function AsyncRelationshipPicker({ relatedSlug, useAsTitle, multi, value, onChan
     return /*#__PURE__*/ _jsxs("div", {
         className: "flex flex-col gap-2",
         children: [
-            selectedIds.length > 0 && /*#__PURE__*/ _jsx("div", {
+            multi && selectedIds.length > 0 && /*#__PURE__*/ _jsx("div", {
                 className: "flex flex-wrap gap-1",
                 children: selectedIds.map((id, i)=>/*#__PURE__*/ _jsxs(Badge, {
                         variant: "secondary",
@@ -218,58 +218,75 @@ function AsyncRelationshipPicker({ relatedSlug, useAsTitle, multi, value, onChan
                         ]
                     }, id))
             }),
-            /*#__PURE__*/ _jsxs(Popover, {
-                open: open,
-                onOpenChange: setOpen,
+            /*#__PURE__*/ _jsxs("div", {
+                className: "flex items-center gap-1",
                 children: [
-                    /*#__PURE__*/ _jsx(PopoverTrigger, {
-                        asChild: true,
-                        children: /*#__PURE__*/ _jsx(Button, {
-                            type: "button",
-                            variant: "outline",
-                            size: "sm",
-                            className: "justify-start",
-                            children: selectedIds.length === 0 ? `${t('general:select')}…` : multi ? `${t('shadcnAdmin:addMore')}…` : t('shadcnAdmin:pickerChange')
-                        })
-                    }),
-                    /*#__PURE__*/ _jsx(PopoverContent, {
-                        className: "w-72 p-0",
-                        align: "start",
-                        children: /*#__PURE__*/ _jsxs(Command, {
-                            shouldFilter: false,
-                            children: [
-                                /*#__PURE__*/ _jsx(CommandInput, {
-                                    placeholder: t('shadcnAdmin:searchPlaceholder'),
-                                    value: search,
-                                    onValueChange: setSearch
-                                }),
-                                /*#__PURE__*/ _jsxs(CommandList, {
+                    /*#__PURE__*/ _jsxs(Popover, {
+                        open: open,
+                        onOpenChange: setOpen,
+                        children: [
+                            /*#__PURE__*/ _jsx(PopoverTrigger, {
+                                asChild: true,
+                                children: /*#__PURE__*/ _jsx(Button, {
+                                    type: "button",
+                                    variant: "outline",
+                                    size: "sm",
+                                    className: cn('justify-start', !multi && selectedIds.length > 0 && 'flex-1 min-w-0'),
+                                    children: selectedIds.length === 0 ? `${t('general:select')}…` : multi ? `${t('shadcnAdmin:addMore')}…` : /*#__PURE__*/ _jsx("span", {
+                                        className: "truncate",
+                                        children: selectedTitles[0]
+                                    })
+                                })
+                            }),
+                            /*#__PURE__*/ _jsx(PopoverContent, {
+                                className: "w-72 p-0",
+                                align: "start",
+                                children: /*#__PURE__*/ _jsxs(Command, {
+                                    shouldFilter: false,
                                     children: [
-                                        !loading && results.length === 0 && /*#__PURE__*/ _jsx(CommandEmpty, {
-                                            children: t('general:noResultsFound')
+                                        /*#__PURE__*/ _jsx(CommandInput, {
+                                            placeholder: t('shadcnAdmin:searchPlaceholder'),
+                                            value: search,
+                                            onValueChange: setSearch
                                         }),
-                                        /*#__PURE__*/ _jsx(CommandGroup, {
-                                            children: results.map((r)=>{
-                                                const id = String(r.id);
-                                                const isSelected = selectedIds.includes(id);
-                                                return /*#__PURE__*/ _jsxs(CommandItem, {
-                                                    value: id,
-                                                    onSelect: ()=>handleSelect(id),
-                                                    children: [
-                                                        /*#__PURE__*/ _jsx("span", {
-                                                            className: "flex-1 truncate",
-                                                            children: r.title
-                                                        }),
-                                                        /*#__PURE__*/ _jsx(CheckIcon, {
-                                                            className: cn('size-4', isSelected ? 'opacity-100' : 'opacity-0')
-                                                        })
-                                                    ]
-                                                }, id);
-                                            })
+                                        /*#__PURE__*/ _jsxs(CommandList, {
+                                            children: [
+                                                !loading && results.length === 0 && /*#__PURE__*/ _jsx(CommandEmpty, {
+                                                    children: t('general:noResultsFound')
+                                                }),
+                                                /*#__PURE__*/ _jsx(CommandGroup, {
+                                                    children: results.map((r)=>{
+                                                        const id = String(r.id);
+                                                        const isSelected = selectedIds.includes(id);
+                                                        return /*#__PURE__*/ _jsxs(CommandItem, {
+                                                            value: id,
+                                                            onSelect: ()=>handleSelect(id),
+                                                            children: [
+                                                                /*#__PURE__*/ _jsx("span", {
+                                                                    className: "flex-1 truncate",
+                                                                    children: r.title
+                                                                }),
+                                                                /*#__PURE__*/ _jsx(CheckIcon, {
+                                                                    className: cn('size-4', isSelected ? 'opacity-100' : 'opacity-0')
+                                                                })
+                                                            ]
+                                                        }, id);
+                                                    })
+                                                })
+                                            ]
                                         })
                                     ]
                                 })
-                            ]
+                            })
+                        ]
+                    }),
+                    !multi && selectedIds.length > 0 && /*#__PURE__*/ _jsx("button", {
+                        type: "button",
+                        onClick: ()=>removeOne(selectedIds[0]),
+                        className: "shrink-0 text-muted-foreground hover:text-foreground",
+                        "aria-label": t('general:remove'),
+                        children: /*#__PURE__*/ _jsx(XIcon, {
+                            className: "size-4"
                         })
                     })
                 ]
