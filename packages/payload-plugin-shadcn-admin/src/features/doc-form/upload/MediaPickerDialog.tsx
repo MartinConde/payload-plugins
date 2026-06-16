@@ -61,6 +61,10 @@ export type MediaPickerDialogProps = {
   value: string | string[] | null
   onChange: (value: string | string[] | null) => void
   disabled?: boolean
+  /** Optional override for the trigger button label. When omitted the default
+   *  is "Choose from library" (single without selection) / "Change…" (single
+   *  with an existing selection). Gallery uses "Add from library". */
+  triggerLabel?: string
 }
 
 export function MediaPickerDialog({
@@ -70,6 +74,7 @@ export function MediaPickerDialog({
   value,
   onChange,
   disabled,
+  triggerLabel,
 }: MediaPickerDialogProps): React.ReactElement {
   const { t } = useTranslation<
     ShadcnAdminTranslationsObject,
@@ -222,14 +227,16 @@ export function MediaPickerDialog({
       >
         <FolderOpenIcon className="size-3.5" />
         <span className="ml-1">
-          {!multi && hasSelection
-            ? t('shadcnAdmin:pickerChange')
-            : t('shadcnAdmin:chooseFromLibrary')}
+          {triggerLabel != null
+            ? triggerLabel
+            : !multi && hasSelection
+              ? t('shadcnAdmin:pickerChange')
+              : t('shadcnAdmin:chooseFromLibrary')}
         </span>
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="flex max-h-[90vh] flex-col sm:max-w-3xl">
+        <DialogContent className="flex max-h-[90vh] flex-col sm:max-w-5xl">
           <DialogHeader>
             <DialogTitle>{t('shadcnAdmin:mediaLibrary')}</DialogTitle>
           </DialogHeader>
@@ -246,7 +253,7 @@ export function MediaPickerDialog({
 
             {loading && docs.length === 0 ? (
               /* Skeleton tiles while the first page loads */
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
                 {Array.from({ length: LIMIT }).map((_, i) => (
                   <Skeleton
                     key={i}
@@ -260,7 +267,7 @@ export function MediaPickerDialog({
               </p>
             ) : (
               <>
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
                   {docs.map((doc) => {
                     const isSelected = multi
                       ? localSelection.includes(doc.id)

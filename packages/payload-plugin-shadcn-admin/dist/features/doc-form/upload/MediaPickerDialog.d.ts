@@ -11,5 +11,9 @@ export type MediaPickerDialogProps = {
     value: string | string[] | null;
     onChange: (value: string | string[] | null) => void;
     disabled?: boolean;
+    /** Optional override for the trigger button label. When omitted the default
+     *  is "Choose from library" (single without selection) / "Change…" (single
+     *  with an existing selection). Gallery uses "Add from library". */
+    triggerLabel?: string;
 };
-export declare function MediaPickerDialog({ relatedSlug, useAsTitle, multi, value, onChange, disabled, }: MediaPickerDialogProps): React.ReactElement;
+export declare function MediaPickerDialog({ relatedSlug, useAsTitle, multi, value, onChange, disabled, triggerLabel, }: MediaPickerDialogProps): React.ReactElement;

@@ -149,7 +149,10 @@
             mediaLibrary: 'Media library',
             loadMore: 'Load more',
             selectCount_one: 'Select {{count}} item',
-            selectCount_other: 'Select {{count}} items'
+            selectCount_other: 'Select {{count}} items',
+            // Gallery field
+            addFromLibrary: 'Add from library',
+            noGalleryItems: 'No images yet. Add from the library or upload new files.'
         }
     },
     fr: {
@@ -280,7 +283,10 @@
             mediaLibrary: 'Bibliothèque de médias',
             loadMore: 'Charger plus',
             selectCount_one: 'Sélectionner {{count}} élément',
-            selectCount_other: 'Sélectionner {{count}} éléments'
+            selectCount_other: 'Sélectionner {{count}} éléments',
+            // Gallery field
+            addFromLibrary: 'Ajouter depuis la bibliothèque',
+            noGalleryItems: 'Aucune image pour le moment. Ajoutez-en depuis la bibliothèque ou téléversez de nouveaux fichiers.'
         }
     },
     de: {
@@ -411,7 +417,10 @@
             mediaLibrary: 'Medienbibliothek',
             loadMore: 'Mehr laden',
             selectCount_one: '{{count}} Element auswählen',
-            selectCount_other: '{{count}} Elemente auswählen'
+            selectCount_other: '{{count}} Elemente auswählen',
+            // Gallery field
+            addFromLibrary: 'Aus Bibliothek hinzufügen',
+            noGalleryItems: 'Noch keine Bilder. Fügen Sie welche aus der Bibliothek hinzu oder laden Sie neue Dateien hoch.'
         }
     },
     es: {
@@ -542,7 +551,10 @@
             mediaLibrary: 'Biblioteca de medios',
             loadMore: 'Cargar más',
             selectCount_one: 'Seleccionar {{count}} elemento',
-            selectCount_other: 'Seleccionar {{count}} elementos'
+            selectCount_other: 'Seleccionar {{count}} elementos',
+            // Gallery field
+            addFromLibrary: 'Añadir desde la biblioteca',
+            noGalleryItems: 'Aún no hay imágenes. Añade desde la biblioteca o sube nuevos archivos.'
         }
     }
 };

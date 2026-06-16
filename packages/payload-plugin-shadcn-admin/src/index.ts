@@ -4,3 +4,7 @@ export {
   collectionsFromPayloadConfig,
   globalsFromPayloadConfig,
 } from './shared/collections.js'
+export {
+  galleryField,
+  type GalleryFieldOptions,
+} from './fields/galleryField.js'

@@ -22,7 +22,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '
 import { Input } from 'payload-plugin-shadcn-ui';
 import { cn, useActiveLocale } from 'payload-plugin-shadcn-ui';
 const LIMIT = 24;
-export function MediaPickerDialog({ relatedSlug, useAsTitle, multi, value, onChange, disabled }) {
+export function MediaPickerDialog({ relatedSlug, useAsTitle, multi, value, onChange, disabled, triggerLabel }) {
     const { t } = useTranslation();
     const [open, setOpen] = React.useState(false);
     const [search, setSearch] = React.useState('');
@@ -166,7 +166,7 @@ export function MediaPickerDialog({ relatedSlug, useAsTitle, multi, value, onCha
                     }),
                     /*#__PURE__*/ _jsx("span", {
                         className: "ml-1",
-                        children: !multi && hasSelection ? t('shadcnAdmin:pickerChange') : t('shadcnAdmin:chooseFromLibrary')
+                        children: triggerLabel != null ? triggerLabel : !multi && hasSelection ? t('shadcnAdmin:pickerChange') : t('shadcnAdmin:chooseFromLibrary')
                     })
                 ]
             }),
@@ -174,7 +174,7 @@ export function MediaPickerDialog({ relatedSlug, useAsTitle, multi, value, onCha
                 open: open,
                 onOpenChange: setOpen,
                 children: /*#__PURE__*/ _jsxs(DialogContent, {
-                    className: "flex max-h-[90vh] flex-col sm:max-w-3xl",
+                    className: "flex max-h-[90vh] flex-col sm:max-w-5xl",
                     children: [
                         /*#__PURE__*/ _jsx(DialogHeader, {
                             children: /*#__PURE__*/ _jsx(DialogTitle, {
@@ -193,7 +193,7 @@ export function MediaPickerDialog({ relatedSlug, useAsTitle, multi, value, onCha
                                     })
                                 }),
                                 loading && docs.length === 0 ? /* Skeleton tiles while the first page loads */ /*#__PURE__*/ _jsx("div", {
-                                    className: "grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4",
+                                    className: "grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5",
                                     children: Array.from({
                                         length: LIMIT
                                     }).map((_, i)=>/*#__PURE__*/ _jsx(Skeleton, {
@@ -205,7 +205,7 @@ export function MediaPickerDialog({ relatedSlug, useAsTitle, multi, value, onCha
                                 }) : /*#__PURE__*/ _jsxs(_Fragment, {
                                     children: [
                                         /*#__PURE__*/ _jsx("div", {
-                                            className: "grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4",
+                                            className: "grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5",
                                             children: docs.map((doc)=>{
                                                 const isSelected = multi ? localSelection.includes(doc.id) : selectedIds.includes(doc.id);
                                                 const isImg = doc.mimeType?.startsWith('image/');
