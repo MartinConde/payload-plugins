@@ -14,6 +14,10 @@ import {
 type PluginNavStash = {
   branding?: AdminBranding
   sidebar?: { groups: NavGroup[] }
+}
+
+type PluginNSStash = {
+  nav?: PluginNavStash
   rebuildFrontend?: { label: string; endpointPath: string }
 }
 
@@ -55,16 +59,16 @@ const autoGroupsFromPayloadConfig = (
    Consumer-defined Nav is preserved by the plugin factory (consumer wins),
    so this only renders when no other Nav is wired. */
 export default function DefaultNav(props: ServerProps) {
-  const stash = (
+  const ns = (
     props.payload?.config?.custom as
-      | { 'plugin-shadcn-admin'?: { nav?: PluginNavStash } }
+      | { 'plugin-shadcn-admin'?: PluginNSStash }
       | undefined
-  )?.['plugin-shadcn-admin']?.nav
+  )?.['plugin-shadcn-admin']
 
-  const branding = stash?.branding
+  const branding = ns?.nav?.branding
   const groups =
-    stash?.sidebar?.groups ?? autoGroupsFromPayloadConfig(props.payload.config)
-  const rebuildFrontend = stash?.rebuildFrontend
+    ns?.nav?.sidebar?.groups ?? autoGroupsFromPayloadConfig(props.payload.config)
+  const rebuildFrontend = ns?.rebuildFrontend
 
   const email = (props.user?.email as string | undefined) ?? ''
   const name = (props.user?.name as string | undefined) ?? (email || 'User')

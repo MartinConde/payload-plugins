@@ -35,10 +35,10 @@ import { collectionsFromPayloadConfig, globalsFromPayloadConfig } from '../../sh
 
    Consumer-defined Nav is preserved by the plugin factory (consumer wins),
    so this only renders when no other Nav is wired. */ export default function DefaultNav(props) {
-    const stash = props.payload?.config?.custom?.['plugin-shadcn-admin']?.nav;
-    const branding = stash?.branding;
-    const groups = stash?.sidebar?.groups ?? autoGroupsFromPayloadConfig(props.payload.config);
-    const rebuildFrontend = stash?.rebuildFrontend;
+    const ns = props.payload?.config?.custom?.['plugin-shadcn-admin'];
+    const branding = ns?.nav?.branding;
+    const groups = ns?.nav?.sidebar?.groups ?? autoGroupsFromPayloadConfig(props.payload.config);
+    const rebuildFrontend = ns?.rebuildFrontend;
     const email = props.user?.email ?? '';
     const name = props.user?.name ?? (email || 'User');
     return /*#__PURE__*/ _jsx(NavShell, {
