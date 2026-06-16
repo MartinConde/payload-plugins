@@ -97,7 +97,7 @@ type DefaultAdminSidebarProps = Omit<React.ComponentProps<typeof Sidebar>, 'chil
   /** When set, renders a "Rebuild Frontend" button in the sidebar footer
    *  above the user menu. Provided by the plugin when `rebuildFrontend`
    *  is enabled in the plugin options. */
-  rebuildFrontend?: { label: string; endpointPath: string }
+  rebuildFrontend?: { label?: string; endpointPath: string }
 }
 
 /* Resolves an IconRef to a renderable component. String → lucide lookup;

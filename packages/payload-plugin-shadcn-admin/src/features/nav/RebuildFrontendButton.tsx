@@ -3,20 +3,24 @@
 import * as React from 'react'
 import { RotateCw } from 'lucide-react'
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from 'payload-plugin-shadcn-ui'
-import { formatAdminURL, toast, useConfig } from '../../internal/payloadAdapter.js'
+import { formatAdminURL, toast, useConfig, useTranslation } from '../../internal/payloadAdapter.js'
 
 export type RebuildFrontendButtonProps = {
-  label: string
+  /** Consumer override label. When absent the translation key is used. */
+  label?: string
   endpointPath: string
 }
 
 export function RebuildFrontendButton({
-  label,
+  label: labelProp,
   endpointPath,
 }: RebuildFrontendButtonProps) {
   const { config } = useConfig()
   const apiRoute = (config as unknown as { routes?: { api?: string } }).routes?.api
   const serverURL = (config as unknown as { serverURL?: string }).serverURL
+  const { t } = useTranslation()
+
+  const label = labelProp ?? t('shadcnAdmin:rebuildFrontend' as Parameters<typeof t>[0])
 
   const [loading, setLoading] = React.useState(false)
 
@@ -34,7 +38,7 @@ export function RebuildFrontendButton({
       )
       const body = await res.json().catch(() => ({})) as Record<string, unknown>
       if (res.ok) {
-        toast.success(label + ' triggered')
+        toast.success(label)
       } else {
         toast.error(
           typeof body.error === 'string' ? body.error : `Request failed (${res.status})`,
@@ -47,6 +51,8 @@ export function RebuildFrontendButton({
     }
   }, [loading, apiRoute, endpointPath, serverURL, label])
 
+  const inFlightLabel = t('shadcnAdmin:rebuilding' as Parameters<typeof t>[0])
+
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -56,7 +62,7 @@ export function RebuildFrontendButton({
           onClick={handleClick}
         >
           <RotateCw className={loading ? 'animate-spin' : ''} />
-          <span>{loading ? 'Rebuilding…' : label}</span>
+          <span>{loading ? inFlightLabel : label}</span>
         </SidebarMenuButton>
       </SidebarMenuItem>
     </SidebarMenu>

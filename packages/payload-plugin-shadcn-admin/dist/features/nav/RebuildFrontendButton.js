@@ -3,11 +3,13 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import * as React from 'react';
 import { RotateCw } from 'lucide-react';
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from 'payload-plugin-shadcn-ui';
-import { formatAdminURL, toast, useConfig } from '../../internal/payloadAdapter.js';
-export function RebuildFrontendButton({ label, endpointPath }) {
+import { formatAdminURL, toast, useConfig, useTranslation } from '../../internal/payloadAdapter.js';
+export function RebuildFrontendButton({ label: labelProp, endpointPath }) {
     const { config } = useConfig();
     const apiRoute = config.routes?.api;
     const serverURL = config.serverURL;
+    const { t } = useTranslation();
+    const label = labelProp ?? t('shadcnAdmin:rebuildFrontend');
     const [loading, setLoading] = React.useState(false);
     const handleClick = React.useCallback(async ()=>{
         if (loading) return;
@@ -26,7 +28,7 @@ export function RebuildFrontendButton({ label, endpointPath }) {
             });
             const body = await res.json().catch(()=>({}));
             if (res.ok) {
-                toast.success(label + ' triggered');
+                toast.success(label);
             } else {
                 toast.error(typeof body.error === 'string' ? body.error : `Request failed (${res.status})`);
             }
@@ -42,6 +44,7 @@ export function RebuildFrontendButton({ label, endpointPath }) {
         serverURL,
         label
     ]);
+    const inFlightLabel = t('shadcnAdmin:rebuilding');
     return /*#__PURE__*/ _jsx(SidebarMenu, {
         children: /*#__PURE__*/ _jsx(SidebarMenuItem, {
             children: /*#__PURE__*/ _jsxs(SidebarMenuButton, {
@@ -53,7 +56,7 @@ export function RebuildFrontendButton({ label, endpointPath }) {
                         className: loading ? 'animate-spin' : ''
                     }),
                     /*#__PURE__*/ _jsx("span", {
-                        children: loading ? 'Rebuilding…' : label
+                        children: loading ? inFlightLabel : label
                     })
                 ]
             })

@@ -1,5 +1,6 @@
 export type RebuildFrontendButtonProps = {
-    label: string;
+    /** Consumer override label. When absent the translation key is used. */
+    label?: string;
     endpointPath: string;
 };
-export declare function RebuildFrontendButton({ label, endpointPath, }: RebuildFrontendButtonProps): import("react/jsx-runtime").JSX.Element;
+export declare function RebuildFrontendButton({ label: labelProp, endpointPath, }: RebuildFrontendButtonProps): import("react/jsx-runtime").JSX.Element;

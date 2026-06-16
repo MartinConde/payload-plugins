@@ -53,7 +53,7 @@ type DefaultAdminSidebarProps = Omit<React.ComponentProps<typeof Sidebar>, 'chil
      *  above the user menu. Provided by the plugin when `rebuildFrontend`
      *  is enabled in the plugin options. */
     rebuildFrontend?: {
-        label: string;
+        label?: string;
         endpointPath: string;
     };
 };

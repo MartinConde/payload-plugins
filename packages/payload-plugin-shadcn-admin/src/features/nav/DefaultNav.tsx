@@ -18,7 +18,7 @@ type PluginNavStash = {
 
 type PluginNSStash = {
   nav?: PluginNavStash
-  rebuildFrontend?: { label: string; endpointPath: string }
+  rebuildFrontend?: { label?: string; endpointPath: string }
 }
 
 /* Build a default NavGroup[] from a Payload config — one group for collections,

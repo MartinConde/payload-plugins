@@ -381,8 +381,9 @@ export const shadcnAdminPlugin =
         options.rebuildFrontend.deployHookEnv ?? REBUILD_FRONTEND_DEFAULT_ENV
       const endpointPath =
         options.rebuildFrontend.endpointPath ?? REBUILD_FRONTEND_DEFAULT_PATH
-      const label =
-        options.rebuildFrontend.label ?? REBUILD_FRONTEND_DEFAULT_LABEL
+      // label is optional in the stash — when absent the component falls back
+      // to the shadcnAdmin:rebuildFrontend translation key.
+      const label = options.rebuildFrontend.label
 
       next.endpoints = [
         ...(config.endpoints ?? []),
@@ -431,7 +432,11 @@ export const shadcnAdminPlugin =
       ]
 
       // Stash only the non-secret, serializable values for the client button.
-      pluginCustom.rebuildFrontend = { label, endpointPath }
+      // label is omitted when the consumer didn't set it — the component
+      // falls back to the shadcnAdmin:rebuildFrontend translation key.
+      pluginCustom.rebuildFrontend = label !== undefined
+        ? { label, endpointPath }
+        : { endpointPath }
     }
 
     // Single consolidated write to next.custom so that skippedDocViews, nav,

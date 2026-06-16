@@ -164,6 +164,9 @@ export const shadcnAdminTranslations = {
       // Gallery field
       addFromLibrary: 'Add from library',
       noGalleryItems: 'No images yet. Add from the library or upload new files.',
+      // Rebuild frontend button
+      rebuildFrontend: 'Rebuild Frontend',
+      rebuilding: 'Rebuilding…',
     },
   },
   fr: {
@@ -308,6 +311,9 @@ export const shadcnAdminTranslations = {
       // Gallery field
       addFromLibrary: 'Ajouter depuis la bibliothèque',
       noGalleryItems: 'Aucune image pour le moment. Ajoutez-en depuis la bibliothèque ou téléversez de nouveaux fichiers.',
+      // Rebuild frontend button
+      rebuildFrontend: 'Reconstruire le frontend',
+      rebuilding: 'Reconstruction…',
     },
   },
   de: {
@@ -454,6 +460,9 @@ export const shadcnAdminTranslations = {
       // Gallery field
       addFromLibrary: 'Aus Bibliothek hinzufügen',
       noGalleryItems: 'Noch keine Bilder. Fügen Sie welche aus der Bibliothek hinzu oder laden Sie neue Dateien hoch.',
+      // Rebuild frontend button
+      rebuildFrontend: 'Frontend neu erstellen',
+      rebuilding: 'Wird erstellt…',
     },
   },
   es: {
@@ -596,6 +605,9 @@ export const shadcnAdminTranslations = {
       // Gallery field
       addFromLibrary: 'Añadir desde la biblioteca',
       noGalleryItems: 'Aún no hay imágenes. Añade desde la biblioteca o sube nuevos archivos.',
+      // Rebuild frontend button
+      rebuildFrontend: 'Reconstruir el frontend',
+      rebuilding: 'Reconstruyendo…',
     },
   },
 }
