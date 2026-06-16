@@ -22,6 +22,10 @@ const DASHBOARD_VIEW_PATH =
   'payload-plugin-shadcn-admin/rsc#AutoDashboardView'
 const PLUGIN_NAMESPACE = 'plugin-shadcn-admin'
 
+const REBUILD_FRONTEND_DEFAULT_PATH = '/rebuild-frontend'
+const REBUILD_FRONTEND_DEFAULT_ENV = 'FRONTEND_DEPLOY_HOOK_URL'
+const REBUILD_FRONTEND_DEFAULT_LABEL = 'Rebuild Frontend'
+
 /* Root-level Account + auth view overrides, keyed by the `admin.routes` key
    `getRouteData` resolves the current path to. `getCustomViewByKey` reads
    `config.admin.components.views[key].Component`, so these keys must match
@@ -289,18 +293,18 @@ export const shadcnAdminPlugin =
       )
     }
 
-    // Stash the skip list on config.custom under our namespace so the
-    // AdminProviders client can read it via useConfig() and render an
-    // admin-only banner. Always stashed (empty list when none) so the client
-    // can rely on a stable shape.
-    next.custom = {
-      ...next.custom,
-      [PLUGIN_NAMESPACE]: {
-        ...((next.custom as Record<string, unknown> | undefined)?.[
-          PLUGIN_NAMESPACE
-        ] as Record<string, unknown> | undefined),
-        skippedDocViews,
-      },
+    // Build the plugin's config.custom stash incrementally so that all keys
+    // (`skippedDocViews`, `nav`, `rebuildFrontend`) coexist regardless of
+    // which options are enabled. We accumulate into `pluginCustom` and write
+    // once at the end of the factory. Always spread from `next.custom` (not
+    // `config.custom`) so earlier plugin passes are preserved.
+    const pluginCustom: Record<string, unknown> = {
+      ...((next.custom as Record<string, unknown> | undefined)?.[
+        PLUGIN_NAMESPACE
+      ] as Record<string, unknown> | undefined),
+      // Always stash the skip list (empty array when none) so the client
+      // AdminProviders banner can rely on a stable shape.
+      skippedDocViews,
     }
 
     // defaultNav: install DefaultNav at admin.components.Nav, stash branding
@@ -310,17 +314,9 @@ export const shadcnAdminPlugin =
       if (!existingComponents.Nav) {
         next.admin!.components!.Nav = DEFAULT_NAV_PATH
       }
-      next.custom = {
-        ...config.custom,
-        [PLUGIN_NAMESPACE]: {
-          ...((config.custom as Record<string, unknown> | undefined)?.[
-            PLUGIN_NAMESPACE
-          ] as Record<string, unknown> | undefined),
-          nav: {
-            branding: options.defaultNav.branding,
-            sidebar: options.defaultNav.sidebar,
-          },
-        },
+      pluginCustom.nav = {
+        branding: options.defaultNav.branding,
+        sidebar: options.defaultNav.sidebar,
       }
     }
 
@@ -373,6 +369,76 @@ export const shadcnAdminPlugin =
           dashboard: { Component: DASHBOARD_VIEW_PATH },
         } as never
       }
+    }
+
+    // rebuildFrontend: register a POST endpoint that triggers a frontend
+    // rebuild by POSTing to a deploy-hook URL read from a server-side env var.
+    // The URL is never exposed to the client. We also stash the (non-secret)
+    // label and endpointPath so the sidebar button component can read them via
+    // config.custom.
+    if (options.rebuildFrontend) {
+      const deployHookEnv =
+        options.rebuildFrontend.deployHookEnv ?? REBUILD_FRONTEND_DEFAULT_ENV
+      const endpointPath =
+        options.rebuildFrontend.endpointPath ?? REBUILD_FRONTEND_DEFAULT_PATH
+      const label =
+        options.rebuildFrontend.label ?? REBUILD_FRONTEND_DEFAULT_LABEL
+
+      next.endpoints = [
+        ...(config.endpoints ?? []),
+        {
+          path: endpointPath,
+          method: 'post',
+          handler: async (req) => {
+            if (!req.user) {
+              return Response.json({ error: 'Unauthorized' }, { status: 401 })
+            }
+            const url = process.env[deployHookEnv]
+            if (!url) {
+              req.payload.logger.error(
+                `[plugin-shadcn-admin] rebuildFrontend: env var "${deployHookEnv}" is not set`,
+              )
+              return Response.json(
+                { error: 'Deploy hook not configured' },
+                { status: 500 },
+              )
+            }
+            try {
+              const hookRes = await fetch(url, { method: 'POST' })
+              if (!hookRes.ok) {
+                req.payload.logger.error(
+                  `[plugin-shadcn-admin] rebuildFrontend: deploy hook returned ${hookRes.status}`,
+                )
+                return Response.json(
+                  { error: `Deploy hook failed (${hookRes.status})` },
+                  { status: 502 },
+                )
+              }
+              return Response.json({ ok: true })
+            } catch (err) {
+              req.payload.logger.error(
+                `[plugin-shadcn-admin] rebuildFrontend: request failed — ${
+                  err instanceof Error ? err.message : String(err)
+                }`,
+              )
+              return Response.json(
+                { error: 'Deploy hook request failed' },
+                { status: 502 },
+              )
+            }
+          },
+        },
+      ]
+
+      // Stash only the non-secret, serializable values for the client button.
+      pluginCustom.rebuildFrontend = { label, endpointPath }
+    }
+
+    // Single consolidated write to next.custom so that skippedDocViews, nav,
+    // and rebuildFrontend all coexist regardless of which options are active.
+    next.custom = {
+      ...next.custom,
+      [PLUGIN_NAMESPACE]: pluginCustom,
     }
 
     return next

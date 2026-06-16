@@ -9,6 +9,7 @@ import {
   type SidebarCollectionItem,
 } from './CollectionsSidebarGroup.js'
 import { NavUser, type NavUserUser } from './NavUser.js'
+import { RebuildFrontendButton } from './RebuildFrontendButton.js'
 import { ThemeSwitcher } from './ThemeSwitcher.js'
 import { UiFlavorProvider } from './ThemeProvider.js'
 import { useActiveMatcher } from './useActiveMatcher.js'
@@ -93,6 +94,10 @@ type DefaultAdminSidebarProps = Omit<React.ComponentProps<typeof Sidebar>, 'chil
   /** Optional extra content rendered inside `<SidebarContent>` after the
    *  primary groups (e.g. consumer-defined custom links). */
   children?: React.ReactNode
+  /** When set, renders a "Rebuild Frontend" button in the sidebar footer
+   *  above the user menu. Provided by the plugin when `rebuildFrontend`
+   *  is enabled in the plugin options. */
+  rebuildFrontend?: { label: string; endpointPath: string }
 }
 
 /* Resolves an IconRef to a renderable component. String → lucide lookup;
@@ -189,6 +194,7 @@ export function DefaultAdminSidebar({
   groups,
   collections,
   children,
+  rebuildFrontend,
   collapsible = 'icon',
   ...sidebarProps
 }: DefaultAdminSidebarProps) {
@@ -241,6 +247,7 @@ export function DefaultAdminSidebar({
       </SidebarContent>
 
       <SidebarFooter>
+        {rebuildFrontend ? <RebuildFrontendButton {...rebuildFrontend} /> : null}
         <NavUser user={user} extraItems={<ThemeSwitcher />} />
       </SidebarFooter>
       <SidebarRail />

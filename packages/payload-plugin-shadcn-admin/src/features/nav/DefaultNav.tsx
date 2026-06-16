@@ -14,6 +14,7 @@ import {
 type PluginNavStash = {
   branding?: AdminBranding
   sidebar?: { groups: NavGroup[] }
+  rebuildFrontend?: { label: string; endpointPath: string }
 }
 
 /* Build a default NavGroup[] from a Payload config — one group for collections,
@@ -63,6 +64,7 @@ export default function DefaultNav(props: ServerProps) {
   const branding = stash?.branding
   const groups =
     stash?.sidebar?.groups ?? autoGroupsFromPayloadConfig(props.payload.config)
+  const rebuildFrontend = stash?.rebuildFrontend
 
   const email = (props.user?.email as string | undefined) ?? ''
   const name = (props.user?.name as string | undefined) ?? (email || 'User')
@@ -73,6 +75,7 @@ export default function DefaultNav(props: ServerProps) {
         user={{ name, email }}
         branding={branding}
         groups={groups}
+        rebuildFrontend={rebuildFrontend}
       />
     </NavShell>
   )

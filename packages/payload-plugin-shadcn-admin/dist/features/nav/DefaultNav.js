@@ -38,6 +38,7 @@ import { collectionsFromPayloadConfig, globalsFromPayloadConfig } from '../../sh
     const stash = props.payload?.config?.custom?.['plugin-shadcn-admin']?.nav;
     const branding = stash?.branding;
     const groups = stash?.sidebar?.groups ?? autoGroupsFromPayloadConfig(props.payload.config);
+    const rebuildFrontend = stash?.rebuildFrontend;
     const email = props.user?.email ?? '';
     const name = props.user?.name ?? (email || 'User');
     return /*#__PURE__*/ _jsx(NavShell, {
@@ -47,7 +48,8 @@ import { collectionsFromPayloadConfig, globalsFromPayloadConfig } from '../../sh
                 email
             },
             branding: branding,
-            groups: groups
+            groups: groups,
+            rebuildFrontend: rebuildFrontend
         })
     });
 }

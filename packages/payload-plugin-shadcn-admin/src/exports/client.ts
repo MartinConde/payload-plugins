@@ -14,6 +14,10 @@ export {
   DefaultAdminSidebar,
   type AdminBranding,
 } from '../features/nav/DefaultAdminSidebar.js'
+export {
+  RebuildFrontendButton,
+  type RebuildFrontendButtonProps,
+} from '../features/nav/RebuildFrontendButton.js'
 
 /* shadcn primitives (vendored). Re-exported so consumers don't need to copy
    their own. */

@@ -117,6 +117,43 @@ export interface PluginConfig {
    *   (consumer wins).
    */
   defaultDashboard?: boolean
+  /**
+   * Show a "Rebuild Frontend" button in the `defaultNav` sidebar footer that
+   * triggers a frontend deploy by POSTing to a deploy-hook URL server-side.
+   * The deploy-hook URL (a secret) is read from a server-side env var and is
+   * never exposed to the browser.
+   *
+   * The button is only rendered when `defaultNav` is also enabled, since it
+   * lives inside the plugin's own sidebar footer.
+   *
+   * - `false` (default): feature is off; no endpoint is registered and no
+   *   button is rendered.
+   * - object: enable with the given options (all sub-fields optional).
+   */
+  rebuildFrontend?: RebuildFrontendConfig | false
+}
+
+export interface RebuildFrontendConfig {
+  /**
+   * Name of the env var holding the deploy-hook URL. The URL is read at
+   * request time on the server and is never sent to the browser.
+   *
+   * Default: `'FRONTEND_DEPLOY_HOOK_URL'`.
+   */
+  deployHookEnv?: string
+  /**
+   * Label shown on the button.
+   *
+   * Default: `'Rebuild Frontend'`.
+   */
+  label?: string
+  /**
+   * Path for the Payload custom endpoint (mounted under Payload's `/api`
+   * route). Must start with `/`.
+   *
+   * Default: `'/rebuild-frontend'`.
+   */
+  endpointPath?: string
 }
 
 export type DefaultNavConfig = {

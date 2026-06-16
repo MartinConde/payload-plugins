@@ -6,6 +6,7 @@ export { AuthShell } from 'payload-plugin-shadcn-ui';
 export { NavUser } from '../features/nav/NavUser.js';
 export { CollectionsSidebarGroup } from '../features/nav/CollectionsSidebarGroup.js';
 export { DefaultAdminSidebar } from '../features/nav/DefaultAdminSidebar.js';
+export { RebuildFrontendButton } from '../features/nav/RebuildFrontendButton.js';
 /* shadcn primitives (vendored). Re-exported so consumers don't need to copy
    their own. */ export { Button, buttonVariants } from 'payload-plugin-shadcn-ui';
 export { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from 'payload-plugin-shadcn-ui';

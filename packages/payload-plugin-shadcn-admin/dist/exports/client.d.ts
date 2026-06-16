@@ -5,6 +5,7 @@ export { AuthShell } from 'payload-plugin-shadcn-ui';
 export { NavUser, type NavUserUser } from '../features/nav/NavUser.js';
 export { CollectionsSidebarGroup, type SidebarCollectionItem, } from '../features/nav/CollectionsSidebarGroup.js';
 export { DefaultAdminSidebar, type AdminBranding, } from '../features/nav/DefaultAdminSidebar.js';
+export { RebuildFrontendButton, type RebuildFrontendButtonProps, } from '../features/nav/RebuildFrontendButton.js';
 export { Button, buttonVariants } from 'payload-plugin-shadcn-ui';
 export { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, } from 'payload-plugin-shadcn-ui';
 export { Collapsible, CollapsibleContent, CollapsibleTrigger, } from 'payload-plugin-shadcn-ui';

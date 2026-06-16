@@ -5,6 +5,7 @@ import * as LucideIcons from 'lucide-react';
 import { Box, ChevronRight } from 'lucide-react';
 import { CollectionsSidebarGroup } from './CollectionsSidebarGroup.js';
 import { NavUser } from './NavUser.js';
+import { RebuildFrontendButton } from './RebuildFrontendButton.js';
 import { ThemeSwitcher } from './ThemeSwitcher.js';
 import { UiFlavorProvider } from './ThemeProvider.js';
 import { useActiveMatcher } from './useActiveMatcher.js';
@@ -111,7 +112,7 @@ function RenderNavItem({ item }) {
         })
     });
 }
-export function DefaultAdminSidebar({ user, branding, groups, collections, children, collapsible = 'icon', ...sidebarProps }) {
+export function DefaultAdminSidebar({ user, branding, groups, collections, children, rebuildFrontend, collapsible = 'icon', ...sidebarProps }) {
     const { name = 'CMS', subtitle = 'Payload admin', icon: brandIconRef, href = '/admin' } = branding ?? {};
     const BrandIcon = resolveIcon(brandIconRef) ?? Box;
     return /*#__PURE__*/ _jsx(UiFlavorProvider, {
@@ -172,11 +173,16 @@ export function DefaultAdminSidebar({ user, branding, groups, collections, child
                         children
                     ]
                 }),
-                /*#__PURE__*/ _jsx(SidebarFooter, {
-                    children: /*#__PURE__*/ _jsx(NavUser, {
-                        user: user,
-                        extraItems: /*#__PURE__*/ _jsx(ThemeSwitcher, {})
-                    })
+                /*#__PURE__*/ _jsxs(SidebarFooter, {
+                    children: [
+                        rebuildFrontend ? /*#__PURE__*/ _jsx(RebuildFrontendButton, {
+                            ...rebuildFrontend
+                        }) : null,
+                        /*#__PURE__*/ _jsx(NavUser, {
+                            user: user,
+                            extraItems: /*#__PURE__*/ _jsx(ThemeSwitcher, {})
+                        })
+                    ]
                 }),
                 /*#__PURE__*/ _jsx(SidebarRail, {})
             ]

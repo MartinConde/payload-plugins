@@ -49,6 +49,13 @@ type DefaultAdminSidebarProps = Omit<React.ComponentProps<typeof Sidebar>, 'chil
     /** Optional extra content rendered inside `<SidebarContent>` after the
      *  primary groups (e.g. consumer-defined custom links). */
     children?: React.ReactNode;
+    /** When set, renders a "Rebuild Frontend" button in the sidebar footer
+     *  above the user menu. Provided by the plugin when `rebuildFrontend`
+     *  is enabled in the plugin options. */
+    rebuildFrontend?: {
+        label: string;
+        endpointPath: string;
+    };
 };
-export declare function DefaultAdminSidebar({ user, branding, groups, collections, children, collapsible, ...sidebarProps }: DefaultAdminSidebarProps): import("react/jsx-runtime").JSX.Element;
+export declare function DefaultAdminSidebar({ user, branding, groups, collections, children, rebuildFrontend, collapsible, ...sidebarProps }: DefaultAdminSidebarProps): import("react/jsx-runtime").JSX.Element;
 export {};
