@@ -28,18 +28,13 @@ import { Button } from 'payload-plugin-shadcn-ui';
 import { cn } from 'payload-plugin-shadcn-ui';
 import { MediaPickerDialog } from '../upload/MediaPickerDialog.js';
 import { UploadNewDialog } from '../upload/UploadNewDialog.js';
+import { coerceRelationshipValue } from '../inputs/relationshipId.js';
 // ── helpers (module-local, same as ArrayInput) ────────────────────────────────
 const ensureRowId = (row)=>{
     const id = typeof row.id === 'string' ? row.id : typeof row.id === 'number' ? String(row.id) : globalThis.crypto?.randomUUID?.() ?? `row-${Math.random().toString(36).slice(2, 10)}`;
     return {
         ...row,
         id
-    };
-};
-const makeImageRow = (imageFieldName, imageId)=>{
-    return {
-        id: globalThis.crypto?.randomUUID?.() ?? `row-${Math.random().toString(36).slice(2, 10)}`,
-        [imageFieldName]: imageId
     };
 };
 /** Extract the string ID from an image field value that may be a plain ID
@@ -51,6 +46,27 @@ const makeImageRow = (imageFieldName, imageId)=>{
         if (typeof id === 'string' || typeof id === 'number') return String(id);
     }
     return null;
+};
+/* Coerce a row's image field to a scalar ID (string for UUID collections,
+   number for integer-ID collections such as D1/SQLite). This mirrors what
+   FieldInput does for standalone upload fields via coerceRelationshipValue —
+   since the gallery bypasses that layer entirely, we must do it ourselves
+   whenever we emit rows via onChange. Populated doc objects ({ id, url, … })
+   from the initial doc load are also collapsed to their id here. */ const normalizeRowImage = (row, imageFieldName)=>{
+    const raw = row[imageFieldName];
+    const strId = extractImageId(raw);
+    if (strId === null) return row;
+    const coerced = coerceRelationshipValue(strId);
+    return coerced === raw ? row : {
+        ...row,
+        [imageFieldName]: coerced
+    };
+};
+const makeImageRow = (imageFieldName, imageId)=>{
+    return {
+        id: globalThis.crypto?.randomUUID?.() ?? `row-${Math.random().toString(36).slice(2, 10)}`,
+        [imageFieldName]: coerceRelationshipValue(imageId)
+    };
 };
 // ── main component ────────────────────────────────────────────────────────────
 export function GalleryArrayInput({ field, value, onChange, nestedPath = '', renderChild, useAsTitleBySlug, uploadCollectionsBySlug = {}, fieldPerms, disabled }) {
@@ -132,13 +148,23 @@ export function GalleryArrayInput({ field, value, onChange, nestedPath = '', ren
     }), useSensor(KeyboardSensor, {
         coordinateGetter: sortableKeyboardCoordinates
     }));
+    // Normalize image IDs before emitting rows. Collapses populated doc objects
+    // to plain scalars and coerces integer-string IDs to numbers (required for
+    // D1/SQLite where isValidID checks typeof === 'number'). Existing rows from
+    // the server load may carry populated objects; new rows from the picker
+    // already go through makeImageRow (which coerces), but normalizing all rows
+    // here ensures consistency regardless of origin.
+    const emitRows = React.useCallback((nextRows)=>onChange(nextRows.map((r)=>normalizeRowImage(r, imageFieldName))), [
+        onChange,
+        imageFieldName
+    ]);
     const handleDragEnd = (event)=>{
         const { active, over } = event;
         if (!over || active.id === over.id) return;
         const oldIndex = rows.findIndex((r)=>r.id === active.id);
         const newIndex = rows.findIndex((r)=>r.id === over.id);
         if (oldIndex < 0 || newIndex < 0) return;
-        onChange(arrayMove(rows, oldIndex, newIndex));
+        emitRows(arrayMove(rows, oldIndex, newIndex));
     };
     // ── add from library ────────────────────────────────────────────────────────
     const handlePickFromLibrary = (picked)=>{
@@ -148,7 +174,7 @@ export function GalleryArrayInput({ field, value, onChange, nestedPath = '', ren
         ];
         if (ids.length === 0) return;
         const newRows = ids.map((id)=>makeImageRow(imageFieldName, id));
-        onChange([
+        emitRows([
             ...rows,
             ...newRows
         ]);
@@ -157,7 +183,7 @@ export function GalleryArrayInput({ field, value, onChange, nestedPath = '', ren
     const [uploadOpen, setUploadOpen] = React.useState(false);
     const handleUploadSuccess = React.useCallback((created)=>{
         const newRows = created.map((c)=>makeImageRow(imageFieldName, String(c.id)));
-        if (newRows.length > 0) onChange([
+        if (newRows.length > 0) emitRows([
             ...rows,
             ...newRows
         ]);
@@ -165,10 +191,10 @@ export function GalleryArrayInput({ field, value, onChange, nestedPath = '', ren
     [
         imageFieldName,
         rows,
-        onChange
+        emitRows
     ]);
     // ── remove ──────────────────────────────────────────────────────────────────
-    const removeRow = (rowId)=>onChange(rows.filter((r)=>r.id !== rowId));
+    const removeRow = (rowId)=>emitRows(rows.filter((r)=>r.id !== rowId));
     // ── render ──────────────────────────────────────────────────────────────────
     return /*#__PURE__*/ _jsxs("div", {
         className: "flex flex-col gap-3",

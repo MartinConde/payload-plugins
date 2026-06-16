@@ -55,6 +55,7 @@ import {
   type UploadCreated,
 } from '../upload/UploadNewDialog.js'
 import type { FieldInputProps } from '../inputs/FieldInput.js'
+import { coerceRelationshipValue } from '../inputs/relationshipId.js'
 
 // ── local types ──────────────────────────────────────────────────────────────
 
@@ -81,15 +82,6 @@ const ensureRowId = (row: Record<string, unknown>): Row => {
   return { ...row, id } as Row
 }
 
-const makeImageRow = (imageFieldName: string, imageId: string): Row => {
-  return {
-    id:
-      globalThis.crypto?.randomUUID?.() ??
-      `row-${Math.random().toString(36).slice(2, 10)}`,
-    [imageFieldName]: imageId,
-  } as Row
-}
-
 /** Extract the string ID from an image field value that may be a plain ID
  *  string, a numeric ID, or a populated doc object `{ id, … }`. */
 const extractImageId = (v: unknown): string | null => {
@@ -100,6 +92,29 @@ const extractImageId = (v: unknown): string | null => {
     if (typeof id === 'string' || typeof id === 'number') return String(id)
   }
   return null
+}
+
+/* Coerce a row's image field to a scalar ID (string for UUID collections,
+   number for integer-ID collections such as D1/SQLite). This mirrors what
+   FieldInput does for standalone upload fields via coerceRelationshipValue —
+   since the gallery bypasses that layer entirely, we must do it ourselves
+   whenever we emit rows via onChange. Populated doc objects ({ id, url, … })
+   from the initial doc load are also collapsed to their id here. */
+const normalizeRowImage = (row: Row, imageFieldName: string): Row => {
+  const raw = row[imageFieldName]
+  const strId = extractImageId(raw)
+  if (strId === null) return row
+  const coerced = coerceRelationshipValue(strId)
+  return coerced === raw ? row : { ...row, [imageFieldName]: coerced }
+}
+
+const makeImageRow = (imageFieldName: string, imageId: string): Row => {
+  return {
+    id:
+      globalThis.crypto?.randomUUID?.() ??
+      `row-${Math.random().toString(36).slice(2, 10)}`,
+    [imageFieldName]: coerceRelationshipValue(imageId),
+  } as Row
 }
 
 // ── main component ────────────────────────────────────────────────────────────
@@ -201,13 +216,25 @@ export function GalleryArrayInput({
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   )
 
+  // Normalize image IDs before emitting rows. Collapses populated doc objects
+  // to plain scalars and coerces integer-string IDs to numbers (required for
+  // D1/SQLite where isValidID checks typeof === 'number'). Existing rows from
+  // the server load may carry populated objects; new rows from the picker
+  // already go through makeImageRow (which coerces), but normalizing all rows
+  // here ensures consistency regardless of origin.
+  const emitRows = React.useCallback(
+    (nextRows: Row[]) =>
+      onChange(nextRows.map((r) => normalizeRowImage(r, imageFieldName))),
+    [onChange, imageFieldName],
+  )
+
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event
     if (!over || active.id === over.id) return
     const oldIndex = rows.findIndex((r) => r.id === active.id)
     const newIndex = rows.findIndex((r) => r.id === over.id)
     if (oldIndex < 0 || newIndex < 0) return
-    onChange(arrayMove(rows, oldIndex, newIndex))
+    emitRows(arrayMove(rows, oldIndex, newIndex))
   }
 
   // ── add from library ────────────────────────────────────────────────────────
@@ -216,7 +243,7 @@ export function GalleryArrayInput({
     const ids = Array.isArray(picked) ? picked : [picked]
     if (ids.length === 0) return
     const newRows = ids.map((id) => makeImageRow(imageFieldName, id))
-    onChange([...rows, ...newRows])
+    emitRows([...rows, ...newRows])
   }
 
   // ── upload new ──────────────────────────────────────────────────────────────
@@ -224,15 +251,15 @@ export function GalleryArrayInput({
   const handleUploadSuccess = React.useCallback(
     (created: UploadCreated[]) => {
       const newRows = created.map((c) => makeImageRow(imageFieldName, String(c.id)))
-      if (newRows.length > 0) onChange([...rows, ...newRows])
+      if (newRows.length > 0) emitRows([...rows, ...newRows])
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [imageFieldName, rows, onChange],
+    [imageFieldName, rows, emitRows],
   )
 
   // ── remove ──────────────────────────────────────────────────────────────────
   const removeRow = (rowId: string) =>
-    onChange(rows.filter((r) => r.id !== rowId))
+    emitRows(rows.filter((r) => r.id !== rowId))
 
   // ── render ──────────────────────────────────────────────────────────────────
 
