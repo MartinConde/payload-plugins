@@ -3,7 +3,7 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { Check } from 'lucide-react';
 import * as React from 'react';
 import { DataTableColumnHeader } from '../data-table/DataTableColumnHeader.js';
-import { pickFieldNames } from './fieldPicker.js';
+import { findFieldByName, pickFieldNames } from './fieldPicker.js';
 const PLUGIN_NAMESPACE = 'plugin-shadcn-admin';
 const EM_DASH = '—';
 const stringifyLabel = (value)=>{
@@ -388,7 +388,7 @@ const isSortable = (field)=>{
 const isExcluded = (field)=>Boolean(field.hidden || field.admin?.hidden || field.admin?.disableListColumn);
 const findField = (collection, name)=>{
     if (SYNTHETIC_FIELDS[name]) return SYNTHETIC_FIELDS[name];
-    return collection.fields.find((f)=>f.name === name);
+    return findFieldByName(collection.fields, name);
 };
 export function buildColumnsForCollection({ collection, useAsTitleBySlug, nativeCellFieldNames, nativeCellsByRow }) {
     const useAsTitle = collection.admin?.useAsTitle;

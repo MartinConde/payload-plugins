@@ -7,12 +7,47 @@
     'collapsible',
     'ui'
 ]);
+/* Containers whose children are always presentational — Payload flattens
+   their fields into the parent's data, so a bare field name still matches. */ const FLATTENING_TYPES = new Set([
+    'row',
+    'collapsible'
+]);
 const SYNTHETIC_FIELD_NAMES = new Set([
     'id',
     'createdAt',
     'updatedAt'
 ]);
 const isExcluded = (field)=>Boolean(field.hidden || field.admin?.hidden || field.admin?.disableListColumn);
+/* Recursively expand `row`/`collapsible` (always presentational) and
+   unnamed `tabs` entries (presentational when a tab has no `name`) into the
+   flat list of fields that actually address top-level document keys. Named
+   `group`/named-tab fields are left as-is — their children live one level
+   down under that name, so a bare name lookup wouldn't match them anyway.
+   Without this, any field nested in an unnamed tab (a common layout for
+   e.g. a Pages collection's `title`) silently fails every name-based
+   lookup below: it never appears as a column, filter option, or select
+   projection, with no error. */ export function flattenFields(fields) {
+    const out = [];
+    for (const field of fields){
+        const asAny = field;
+        if (FLATTENING_TYPES.has(field.type) && Array.isArray(asAny.fields)) {
+            out.push(...flattenFields(asAny.fields));
+            continue;
+        }
+        if (field.type === 'tabs' && Array.isArray(asAny.tabs)) {
+            for (const tab of asAny.tabs){
+                if (tab.name) continue;
+                if (Array.isArray(tab.fields)) out.push(...flattenFields(tab.fields));
+            }
+            continue;
+        }
+        out.push(field);
+    }
+    return out;
+}
+export function findFieldByName(fields, name) {
+    return flattenFields(fields).find((f)=>f.name === name);
+}
 /* Pick which field names should appear as columns, in display order. */ export function pickFieldNames(collection) {
     const defaults = collection.admin?.defaultColumns;
     if (defaults && defaults.length > 0) return [
@@ -21,7 +56,7 @@ const isExcluded = (field)=>Boolean(field.hidden || field.admin?.hidden || field
     const useAsTitle = collection.admin?.useAsTitle;
     const names = [];
     if (useAsTitle) names.push(useAsTitle);
-    for (const field of collection.fields){
+    for (const field of flattenFields(collection.fields)){
         if (!field.name) continue;
         if (STRUCTURAL_TYPES.has(field.type)) continue;
         if (isExcluded(field)) continue;
@@ -50,7 +85,7 @@ const isExcluded = (field)=>Boolean(field.hidden || field.admin?.hidden || field
     const populate = {};
     for (const name of pickFieldNames(collection)){
         if (SYNTHETIC_FIELD_NAMES.has(name)) continue;
-        const field = collection.fields.find((f)=>f.name === name);
+        const field = findFieldByName(collection.fields, name);
         if (!field) continue;
         if (field.type !== 'relationship' && field.type !== 'upload') continue;
         const slugs = Array.isArray(field.relationTo) ? field.relationTo : field.relationTo ? [
@@ -72,7 +107,7 @@ const isExcluded = (field)=>Boolean(field.hidden || field.admin?.hidden || field
     const names = pickFieldNames(collection);
     for (const name of names){
         if (SYNTHETIC_FIELD_NAMES.has(name)) continue;
-        const field = collection.fields.find((f)=>f.name === name);
+        const field = findFieldByName(collection.fields, name);
         if (!field) continue;
         if (field.type === 'relationship' || field.type === 'upload') {
             if (!Array.isArray(field.relationTo)) return true;

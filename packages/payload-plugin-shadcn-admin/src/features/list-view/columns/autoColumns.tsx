@@ -5,7 +5,12 @@ import { Check } from 'lucide-react'
 import * as React from 'react'
 
 import { DataTableColumnHeader } from '../data-table/DataTableColumnHeader.js'
-import { pickFieldNames, type CollectionMeta, type FieldMeta } from './fieldPicker.js'
+import {
+  findFieldByName,
+  pickFieldNames,
+  type CollectionMeta,
+  type FieldMeta,
+} from './fieldPicker.js'
 
 /* The auto-columns builder reads only a small structural subset of Payload's
    SanitizedCollectionConfig so callers don't need to import Payload's full type
@@ -431,7 +436,7 @@ const findField = (
   name: string,
 ): AutoField | undefined => {
   if (SYNTHETIC_FIELDS[name]) return SYNTHETIC_FIELDS[name]
-  return collection.fields.find((f) => f.name === name)
+  return findFieldByName(collection.fields, name)
 }
 
 export type BuildColumnsOptions = {

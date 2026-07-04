@@ -35,10 +35,55 @@ const STRUCTURAL_TYPES = new Set([
   'ui',
 ])
 
+/* Containers whose children are always presentational — Payload flattens
+   their fields into the parent's data, so a bare field name still matches. */
+const FLATTENING_TYPES = new Set(['row', 'collapsible'])
+
 const SYNTHETIC_FIELD_NAMES = new Set(['id', 'createdAt', 'updatedAt'])
 
 const isExcluded = (field: FieldMeta): boolean =>
   Boolean(field.hidden || field.admin?.hidden || field.admin?.disableListColumn)
+
+/* Recursively expand `row`/`collapsible` (always presentational) and
+   unnamed `tabs` entries (presentational when a tab has no `name`) into the
+   flat list of fields that actually address top-level document keys. Named
+   `group`/named-tab fields are left as-is — their children live one level
+   down under that name, so a bare name lookup wouldn't match them anyway.
+   Without this, any field nested in an unnamed tab (a common layout for
+   e.g. a Pages collection's `title`) silently fails every name-based
+   lookup below: it never appears as a column, filter option, or select
+   projection, with no error. */
+export function flattenFields<T extends FieldMeta>(
+  fields: ReadonlyArray<T>,
+): T[] {
+  const out: T[] = []
+  for (const field of fields) {
+    const asAny = field as unknown as {
+      fields?: T[]
+      tabs?: Array<{ name?: string; fields?: T[] }>
+    }
+    if (FLATTENING_TYPES.has(field.type) && Array.isArray(asAny.fields)) {
+      out.push(...flattenFields(asAny.fields))
+      continue
+    }
+    if (field.type === 'tabs' && Array.isArray(asAny.tabs)) {
+      for (const tab of asAny.tabs) {
+        if (tab.name) continue
+        if (Array.isArray(tab.fields)) out.push(...flattenFields(tab.fields))
+      }
+      continue
+    }
+    out.push(field)
+  }
+  return out
+}
+
+export function findFieldByName<T extends FieldMeta>(
+  fields: ReadonlyArray<T>,
+  name: string,
+): T | undefined {
+  return flattenFields(fields).find((f) => f.name === name)
+}
 
 /* Pick which field names should appear as columns, in display order. */
 export function pickFieldNames(collection: CollectionMeta): string[] {
@@ -49,7 +94,7 @@ export function pickFieldNames(collection: CollectionMeta): string[] {
   const names: string[] = []
   if (useAsTitle) names.push(useAsTitle)
 
-  for (const field of collection.fields) {
+  for (const field of flattenFields(collection.fields)) {
     if (!field.name) continue
     if (STRUCTURAL_TYPES.has(field.type)) continue
     if (isExcluded(field)) continue
@@ -88,7 +133,7 @@ export function buildListPopulate(
   const populate: Record<string, Record<string, true>> = {}
   for (const name of pickFieldNames(collection)) {
     if (SYNTHETIC_FIELD_NAMES.has(name)) continue
-    const field = collection.fields.find((f) => f.name === name)
+    const field = findFieldByName(collection.fields, name)
     if (!field) continue
     if (field.type !== 'relationship' && field.type !== 'upload') continue
     const slugs = Array.isArray(field.relationTo)
@@ -112,7 +157,7 @@ export function collectionNeedsDepthOne(collection: CollectionMeta): boolean {
   const names = pickFieldNames(collection)
   for (const name of names) {
     if (SYNTHETIC_FIELD_NAMES.has(name)) continue
-    const field = collection.fields.find((f) => f.name === name)
+    const field = findFieldByName(collection.fields, name)
     if (!field) continue
     if (field.type === 'relationship' || field.type === 'upload') {
       if (!Array.isArray(field.relationTo)) return true

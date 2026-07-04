@@ -23,6 +23,6 @@ export { formatAdminURL, getSafeRedirect, hasDraftsEnabled, mergeListSearchAndWh
 // from '@payloadcms/ui' (runtime) — client hooks + components used by the
 // bridge, list-view client, auth forms, schedule popover, etc.
 // ---------------------------------------------------------------------------
-export { EditUpload, Form, OperationProvider, toast, useAuth, useConfig, useDocumentDrawerContext, useDocumentInfo, useListDrawerContext, useLocale, useServerFunctions, useTranslation, useUploadHandlers } from '@payloadcms/ui';
+export { EditUpload, Form, OperationProvider, toast, useAuth, useConfig, useDocumentDrawerContext, useDocumentInfo, useListDrawerContext, useListQuery, useLocale, useServerFunctions, useTranslation, useUploadHandlers } from '@payloadcms/ui';
 export { enTranslations } from '@payloadcms/translations/languages/en'; // translations.ts (English baseline)
 export { deepMergeSimple } from '@payloadcms/translations/utilities'; //   plugin.ts (i18n merge under shadcnAdmin namespace)

@@ -3,7 +3,7 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import * as React from 'react';
 import Link from 'next/link';
 import { LayoutList, FolderTree } from 'lucide-react';
-import { useTranslation } from '../../internal/payloadAdapter.js';
+import { useListQuery, useTranslation } from '../../internal/payloadAdapter.js';
 import { Button } from 'payload-plugin-shadcn-ui';
 import { cn } from 'payload-plugin-shadcn-ui';
 /* List ⇄ Folders toggle rendered in the auto list view's header. Flips a
@@ -12,6 +12,7 @@ import { cn } from 'payload-plugin-shadcn-ui';
    route `/collections/:slug` to Payload's hardcoded (non-overridable) folder
    view instead of ours. */ export function FolderListToggle({ basePath, mode }) {
     const { t } = useTranslation();
+    const { refineListData } = useListQuery();
     return /*#__PURE__*/ _jsxs("div", {
         className: "inline-flex overflow-hidden rounded-md border",
         children: [
@@ -23,6 +24,12 @@ import { cn } from 'payload-plugin-shadcn-ui';
                 children: /*#__PURE__*/ _jsxs(Link, {
                     href: basePath,
                     "aria-current": mode === 'list',
+                    onClick: (e)=>{
+                        e.preventDefault();
+                        void refineListData({
+                            view: undefined
+                        }, false);
+                    },
                     children: [
                         /*#__PURE__*/ _jsx(LayoutList, {
                             className: "mr-2 h-4 w-4"

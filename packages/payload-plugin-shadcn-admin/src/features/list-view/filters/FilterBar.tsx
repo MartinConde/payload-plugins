@@ -7,7 +7,11 @@
 
 import * as React from 'react'
 
-import type { CollectionMeta, FieldMeta } from '../columns/fieldPicker.js'
+import {
+  flattenFields,
+  type CollectionMeta,
+  type FieldMeta,
+} from '../columns/fieldPicker.js'
 import { useFilterUrlState } from './useFilterUrlState.js'
 import { usePreferencesSync } from '../prefs/usePreferencesSync.js'
 import { AddFilterMenu } from './AddFilterMenu.js'
@@ -75,7 +79,7 @@ export function FilterBar({
   const allFields = React.useMemo<FieldMeta[]>(() => {
     const seen = new Set<string>()
     const out: FieldMeta[] = []
-    for (const f of collection.fields) {
+    for (const f of flattenFields(collection.fields)) {
       if (!f.name || seen.has(f.name)) continue
       seen.add(f.name)
       out.push(f)

@@ -4,6 +4,7 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
    keeps a write-behind copy via usePreferencesSync, and renders the chips
    plus a trailing "+ Add filter" pill. Renders nothing chrome when the
    state is empty other than the pill itself. */ import * as React from 'react';
+import { flattenFields } from '../columns/fieldPicker.js';
 import { useFilterUrlState } from './useFilterUrlState.js';
 import { usePreferencesSync } from '../prefs/usePreferencesSync.js';
 import { AddFilterMenu } from './AddFilterMenu.js';
@@ -59,7 +60,7 @@ export function FilterBar({ collection, useAsTitleBySlug }) {
     const allFields = React.useMemo(()=>{
         const seen = new Set();
         const out = [];
-        for (const f of collection.fields){
+        for (const f of flattenFields(collection.fields)){
             if (!f.name || seen.has(f.name)) continue;
             seen.add(f.name);
             out.push(f);
