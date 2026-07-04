@@ -9,5 +9,5 @@ type AuthShellProps = {
     footer?: React.ReactNode;
     className?: string;
 };
-export declare function AuthShell({ brand, title, description, children, footer, className, }: AuthShellProps): import("react/jsx-runtime").JSX.Element;
+export declare function AuthShell({ brand, title, description, children, footer, className, }: AuthShellProps): React.JSX.Element;
 export {};

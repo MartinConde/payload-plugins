@@ -8,6 +8,7 @@
    "X of Y" totals. Set `pageSize` to the value used in the server query. */
 
 import * as React from 'react'
+import Link from 'next/link'
 import { SearchIcon } from 'lucide-react'
 import {
   type ColumnDef,
@@ -157,6 +158,12 @@ type DataTableProps<TData, TValue> = {
 
   // Row interaction
   onRowClick?: (row: Row<TData>) => void
+  /** When set, the first visible cell of each row renders its content inside a
+   *  real `<Link>` to this href instead of plain text. Lets middle-click /
+   *  cmd+click open the doc in a new tab and right-click show "Open in new
+   *  tab", the way a real anchor does — a JS-only onClick can't. The rest of
+   *  the row keeps navigating via `onRowClick` on plain left-click. */
+  getRowHref?: (row: Row<TData>) => string | undefined
 
   // Pagination footer
   showSelectedCount?: boolean
@@ -201,6 +208,7 @@ export function DataTable<TData, TValue>({
   bulkActions,
   exportMenu,
   onRowClick,
+  getRowHref,
   showSelectedCount,
   emptyMessage = 'No results.',
   className,
@@ -414,20 +422,49 @@ export function DataTable<TData, TValue>({
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && 'selected'}
-                  className={onRowClick ? 'cursor-pointer' : undefined}
-                  onClick={onRowClick ? () => onRowClick(row) : undefined}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
+              table.getRowModel().rows.map((row) => {
+                const rowHref = getRowHref?.(row)
+                const visibleCells = row.getVisibleCells()
+                // Link the first non-locked column (e.g. the title/id column),
+                // not literally index 0 — with row selection on, index 0 is
+                // the checkbox column, which must stay a plain checkbox.
+                const linkCellId = visibleCells.find(
+                  (c) => !lockedSet.has(c.column.id),
+                )?.id
+                return (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && 'selected'}
+                    className={onRowClick ? 'cursor-pointer' : undefined}
+                    onClick={onRowClick ? () => onRowClick(row) : undefined}
+                  >
+                    {visibleCells.map((cell) => {
+                      const content = flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )
+                      return (
+                        <TableCell key={cell.id}>
+                          {rowHref && cell.id === linkCellId ? (
+                            // Stops the click from also bubbling to the row's
+                            // onClick — the anchor already handles navigation
+                            // (soft nav on plain click, native new-tab on
+                            // middle/cmd/ctrl-click) and firing both would
+                            // double-navigate.
+                            <div onClick={(e) => e.stopPropagation()}>
+                              <Link href={rowHref} className="contents">
+                                {content}
+                              </Link>
+                            </div>
+                          ) : (
+                            content
+                          )}
+                        </TableCell>
+                      )
+                    })}
+                  </TableRow>
+                )
+              })
             ) : (
               <TableRow>
                 <TableCell colSpan={columns.length} className="h-24 text-center">

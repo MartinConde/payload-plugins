@@ -43,4 +43,4 @@ export type CollectionListViewProps<TData extends {
 };
 export declare function CollectionListView<TData extends {
     id: number | string;
-}>({ serverProps, title, columns, mapRow, breadcrumbs, paginatedDocs, enableSearch, searchPlaceholder, enableBulkDelete, enableCreate, enableSorting, enableFiltering, enableColumnVisibility, filterColumnId, filterPlaceholder, toolbarRight, filterBar, bulkActions, onRowClick, disableRowClick, }: CollectionListViewProps<TData>): import("react/jsx-runtime").JSX.Element;
+}>({ serverProps, title, columns, mapRow, breadcrumbs, paginatedDocs, enableSearch, searchPlaceholder, enableBulkDelete, enableCreate, enableSorting, enableFiltering, enableColumnVisibility, filterColumnId, filterPlaceholder, toolbarRight, filterBar, bulkActions, onRowClick, disableRowClick, }: CollectionListViewProps<TData>): React.JSX.Element;

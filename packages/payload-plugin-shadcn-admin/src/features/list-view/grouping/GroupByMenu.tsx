@@ -1,16 +1,22 @@
 'use client'
 
-/* v3.22 — "Group by" picker. URL-param state (`?groupBy=<field>`, `-field` for
-   descending group order); selecting a field reloads the list grouped, "None"
-   clears it.
+/* v3.22 — "Group by" picker. URL-param state (`?listGroupBy=<field>`,
+   `-field` for descending group order); selecting a field reloads the list
+   grouped, "None" clears it.
+
+   The param is deliberately NOT `?groupBy=` — see the comment in
+   AutoCollectionListView.tsx where it's parsed: that name is reserved by
+   Payload core's own list-view route for a native, sticky (non-clearable)
+   preference, and reusing it means "None" never durably sticks.
 
    The active grouping comes from the `current` PROP, set by the RSC from the
-   server-parsed `groupBy` — NOT from `useSearchParams()`. Inside Payload's admin
-   shell that hook lags a navigation by a tick, and because the flat and grouped
-   views render *different* GroupByMenu instances, a freshly-mounted menu would
-   read the stale value and show the wrong label until a second click. The
-   server already knows the truth (it picked the flat vs grouped branch), so we
-   trust the prop. Navigation still reads the live `window.location.search`. */
+   server-parsed `listGroupBy` — NOT from `useSearchParams()`. Inside Payload's
+   admin shell that hook lags a navigation by a tick, and because the flat and
+   grouped views render *different* GroupByMenu instances, a freshly-mounted
+   menu would read the stale value and show the wrong label until a second
+   click. The server already knows the truth (it picked the flat vs grouped
+   branch), so we trust the prop. Navigation still reads the live
+   `window.location.search`. */
 
 import * as React from 'react'
 import { usePathname, useRouter } from 'next/navigation'
@@ -37,7 +43,7 @@ export function GroupByMenu({
   current,
 }: {
   fields: GroupableField[]
-  /** Active groupBy field name (server-parsed), or null when not grouped. */
+  /** Active listGroupBy field name (server-parsed), or null when not grouped. */
   current: string | null
 }): React.ReactElement | null {
   const { t } = useTranslation<
@@ -57,8 +63,13 @@ export function GroupByMenu({
     const search =
       typeof window !== 'undefined' ? window.location.search : ''
     const next = new URLSearchParams(search)
-    if (value) next.set('groupBy', value)
-    else next.delete('groupBy')
+    // `set('listGroupBy', '')` rather than `delete` — Payload's own
+    // ListQueryProvider (@payloadcms/ui) still wraps this custom list view and
+    // its sanitizeQuery only treats an empty-string value as "clear this key";
+    // omitting the key outright lets its stale client-side copy of the old
+    // value silently resurrect on the next render (see GroupedListToolbar.tsx
+    // for the fuller writeup — same mechanism, there for `search`).
+    next.set('listGroupBy', value ?? '')
     next.delete('page') // reset pagination when grouping changes
     const qs = next.toString()
     router.push(qs ? `${pathname}?${qs}` : pathname)

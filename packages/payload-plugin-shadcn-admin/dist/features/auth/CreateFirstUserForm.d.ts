@@ -1,3 +1,4 @@
+import * as React from 'react';
 import type { ExtractedField } from 'payload-plugin-shadcn-ui';
 type CreateFirstUserFormProps = {
     userSlug: string;
@@ -5,5 +6,5 @@ type CreateFirstUserFormProps = {
     useAsTitleBySlug: Record<string, string | undefined>;
     initialValues: Record<string, unknown>;
 };
-export declare function CreateFirstUserForm({ userSlug, fields, useAsTitleBySlug, initialValues, }: CreateFirstUserFormProps): import("react/jsx-runtime").JSX.Element;
+export declare function CreateFirstUserForm({ userSlug, fields, useAsTitleBySlug, initialValues, }: CreateFirstUserFormProps): React.JSX.Element;
 export {};

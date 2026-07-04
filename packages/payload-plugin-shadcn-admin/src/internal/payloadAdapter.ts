@@ -24,6 +24,7 @@ export type {
   Payload, //                              dashboard + folder-view (typed payload instance)
   PayloadRequest, //                       dashboard (req.user typing)
   Plugin, //                               plugin.ts (return type)
+  SanitizedCollectionConfig, //            features/list-view/grouping (mergeListSearchAndWhere input)
   ServerProps, //                          features/nav/DefaultNav
   TypedUser, //                            features/folder-view/getCollectionFolderData
   UploadEdits, //                          AutoDocFormBridge + CollectionUploadHeader
@@ -45,6 +46,7 @@ export {
   formatAdminURL, //                       auth views + ApiInspector + SchedulePublishPopover
   getSafeRedirect, //                      auth views (?redirect= validation)
   hasDraftsEnabled, //                     ApiInspector (drafts query-param shaping)
+  mergeListSearchAndWhere, //              features/list-view (search→where — payload.find has no `search` option)
 } from 'payload/shared'
 
 // ---------------------------------------------------------------------------

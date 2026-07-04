@@ -11,5 +11,5 @@ type DashboardViewProps = AdminViewServerProps & {
     navGroups?: NavGroup[];
     payload: Payload;
 };
-export declare function AutoDashboardView(props: DashboardViewProps): Promise<import("react/jsx-runtime").JSX.Element>;
+export declare function AutoDashboardView(props: DashboardViewProps): Promise<import("react").JSX.Element>;
 export {};

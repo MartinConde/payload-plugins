@@ -1,3 +1,4 @@
+import * as React from 'react';
 type ParentType = 'array' | 'object';
 type RenderJsonProps = {
     object: unknown;
@@ -6,5 +7,5 @@ type RenderJsonProps = {
     isEmpty?: boolean;
     trailingComma?: boolean;
 };
-export declare function RenderJson({ object, objectKey, parentType, isEmpty, trailingComma, }: RenderJsonProps): import("react/jsx-runtime").JSX.Element;
+export declare function RenderJson({ object, objectKey, parentType, isEmpty, trailingComma, }: RenderJsonProps): React.JSX.Element;
 export {};

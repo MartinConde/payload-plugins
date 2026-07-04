@@ -7,5 +7,5 @@ type AutoColumnsBridgeProps = BuildColumnsOptions & Omit<React.ComponentProps<ty
      *  CollectionListViewClient too (forwarded via `isTrash`). */
     hasTrashPermission?: boolean;
 };
-export declare function AutoColumnsBridge({ collection, useAsTitleBySlug, hasTrashPermission, nativeCellFieldNames, nativeCellsByRow, ...clientProps }: AutoColumnsBridgeProps): import("react/jsx-runtime").JSX.Element;
+export declare function AutoColumnsBridge({ collection, useAsTitleBySlug, hasTrashPermission, nativeCellFieldNames, nativeCellsByRow, ...clientProps }: AutoColumnsBridgeProps): React.JSX.Element;
 export {};

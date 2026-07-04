@@ -1,1 +1,2 @@
-export declare function ThemeSwitcher(): import("react/jsx-runtime").JSX.Element;
+import * as React from 'react';
+export declare function ThemeSwitcher(): React.JSX.Element;

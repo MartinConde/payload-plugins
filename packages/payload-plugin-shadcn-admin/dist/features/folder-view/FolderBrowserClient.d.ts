@@ -1,3 +1,4 @@
+import * as React from 'react';
 export type FolderItem = {
     itemKey: string;
     relationTo: string;
@@ -31,4 +32,4 @@ export type FolderBrowserClientProps = {
     extraQuery?: Record<string, string>;
     rootLabel?: string;
 };
-export declare function FolderBrowserClient({ basePath, adminRoute, foldersSlug, folderFieldName, currentFolderID, breadcrumbs, subfolders, documents, extraQuery, rootLabel, }: FolderBrowserClientProps): import("react/jsx-runtime").JSX.Element;
+export declare function FolderBrowserClient({ basePath, adminRoute, foldersSlug, folderFieldName, currentFolderID, breadcrumbs, subfolders, documents, extraQuery, rootLabel, }: FolderBrowserClientProps): React.JSX.Element;

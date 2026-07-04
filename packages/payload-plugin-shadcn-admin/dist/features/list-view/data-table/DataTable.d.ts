@@ -45,9 +45,15 @@ type DataTableProps<TData, TValue> = {
     bulkActions?: (table: TanstackTable<TData>) => React.ReactNode;
     exportMenu?: (table: TanstackTable<TData>) => React.ReactNode;
     onRowClick?: (row: Row<TData>) => void;
+    /** When set, the first visible cell of each row renders its content inside a
+     *  real `<Link>` to this href instead of plain text. Lets middle-click /
+     *  cmd+click open the doc in a new tab and right-click show "Open in new
+     *  tab", the way a real anchor does — a JS-only onClick can't. The rest of
+     *  the row keeps navigating via `onRowClick` on plain left-click. */
+    getRowHref?: (row: Row<TData>) => string | undefined;
     showSelectedCount?: boolean;
     emptyMessage?: string;
     className?: string;
 };
-export declare function DataTable<TData, TValue>({ columns, data, pageCount, rowCount, pagination, onPaginationChange, sorting, onSortingChange, columnFilters, onColumnFiltersChange, columnOrder, onColumnOrderChange, columnVisibility: columnVisibilityProp, onColumnVisibilityChange, lockedColumnIds, onResetColumns, enableSorting, enableFiltering, enableColumnVisibility, enableColumnReorder, enableRowSelection, searchValue, onSearchChange, searchPlaceholder, searchDebounceMs, filterColumnId, filterPlaceholder, toolbarLeft, toolbarRight, filterBar, bulkActions, exportMenu, onRowClick, showSelectedCount, emptyMessage, className, }: DataTableProps<TData, TValue>): import("react/jsx-runtime").JSX.Element;
+export declare function DataTable<TData, TValue>({ columns, data, pageCount, rowCount, pagination, onPaginationChange, sorting, onSortingChange, columnFilters, onColumnFiltersChange, columnOrder, onColumnOrderChange, columnVisibility: columnVisibilityProp, onColumnVisibilityChange, lockedColumnIds, onResetColumns, enableSorting, enableFiltering, enableColumnVisibility, enableColumnReorder, enableRowSelection, searchValue, onSearchChange, searchPlaceholder, searchDebounceMs, filterColumnId, filterPlaceholder, toolbarLeft, toolbarRight, filterBar, bulkActions, exportMenu, onRowClick, getRowHref, showSelectedCount, emptyMessage, className, }: DataTableProps<TData, TValue>): React.JSX.Element;
 export {};

@@ -6,4 +6,4 @@ export type Crumb = {
 export declare function ViewHeader({ breadcrumbs, actions, }: {
     breadcrumbs?: Crumb[];
     actions?: React.ReactNode;
-}): import("react/jsx-runtime").JSX.Element;
+}): React.JSX.Element;

@@ -13,5 +13,5 @@ type NavUserProps = {
     /** Extra menu items rendered between the account link and the logout row. */
     extraItems?: React.ReactNode;
 };
-export declare function NavUser({ user, accountHref, logoutHref, extraItems }: NavUserProps): import("react/jsx-runtime").JSX.Element;
+export declare function NavUser({ user, accountHref, logoutHref, extraItems }: NavUserProps): React.JSX.Element;
 export {};

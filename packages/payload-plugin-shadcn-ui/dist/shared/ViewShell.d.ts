@@ -7,5 +7,5 @@ type ViewShellProps = {
     contentClassName?: string;
     headerActions?: React.ReactNode;
 };
-export declare function ViewShell({ breadcrumbs, children, className, contentClassName, headerActions, }: ViewShellProps): import("react/jsx-runtime").JSX.Element;
+export declare function ViewShell({ breadcrumbs, children, className, contentClassName, headerActions, }: ViewShellProps): React.JSX.Element;
 export {};

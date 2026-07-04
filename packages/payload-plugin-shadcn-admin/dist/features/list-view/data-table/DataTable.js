@@ -6,6 +6,7 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
    - Uncontrolled (ephemeral UI state): columnVisibility, rowSelection
    List views must pass `pageCount` from the server. Pass `rowCount` to show
    "X of Y" totals. Set `pageSize` to the value used in the server query. */ import * as React from 'react';
+import Link from 'next/link';
 import { SearchIcon } from 'lucide-react';
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { DndContext, KeyboardSensor, PointerSensor, closestCenter, useSensor, useSensors } from '@dnd-kit/core';
@@ -48,7 +49,7 @@ function SortableHead({ id, width, children }) {
 }
 export function DataTable({ columns, data, pageCount, rowCount, pagination, onPaginationChange, sorting, onSortingChange, columnFilters, onColumnFiltersChange, columnOrder, onColumnOrderChange, columnVisibility: columnVisibilityProp, onColumnVisibilityChange, lockedColumnIds = [
     'select'
-], onResetColumns, enableSorting = false, enableFiltering = false, enableColumnVisibility = false, enableColumnReorder = false, enableRowSelection = false, searchValue, onSearchChange, searchPlaceholder = 'Search…', searchDebounceMs = 300, filterColumnId, filterPlaceholder = 'Filter…', toolbarLeft, toolbarRight, filterBar, bulkActions, exportMenu, onRowClick, showSelectedCount, emptyMessage = 'No results.', className }) {
+], onResetColumns, enableSorting = false, enableFiltering = false, enableColumnVisibility = false, enableColumnReorder = false, enableRowSelection = false, searchValue, onSearchChange, searchPlaceholder = 'Search…', searchDebounceMs = 300, filterColumnId, filterPlaceholder = 'Filter…', toolbarLeft, toolbarRight, filterBar, bulkActions, exportMenu, onRowClick, getRowHref, showSelectedCount, emptyMessage = 'No results.', className }) {
     const [internalVisibility, setInternalVisibility] = React.useState({});
     const columnVisibility = columnVisibilityProp ?? internalVisibility;
     const handleVisibilityChange = onColumnVisibilityChange ?? setInternalVisibility;
@@ -264,14 +265,37 @@ export function DataTable({ columns, data, pageCount, rowCount, pagination, onPa
                                 })
                             }),
                             /*#__PURE__*/ _jsx(TableBody, {
-                                children: table.getRowModel().rows.length ? table.getRowModel().rows.map((row)=>/*#__PURE__*/ _jsx(TableRow, {
+                                children: table.getRowModel().rows.length ? table.getRowModel().rows.map((row)=>{
+                                    const rowHref = getRowHref?.(row);
+                                    const visibleCells = row.getVisibleCells();
+                                    // Link the first non-locked column (e.g. the title/id column),
+                                    // not literally index 0 — with row selection on, index 0 is
+                                    // the checkbox column, which must stay a plain checkbox.
+                                    const linkCellId = visibleCells.find((c)=>!lockedSet.has(c.column.id))?.id;
+                                    return /*#__PURE__*/ _jsx(TableRow, {
                                         "data-state": row.getIsSelected() && 'selected',
                                         className: onRowClick ? 'cursor-pointer' : undefined,
                                         onClick: onRowClick ? ()=>onRowClick(row) : undefined,
-                                        children: row.getVisibleCells().map((cell)=>/*#__PURE__*/ _jsx(TableCell, {
-                                                children: flexRender(cell.column.columnDef.cell, cell.getContext())
-                                            }, cell.id))
-                                    }, row.id)) : /*#__PURE__*/ _jsx(TableRow, {
+                                        children: visibleCells.map((cell)=>{
+                                            const content = flexRender(cell.column.columnDef.cell, cell.getContext());
+                                            return /*#__PURE__*/ _jsx(TableCell, {
+                                                children: rowHref && cell.id === linkCellId ? // Stops the click from also bubbling to the row's
+                                                // onClick — the anchor already handles navigation
+                                                // (soft nav on plain click, native new-tab on
+                                                // middle/cmd/ctrl-click) and firing both would
+                                                // double-navigate.
+                                                /*#__PURE__*/ _jsx("div", {
+                                                    onClick: (e)=>e.stopPropagation(),
+                                                    children: /*#__PURE__*/ _jsx(Link, {
+                                                        href: rowHref,
+                                                        className: "contents",
+                                                        children: content
+                                                    })
+                                                }) : content
+                                            }, cell.id);
+                                        })
+                                    }, row.id);
+                                }) : /*#__PURE__*/ _jsx(TableRow, {
                                     children: /*#__PURE__*/ _jsx(TableCell, {
                                         colSpan: columns.length,
                                         className: "h-24 text-center",

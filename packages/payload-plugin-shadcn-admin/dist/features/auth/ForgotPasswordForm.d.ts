@@ -1,1 +1,2 @@
-export declare function ForgotPasswordForm(): import("react/jsx-runtime").JSX.Element;
+import * as React from 'react';
+export declare function ForgotPasswordForm(): React.JSX.Element;

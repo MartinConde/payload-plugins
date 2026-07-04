@@ -1,4 +1,4 @@
-import type { ListViewServerProps, Where } from '../../../internal/payloadAdapter.js';
+import type { ListViewServerProps, SanitizedCollectionConfig, Where } from '../../../internal/payloadAdapter.js';
 import type { FieldMeta } from '../columns/fieldPicker.js';
 /** Max groups rendered. */
 export declare const GROUP_CAP = 50;
@@ -23,8 +23,11 @@ export type GroupedResult = {
      *  than GROUP_CAP — i.e. the view is showing a partial picture. */
     capped: boolean;
 };
-export declare function getGroupedData({ payload, collectionSlug, groupByName, groupByField, sortDesc, where, search, trash, locale, user, useAsTitleBySlug, noValueLabel, }: {
+export declare function getGroupedData({ payload, collectionConfig, collectionSlug, groupByName, groupByField, sortDesc, where, search, trash, locale, user, useAsTitleBySlug, noValueLabel, }: {
     payload: ListViewServerProps['payload'];
+    /** Needed to resolve `admin.listSearchableFields` / `admin.useAsTitle` for
+     *  converting `search` into a `where` clause — see mergeListSearchAndWhere. */
+    collectionConfig: SanitizedCollectionConfig;
     collectionSlug: string;
     groupByName: string;
     groupByField: FieldMeta;

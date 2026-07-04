@@ -1,4 +1,5 @@
 import type { Table as TanstackTable } from '@tanstack/react-table';
+import * as React from 'react';
 type Row = {
     id: number | string;
 };
@@ -24,5 +25,5 @@ type TrashBulkActionsProps = {
     /** Mirrors Payload: only show Permanent delete when the user can delete. */
     canDelete?: boolean;
 };
-export declare function TrashBulkActions({ table, collectionSlug, collection, canRestore, canDelete, }: TrashBulkActionsProps): import("react/jsx-runtime").JSX.Element;
+export declare function TrashBulkActions({ table, collectionSlug, collection, canRestore, canDelete, }: TrashBulkActionsProps): React.JSX.Element;
 export {};

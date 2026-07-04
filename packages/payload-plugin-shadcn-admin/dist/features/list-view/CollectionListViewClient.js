@@ -171,6 +171,11 @@ export function CollectionListViewClient({ collectionSlug, columns, data, pageCo
             ]
         });
     } : undefined);
+    const getDocPath = React.useCallback((id)=>// Trash rows open Payload's read-only trash doc view.
+        isTrash ? `/admin/collections/${collectionSlug}/trash/${id}` : `/admin/collections/${collectionSlug}/${id}`, [
+        collectionSlug,
+        isTrash
+    ]);
     const resolvedOnRowClick = disableRowClick ? undefined : onRowClick ?? (drawerOnSelect ? (row)=>{
         drawerOnSelect({
             collectionSlug,
@@ -178,10 +183,12 @@ export function CollectionListViewClient({ collectionSlug, columns, data, pageCo
             docID: String(row.original.id)
         });
     } : (row)=>{
-        // Trash rows open Payload's read-only trash doc view.
-        const path = isTrash ? `/admin/collections/${collectionSlug}/trash/${row.original.id}` : `/admin/collections/${collectionSlug}/${row.original.id}`;
-        router.push(path);
+        router.push(getDocPath(row.original.id));
     });
+    // Only the default (non-custom, non-drawer-select) navigation has a real
+    // URL to link to — a custom `onRowClick` or the drawer's `onSelect` don't
+    // navigate anywhere, so there's no href to hand a `<Link>`.
+    const resolvedGetRowHref = disableRowClick || onRowClick || drawerOnSelect ? undefined : (row)=>getDocPath(row.original.id);
     return /*#__PURE__*/ _jsx(DataTable, {
         columns: columns,
         data: data,
@@ -218,6 +225,7 @@ export function CollectionListViewClient({ collectionSlug, columns, data, pageCo
                 fields: exportFields
             }) : undefined,
         onRowClick: resolvedOnRowClick,
+        getRowHref: resolvedGetRowHref,
         ...emptyMessage ? {
             emptyMessage
         } : {}

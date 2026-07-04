@@ -14,9 +14,21 @@
    - GROUP_CAP caps how many groups render (high-cardinality fields would else
      be a wall of sparse tables); extra groups are dropped from the tail.
    - Counts/rows are within the fetched window (no per-group pagination v1).
-   - filter `where` + `search` + `locale` all thread into the one find. */
+   - filter `where` + `search` + `locale` all thread into the one find.
 
-import type { ListViewServerProps, Where } from '../../../internal/payloadAdapter.js'
+   `search` is NOT a real `payload.find()` Local API option (only `where`,
+   `sort`, `limit`, etc. — check BaseFindOptions) — it's a REST/admin-only
+   convenience Payload core's own renderListView converts to a `where` clause
+   via `mergeListSearchAndWhere` before ever calling `find`. Passing `search`
+   straight through here would silently no-op, so we do the same conversion
+   ourselves before the query. */
+
+import { mergeListSearchAndWhere } from '../../../internal/payloadAdapter.js'
+import type {
+  ListViewServerProps,
+  SanitizedCollectionConfig,
+  Where,
+} from '../../../internal/payloadAdapter.js'
 import type { FieldMeta } from '../columns/fieldPicker.js'
 
 /** Max groups rendered. */
@@ -63,6 +75,7 @@ const NULL_KEY = '__null__'
 
 export async function getGroupedData({
   payload,
+  collectionConfig,
   collectionSlug,
   groupByName,
   groupByField,
@@ -76,6 +89,9 @@ export async function getGroupedData({
   noValueLabel,
 }: {
   payload: ListViewServerProps['payload']
+  /** Needed to resolve `admin.listSearchableFields` / `admin.useAsTitle` for
+   *  converting `search` into a `where` clause — see mergeListSearchAndWhere. */
+  collectionConfig: SanitizedCollectionConfig
   collectionSlug: string
   groupByName: string
   groupByField: FieldMeta
@@ -95,6 +111,10 @@ export async function getGroupedData({
       ? groupByField.relationTo
       : undefined
 
+  const whereWithSearch = search
+    ? mergeListSearchAndWhere({ collectionConfig, search, where: where ?? {} })
+    : where
+
   // One capped fetch with the active filter/search/locale; depth:1 so
   // relationship group values arrive populated (for headings) and cells render.
   const found = (await payload.find({
@@ -102,8 +122,7 @@ export async function getGroupedData({
     depth: 1,
     limit: GROUP_FETCH_CAP,
     sort: sortDesc ? `-${groupByName}` : groupByName,
-    ...(where ? { where } : {}),
-    ...(search ? { search } : {}),
+    ...(whereWithSearch ? { where: whereWithSearch } : {}),
     ...(trash ? { trash: true } : {}),
     ...(locale ? { locale } : {}),
     user,

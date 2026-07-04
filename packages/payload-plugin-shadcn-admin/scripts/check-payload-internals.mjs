@@ -28,6 +28,7 @@ const RUNTIME_EXPORTED = [
   'formatAdminURL',
   'getSafeRedirect',
   'hasDraftsEnabled',
+  'mergeListSearchAndWhere',
   // from '@payloadcms/ui'
   'EditUpload',
   'Form',

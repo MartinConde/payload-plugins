@@ -57,5 +57,5 @@ type DefaultAdminSidebarProps = Omit<React.ComponentProps<typeof Sidebar>, 'chil
         endpointPath: string;
     };
 };
-export declare function DefaultAdminSidebar({ user, branding, groups, collections, children, rebuildFrontend, collapsible, ...sidebarProps }: DefaultAdminSidebarProps): import("react/jsx-runtime").JSX.Element;
+export declare function DefaultAdminSidebar({ user, branding, groups, collections, children, rebuildFrontend, collapsible, ...sidebarProps }: DefaultAdminSidebarProps): React.JSX.Element;
 export {};

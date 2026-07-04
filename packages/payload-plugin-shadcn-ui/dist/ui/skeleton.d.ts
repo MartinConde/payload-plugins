@@ -1,2 +1,2 @@
-declare function Skeleton({ className, ...props }: React.ComponentProps<"div">): import("react/jsx-runtime").JSX.Element;
+declare function Skeleton({ className, ...props }: React.ComponentProps<"div">): import("react").JSX.Element;
 export { Skeleton };

@@ -47,4 +47,4 @@ export type CollectionListViewClientProps<TData extends {
 };
 export declare function CollectionListViewClient<TData extends {
     id: number | string;
-}>({ collectionSlug, columns, data, pageCount, rowCount, defaultPageSize, newDocumentURL, enableSearch, searchPlaceholder, enableBulkDelete, enableCreate, isTrash, trashEnabled, emptyMessage, enableExport, exportFields, enableSorting, enableFiltering, enableColumnVisibility, filterColumnId, filterPlaceholder, toolbarRight, filterBar, bulkActions, onRowClick, disableRowClick, }: CollectionListViewClientProps<TData>): import("react/jsx-runtime").JSX.Element;
+}>({ collectionSlug, columns, data, pageCount, rowCount, defaultPageSize, newDocumentURL, enableSearch, searchPlaceholder, enableBulkDelete, enableCreate, isTrash, trashEnabled, emptyMessage, enableExport, exportFields, enableSorting, enableFiltering, enableColumnVisibility, filterColumnId, filterPlaceholder, toolbarRight, filterBar, bulkActions, onRowClick, disableRowClick, }: CollectionListViewClientProps<TData>): React.JSX.Element;

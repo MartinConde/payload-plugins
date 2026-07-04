@@ -1,3 +1,4 @@
+import * as React from 'react';
 import type { ExtractedField } from 'payload-plugin-shadcn-ui';
 import type { Perms } from '../doc-form/access-control/fieldPermissions.js';
 type AccountFormProps = {
@@ -20,5 +21,5 @@ type AccountFormProps = {
         label: string;
     }[];
 };
-export declare function AccountForm({ userSlug, userId, fields, initialValues, useAsTitleBySlug, docPermissions, useAPIKey, verify, verified, initialApiKey, initialEnableAPIKey, languageOptions, }: AccountFormProps): import("react/jsx-runtime").JSX.Element;
+export declare function AccountForm({ userSlug, userId, fields, initialValues, useAsTitleBySlug, docPermissions, useAPIKey, verify, verified, initialApiKey, initialEnableAPIKey, languageOptions, }: AccountFormProps): React.JSX.Element;
 export {};

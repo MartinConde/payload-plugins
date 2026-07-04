@@ -1,4 +1,5 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { mergeListSearchAndWhere } from '../../internal/payloadAdapter.js';
 import { AutoColumnsBridge } from './AutoColumnsBridge.js';
 import { ViewShell } from 'payload-plugin-shadcn-ui';
 import { FolderBrowserClient } from '../folder-view/FolderBrowserClient.js';
@@ -101,12 +102,28 @@ export async function AutoCollectionListView(serverProps) {
     for (const c of payload.config.collections ?? []){
         useAsTitleBySlug[c.slug] = c.admin?.useAsTitle;
     }
-    // v3.22 — grouped mode (`?groupBy=<field>`, `-field` for descending group
-    // order). One capped find, grouped in JS (see getGroupedData — findDistinct
-    // isn't available on every adapter). Not in trash mode (trash stays flat).
+    // Shared between the flat and grouped branches below — grouping doesn't
+    // change which fields are searchable.
+    const useAsTitle = collection.admin?.useAsTitle;
+    const listSearchableFields = collection.admin?.listSearchableFields;
+    const searchEnabled = Boolean(useAsTitle || Array.isArray(listSearchableFields) && listSearchableFields.length > 0);
+    // v3.22 — grouped mode (`?listGroupBy=<field>`, `-field` for descending
+    // group order). Deliberately NOT `?groupBy=` — Payload core's own list-view
+    // route (renderListView in @payloadcms/next) unconditionally reads/persists
+    // a `groupBy` query key into the collection's preferences doc on every list
+    // request, for its own (currently unused-by-us) native admin.groupBy
+    // feature. That preference is "sticky": upsertPreferences' merge strips
+    // `undefined` incoming values before merging, so clearing our groupBy via
+    // the URL never clears Payload's stored preference, and its ListQueryProvider
+    // (which still wraps our custom Component) writes the stale value straight
+    // back into the address bar via history.replaceState. Using a distinct key
+    // sidesteps the collision entirely.
+    //
+    // One capped find, grouped in JS (see getGroupedData — findDistinct isn't
+    // available on every adapter). Not in trash mode (trash stays flat).
     const groupableFields = getGroupableFields(serializableCollection);
     const spAll = searchParams;
-    const groupByRaw = !isTrash ? firstString(spAll?.groupBy) : undefined;
+    const groupByRaw = !isTrash ? firstString(spAll?.listGroupBy) : undefined;
     const groupByName = groupByRaw ? groupByRaw.replace(/^-/, '') : undefined;
     const groupByField = groupByName ? groupableFields.find((f)=>f.name === groupByName) : undefined;
     // "Group by" picker (both flat + grouped headers). The active grouping is
@@ -121,6 +138,7 @@ export async function AutoCollectionListView(serverProps) {
         const rawField = collection.fields.find((f)=>f.name === groupByName);
         const { groups, totalGroups, capped } = await getGroupedData({
             payload,
+            collectionConfig: collection,
             collectionSlug: collectionSlug,
             groupByName,
             groupByField: rawField ?? {
@@ -174,7 +192,11 @@ export async function AutoCollectionListView(serverProps) {
                 groups: groups,
                 groupByLabel: groupByField.label,
                 totalGroups: totalGroups,
-                capped: capped
+                capped: capped,
+                newDocumentURL: newDocumentURL ?? '',
+                enableCreate: Boolean(hasCreatePermission),
+                enableSearch: searchEnabled,
+                initialSearch: search ?? ''
             })
         });
     }
@@ -202,6 +224,15 @@ export async function AutoCollectionListView(serverProps) {
                 }
             ]
         } : parsedWhere;
+        // `search` isn't a real `payload.find()` Local API option — Payload core's
+        // own renderListView converts it to a `where` clause via
+        // mergeListSearchAndWhere before ever calling `find`; do the same here
+        // (see the identical comment in getGroupedData.ts).
+        const whereWithSearch = search ? mergeListSearchAndWhere({
+            collectionConfig: collection,
+            search,
+            where: where ?? {}
+        }) : where;
         const select = buildListSelect(serializableCollection);
         const populate = buildListPopulate(serializableCollection, useAsTitleBySlug);
         try {
@@ -213,11 +244,8 @@ export async function AutoCollectionListView(serverProps) {
                 ...sort ? {
                     sort
                 } : {},
-                ...where ? {
-                    where
-                } : {},
-                ...search ? {
-                    search
+                ...whereWithSearch ? {
+                    where: whereWithSearch
                 } : {},
                 ...isTrash ? {
                     trash: true
@@ -255,9 +283,6 @@ export async function AutoCollectionListView(serverProps) {
         collectionSlug: collectionSlug,
         viewType
     });
-    const useAsTitle = collection.admin?.useAsTitle;
-    const listSearchableFields = collection.admin?.listSearchableFields;
-    const searchEnabled = Boolean(useAsTitle || Array.isArray(listSearchableFields) && listSearchableFields.length > 0);
     const title = pluralLabel(collection);
     const trashLabel = t?.('general:trash') ?? 'Trash';
     const breadcrumbs = isTrash ? [

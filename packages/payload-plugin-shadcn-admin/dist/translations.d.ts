@@ -131,6 +131,8 @@ export declare const shadcnAdminTranslations: {
             selectCount_other: string;
             addFromLibrary: string;
             noGalleryItems: string;
+            rebuildFrontend: string;
+            rebuilding: string;
         };
     };
     fr: {
@@ -263,6 +265,8 @@ export declare const shadcnAdminTranslations: {
             selectCount_other: string;
             addFromLibrary: string;
             noGalleryItems: string;
+            rebuildFrontend: string;
+            rebuilding: string;
         };
     };
     de: {
@@ -395,6 +399,8 @@ export declare const shadcnAdminTranslations: {
             selectCount_other: string;
             addFromLibrary: string;
             noGalleryItems: string;
+            rebuildFrontend: string;
+            rebuilding: string;
         };
     };
     es: {
@@ -527,6 +533,8 @@ export declare const shadcnAdminTranslations: {
             selectCount_other: string;
             addFromLibrary: string;
             noGalleryItems: string;
+            rebuildFrontend: string;
+            rebuilding: string;
         };
     };
 };

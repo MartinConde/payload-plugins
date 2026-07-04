@@ -14,5 +14,9 @@ export type GroupedListViewProps = {
     groupByLabel: string;
     totalGroups: number;
     capped: boolean;
+    newDocumentURL: string;
+    enableCreate: boolean;
+    enableSearch: boolean;
+    initialSearch: string;
 };
-export declare function GroupedListView({ collectionSlug, collection, useAsTitleBySlug, nativeCellFieldNames, nativeCellsByRow, groups, groupByLabel, totalGroups, capped, }: GroupedListViewProps): React.ReactElement;
+export declare function GroupedListView({ collectionSlug, collection, useAsTitleBySlug, nativeCellFieldNames, nativeCellsByRow, groups, groupByLabel, totalGroups, capped, newDocumentURL, enableCreate, enableSearch, initialSearch, }: GroupedListViewProps): React.ReactElement;

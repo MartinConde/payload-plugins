@@ -1,3 +1,4 @@
+import * as React from 'react';
 import { type LucideIcon } from 'lucide-react';
 export type SidebarCollectionItem = {
     slug: string;
@@ -12,5 +13,5 @@ type CollectionsSidebarGroupProps = {
     /** Fallback icon for items without one. Defaults to lucide's Database. */
     defaultIcon?: LucideIcon;
 };
-export declare function CollectionsSidebarGroup({ collections, label, defaultIcon: DefaultIcon, }: CollectionsSidebarGroupProps): import("react/jsx-runtime").JSX.Element;
+export declare function CollectionsSidebarGroup({ collections, label, defaultIcon: DefaultIcon, }: CollectionsSidebarGroupProps): React.JSX.Element;
 export {};

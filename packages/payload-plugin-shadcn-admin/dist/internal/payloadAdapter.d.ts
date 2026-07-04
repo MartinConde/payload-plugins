@@ -8,6 +8,7 @@ PaginatedDocs, //                        features/list-view (RSC fetch result)
 Payload, //                              dashboard + folder-view (typed payload instance)
 PayloadRequest, //                       dashboard (req.user typing)
 Plugin, //                               plugin.ts (return type)
+SanitizedCollectionConfig, //            features/list-view/grouping (mergeListSearchAndWhere input)
 ServerProps, //                          features/nav/DefaultNav
 TypedUser, //                            features/folder-view/getCollectionFolderData
 UploadEdits, //                          AutoDocFormBridge + CollectionUploadHeader
@@ -16,7 +17,8 @@ export { docAccessOperation, //                   features/account/AutoAccountVi
 getFolderData, } from 'payload';
 export { formatAdminURL, //                       auth views + ApiInspector + SchedulePublishPopover
 getSafeRedirect, //                      auth views (?redirect= validation)
-hasDraftsEnabled, } from 'payload/shared';
+hasDraftsEnabled, //                     ApiInspector (drafts query-param shaping)
+mergeListSearchAndWhere, } from 'payload/shared';
 export { EditUpload, //                           CollectionUploadHeader (image edit dialog)
 Form, //                                 RichTextInput (mounts pre-rendered Lexical field)
 OperationProvider, //                    RichTextInput (mirrors edit/create operation)

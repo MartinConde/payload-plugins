@@ -6,6 +6,6 @@ type FlavorContext = {
 };
 export declare function UiFlavorProvider({ children }: {
     children: React.ReactNode;
-}): import("react/jsx-runtime").JSX.Element;
+}): React.JSX.Element;
 export declare function useUiFlavor(): FlavorContext;
 export {};

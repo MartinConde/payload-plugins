@@ -1,3 +1,4 @@
+import * as React from 'react';
 export type DashboardItem = {
     count?: number;
     createHref?: string;
@@ -19,4 +20,4 @@ export type RecentDoc = {
 export declare function DashboardClient({ recent, sections, }: {
     recent: RecentDoc[];
     sections: DashboardSection[];
-}): import("react/jsx-runtime").JSX.Element;
+}): React.JSX.Element;

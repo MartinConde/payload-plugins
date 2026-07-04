@@ -18,7 +18,7 @@ export { docAccessOperation, getFolderData } from 'payload';
 // ---------------------------------------------------------------------------
 // from 'payload/shared' (runtime) — client-safe helpers
 // ---------------------------------------------------------------------------
-export { formatAdminURL, getSafeRedirect, hasDraftsEnabled } from 'payload/shared';
+export { formatAdminURL, getSafeRedirect, hasDraftsEnabled, mergeListSearchAndWhere } from 'payload/shared';
 // ---------------------------------------------------------------------------
 // from '@payloadcms/ui' (runtime) — client hooks + components used by the
 // bridge, list-view client, auth forms, schedule popover, etc.

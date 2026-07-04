@@ -4,5 +4,5 @@ type DataTableColumnHeaderProps<TData, TValue> = React.HTMLAttributes<HTMLDivEle
     column: Column<TData, TValue>;
     title: string;
 };
-export declare function DataTableColumnHeader<TData, TValue>({ column, title, className, }: DataTableColumnHeaderProps<TData, TValue>): import("react/jsx-runtime").JSX.Element;
+export declare function DataTableColumnHeader<TData, TValue>({ column, title, className, }: DataTableColumnHeaderProps<TData, TValue>): React.JSX.Element;
 export {};

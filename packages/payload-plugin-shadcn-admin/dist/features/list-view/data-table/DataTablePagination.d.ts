@@ -4,5 +4,5 @@ type DataTablePaginationProps<TData> = {
     pageSizeOptions?: number[];
     showSelectedCount?: boolean;
 };
-export declare function DataTablePagination<TData>({ table, pageSizeOptions, showSelectedCount, }: DataTablePaginationProps<TData>): import("react/jsx-runtime").JSX.Element;
+export declare function DataTablePagination<TData>({ table, pageSizeOptions, showSelectedCount, }: DataTablePaginationProps<TData>): import("react").JSX.Element;
 export {};
