@@ -24,13 +24,13 @@ import { BlockPickerSheet } from '../inputs/BlockPickerSheet.js';
 import { LivePreviewPanel } from './LivePreviewPanel.js';
 import { BlockSettingsPanel } from './BlockSettingsPanel.js';
 import { LayersPanel } from './LayersPanel.js';
-export function PageBuilderLayout({ livePreviewEnabled, pageBuilderAvailable, layoutField, livePreviewOpen, setLivePreviewOpen, builderModeOpen, isMobile, values, setValueAtPath, activeLocale, localizationEnabled, collection, fallbackLocale, docPermissions, submitting, renderChild, mainFieldsContent, hasSidebar, sidebarTop, selectedBlockId, setSelectedBlockId }) {
+export function PageBuilderLayout({ livePreviewEnabled, pageBuilderAvailable, layoutField, blocksFieldName, livePreviewOpen, setLivePreviewOpen, builderModeOpen, isMobile, values, setValueAtPath, activeLocale, localizationEnabled, collection, fallbackLocale, docPermissions, submitting, renderChild, mainFieldsContent, hasSidebar, sidebarTop, selectedBlockId, setSelectedBlockId }) {
     const { t } = useTranslation();
     // Locale-aware base path for the blocks field's rows — mirrors how
     // `makeFieldTreeRenderer`'s `renderField` computes `childBasePath` for a
     // localized array/blocks field. Kept in sync with that logic so this stays
     // correct if the field is ever localized.
-    const layoutBasePath = layoutField?.localized && localizationEnabled && activeLocale ? `${layoutField.name}.${activeLocale}` : layoutField?.name ?? 'layout';
+    const layoutBasePath = layoutField?.localized && localizationEnabled && activeLocale ? `${layoutField.name}.${activeLocale}` : layoutField?.name ?? blocksFieldName;
     // Normalized mirror of `values` at `layoutBasePath` — same shape/defaulting
     // `BlocksInput` uses internally, kept independent here since the settings
     // panel and the block-action handlers below both need to read/index it

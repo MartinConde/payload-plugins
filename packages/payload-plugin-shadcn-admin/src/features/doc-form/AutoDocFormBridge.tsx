@@ -1562,6 +1562,7 @@ export function AutoDocFormBridge({
         livePreviewEnabled={livePreviewEnabled}
         pageBuilderAvailable={pageBuilderAvailable}
         layoutField={layoutField}
+        blocksFieldName={blocksFieldName}
         livePreviewOpen={livePreviewOpen}
         setLivePreviewOpen={setLivePreviewOpen}
         builderModeOpen={builderModeOpen}

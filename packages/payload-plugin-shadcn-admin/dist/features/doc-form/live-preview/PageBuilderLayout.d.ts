@@ -8,6 +8,11 @@ export type PageBuilderLayoutProps = {
     layoutField: (ExtractedField & {
         type: 'blocks';
     }) | undefined;
+    /** Name of the blocks field the page-builder layer treats as the editable
+     *  layout — mirrors `layoutField?.name` when a field was found, but is
+     *  the only signal left when it wasn't (matches the bridge's own
+     *  `layoutField?.name ?? blocksFieldName` fallback). */
+    blocksFieldName: string;
     livePreviewOpen: boolean;
     setLivePreviewOpen: React.Dispatch<React.SetStateAction<boolean>>;
     builderModeOpen: boolean;
@@ -27,4 +32,4 @@ export type PageBuilderLayoutProps = {
     selectedBlockId: string | null;
     setSelectedBlockId: React.Dispatch<React.SetStateAction<string | null>>;
 };
-export declare function PageBuilderLayout({ livePreviewEnabled, pageBuilderAvailable, layoutField, livePreviewOpen, setLivePreviewOpen, builderModeOpen, isMobile, values, setValueAtPath, activeLocale, localizationEnabled, collection, fallbackLocale, docPermissions, submitting, renderChild, mainFieldsContent, hasSidebar, sidebarTop, selectedBlockId, setSelectedBlockId, }: PageBuilderLayoutProps): React.ReactElement;
+export declare function PageBuilderLayout({ livePreviewEnabled, pageBuilderAvailable, layoutField, blocksFieldName, livePreviewOpen, setLivePreviewOpen, builderModeOpen, isMobile, values, setValueAtPath, activeLocale, localizationEnabled, collection, fallbackLocale, docPermissions, submitting, renderChild, mainFieldsContent, hasSidebar, sidebarTop, selectedBlockId, setSelectedBlockId, }: PageBuilderLayoutProps): React.ReactElement;

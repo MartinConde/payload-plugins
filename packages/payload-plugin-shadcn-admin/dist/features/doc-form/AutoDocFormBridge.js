@@ -1230,6 +1230,7 @@ export function AutoDocFormBridge({ mode, collectionSlug, globalSlug, docId, col
                                 livePreviewEnabled: livePreviewEnabled,
                                 pageBuilderAvailable: pageBuilderAvailable,
                                 layoutField: layoutField,
+                                blocksFieldName: blocksFieldName,
                                 livePreviewOpen: livePreviewOpen,
                                 setLivePreviewOpen: setLivePreviewOpen,
                                 builderModeOpen: builderModeOpen,

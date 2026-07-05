@@ -42,6 +42,11 @@ export type PageBuilderLayoutProps = {
   livePreviewEnabled: boolean
   pageBuilderAvailable: boolean
   layoutField: (ExtractedField & { type: 'blocks' }) | undefined
+  /** Name of the blocks field the page-builder layer treats as the editable
+   *  layout — mirrors `layoutField?.name` when a field was found, but is
+   *  the only signal left when it wasn't (matches the bridge's own
+   *  `layoutField?.name ?? blocksFieldName` fallback). */
+  blocksFieldName: string
   livePreviewOpen: boolean
   setLivePreviewOpen: React.Dispatch<React.SetStateAction<boolean>>
   builderModeOpen: boolean
@@ -66,6 +71,7 @@ export function PageBuilderLayout({
   livePreviewEnabled,
   pageBuilderAvailable,
   layoutField,
+  blocksFieldName,
   livePreviewOpen,
   setLivePreviewOpen,
   builderModeOpen,
@@ -97,7 +103,7 @@ export function PageBuilderLayout({
   const layoutBasePath =
     layoutField?.localized && localizationEnabled && activeLocale
       ? `${layoutField.name}.${activeLocale}`
-      : (layoutField?.name ?? 'layout')
+      : (layoutField?.name ?? blocksFieldName)
 
   // Normalized mirror of `values` at `layoutBasePath` — same shape/defaulting
   // `BlocksInput` uses internally, kept independent here since the settings
