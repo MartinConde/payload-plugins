@@ -73,6 +73,10 @@ import { makeFieldTreeRenderer } from './fieldTree/FieldTreeRenderer.js'
 import { PageBuilderLayout } from './live-preview/PageBuilderLayout.js'
 import { useDirtyTracking } from './hooks/useDirtyTracking.js'
 import {
+  useAutosaveMachine,
+  useAutosaveScheduler,
+} from './hooks/useAutosaveMachine.js'
+import {
   PLUGIN_NAMESPACE,
   SYSTEM_FIELD_NAMES,
   labelOf,
@@ -604,22 +608,14 @@ export function AutoDocFormBridge({
   )
 
   // ── v3.6 autosave concurrency state ────────────────────────────────────
-  const autosaveTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(
-    null,
-  )
-  const autosaveAbortRef = React.useRef<AbortController | null>(null)
-  const manualSaveInFlightRef = React.useRef<boolean>(false)
-  // Path→value snapshot captured at autosave submit time. Used by the
-  // success cleanup to decide whether a dirty path is still dirty relative
-  // to what the autosave PATCH actually shipped. References returned by
-  // getByPath are stable across setByPath mutations on disjoint paths, so
-  // deep-equality is the correct compare here.
-  const autosaveSnapshotRef = React.useRef<Map<string, unknown> | null>(null)
-  // v3.8 — locale active at autosave snapshot time. Used by cleanup to scope
-  // the dirtyLocales prune to the locale we actually shipped (a locale
-  // switch mid-flight must not blow away the user's edits in the new locale).
-  const autosaveSnapshotLocaleRef = React.useRef<string | null>(null)
-  const autosaveInFlightRef = React.useRef<boolean>(false)
+  const {
+    autosaveTimerRef,
+    autosaveAbortRef,
+    manualSaveInFlightRef,
+    autosaveInFlightRef,
+    autosaveSnapshotRef,
+    autosaveSnapshotLocaleRef,
+  } = useAutosaveMachine()
 
   const submit = React.useCallback(
     async (submitMode: SubmitMode) => {
@@ -1116,32 +1112,17 @@ export function AutoDocFormBridge({
     ],
   )
 
-  // ── Autosave scheduler ────────────────────────────────────────────────
-  // Debounce against value/dirty changes. When drafts + autosave are on,
-  // schedule a single autosave per quiet window. Skip when paused, when a
-  // manual save is in flight, when there's nothing dirty, and when we're
-  // on a create view (no id to PATCH).
-  React.useEffect(() => {
-    if (!draftsEnabled || autosaveInterval === null) return
-    // Globals autosave (singleton, no id); collections require edit-mode + id.
-    if (!isGlobal && (mode !== 'edit' || docId === undefined)) return
-    if (autosavePaused) return
-    if (manualSaveInFlightRef.current) return
-    if (dirty.size === 0) return
+  // Wraps `submit('autosave')` — memoized on `submit` itself so its identity
+  // only changes when submit's own deps change, mirroring the scheduler
+  // effect depending on `submit` directly before this extraction.
+  const triggerAutosave = React.useCallback(() => {
+    void submit('autosave')
+  }, [submit])
 
-    if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current)
-    autosaveTimerRef.current = setTimeout(() => {
-      autosaveTimerRef.current = null
-      void submit('autosave')
-    }, autosaveInterval)
-
-    return () => {
-      if (autosaveTimerRef.current) {
-        clearTimeout(autosaveTimerRef.current)
-        autosaveTimerRef.current = null
-      }
-    }
-  }, [
+  useAutosaveScheduler({
+    autosaveTimerRef,
+    autosaveAbortRef,
+    manualSaveInFlightRef,
     draftsEnabled,
     autosaveInterval,
     isGlobal,
@@ -1150,17 +1131,8 @@ export function AutoDocFormBridge({
     autosavePaused,
     dirty,
     values,
-    submit,
-  ])
-
-  // Cancel in-flight autosave + clear scheduler on unmount.
-  React.useEffect(
-    () => () => {
-      if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current)
-      if (autosaveAbortRef.current) autosaveAbortRef.current.abort()
-    },
-    [],
-  )
+    onAutosave: triggerAutosave,
+  })
 
   // Field-tree recursion (renderField + renderChild) is shared with the
   // list-view bulk-edit drawer via makeFieldTreeRenderer — see
