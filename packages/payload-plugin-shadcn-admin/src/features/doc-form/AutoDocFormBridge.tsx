@@ -71,6 +71,7 @@ import {
 } from './richtext/extractRichTextRenderedFields.js'
 import { makeFieldTreeRenderer } from './fieldTree/FieldTreeRenderer.js'
 import { PageBuilderLayout } from './live-preview/PageBuilderLayout.js'
+import { useDirtyTracking } from './hooks/useDirtyTracking.js'
 import {
   PLUGIN_NAMESPACE,
   SYSTEM_FIELD_NAMES,
@@ -225,7 +226,14 @@ export function AutoDocFormBridge({
   )
 
   const [values, setValues] = React.useState<Record<string, unknown>>(baseline)
-  const [dirty, setDirty] = React.useState<Set<string>>(() => new Set())
+  const {
+    dirty,
+    dirtyRef,
+    markDirty,
+    resetDirty,
+    pruneDirtyConditional,
+    pruneDirtyForLocale,
+  } = useDirtyTracking()
   const [errors, setErrors] = React.useState<Record<string, string>>({})
   const [topError, setTopError] = React.useState<string | null>(null)
   const [submitting, setSubmitting] = React.useState(false)
@@ -296,10 +304,6 @@ export function AutoDocFormBridge({
   React.useEffect(() => {
     valuesRef.current = values
   }, [values])
-  const dirtyRef = React.useRef(dirty)
-  React.useEffect(() => {
-    dirtyRef.current = dirty
-  }, [dirty])
 
   // ── v3.8 — localization state ─────────────────────────────────────────────
   // Multi-locale projects render a LocaleSwitcher in the header and partition
@@ -404,17 +408,11 @@ export function AutoDocFormBridge({
     if (!builderModeOpen) setSelectedBlockId(null)
   }, [builderModeOpen])
 
-  // Per-locale dirty marker for localized paths. `dirty` (Set<string>) stays
-  // as the union — drives "any dirty?" UX. `dirtyLocalesRef` tells us WHICH
-  // locales of a given path are dirty. Non-localized paths have no entry.
-  const dirtyLocalesRef = React.useRef<Map<string, Set<string>>>(new Map())
-
   // Re-baseline when initial values change (e.g. server navigation back to
   // this view with a fresh doc payload).
   React.useEffect(() => {
     setValues(baseline)
-    setDirty(new Set())
-    dirtyLocalesRef.current = new Map()
+    resetDirty()
     setErrors({})
     setTopError(null)
     setStatus('idle')
@@ -569,16 +567,7 @@ export function AutoDocFormBridge({
         }
         return setByPath(prevValues, path, next)
       })
-      setDirty((prevDirty) => {
-        const copy = new Set(prevDirty)
-        copy.add(path)
-        return copy
-      })
-      if (writeLocale) {
-        const set = dirtyLocalesRef.current.get(path) ?? new Set<string>()
-        set.add(writeLocale)
-        dirtyLocalesRef.current.set(path, set)
-      }
+      markDirty(path, writeLocale)
       setErrors((prevErrors) => {
         if (!(path in prevErrors)) return prevErrors
         const copy = { ...prevErrors }
@@ -586,13 +575,12 @@ export function AutoDocFormBridge({
         return copy
       })
     },
-    [isPathLocalized, requestRichTextRebuild],
+    [isPathLocalized, requestRichTextRebuild, markDirty],
   )
 
   const discard = () => {
     setValues(baseline)
-    setDirty(new Set())
-    dirtyLocalesRef.current = new Map()
+    resetDirty()
     setErrors({})
     setTopError(null)
     setStatus('idle')
@@ -1027,34 +1015,10 @@ export function AutoDocFormBridge({
                     snapLocale,
                   )
                 : valuesRef.current
-            setDirty((prev) => {
-              let changed = false
-              const next = new Set<string>()
-              for (const path of prev) {
-                if (!snap.has(path)) {
-                  next.add(path)
-                  continue
-                }
-                const current = getByPath(projectedNow, path)
-                if (deepEqual(current, snap.get(path))) {
-                  changed = true
-                  if (snapLocale) {
-                    const set = dirtyLocalesRef.current.get(path)
-                    if (set) {
-                      set.delete(snapLocale)
-                      if (set.size === 0) dirtyLocalesRef.current.delete(path)
-                      else {
-                        // Other locales still dirty — keep path in dirty Set.
-                        next.add(path)
-                      }
-                    }
-                  }
-                  continue
-                }
-                next.add(path)
-              }
-              return changed ? next : prev
-            })
+            pruneDirtyConditional(snapLocale, (path: string) =>
+              snap.has(path) &&
+              deepEqual(getByPath(projectedNow, path), snap.get(path)),
+            )
           }
           setStatus('saved')
           setLastSavedAt(Date.now())
@@ -1069,25 +1033,9 @@ export function AutoDocFormBridge({
         //   itself drops from `dirty` only if no other locale remains dirty.
         // - Multi-locale publish-all: full reset (every locale was shipped).
         if (localizationEnabled && submitLocale && !isPublishAllLocales) {
-          setDirty((prev) => {
-            const next = new Set<string>()
-            for (const path of prev) {
-              const set = dirtyLocalesRef.current.get(path)
-              if (set) {
-                set.delete(submitLocale)
-                if (set.size === 0) dirtyLocalesRef.current.delete(path)
-                else {
-                  next.add(path)
-                  continue
-                }
-              }
-              // Non-localized dirty path: cleared by this save.
-            }
-            return next
-          })
+          pruneDirtyForLocale(submitLocale)
         } else {
-          setDirty(new Set())
-          dirtyLocalesRef.current = new Map()
+          resetDirty()
         }
         setErrors({})
         setPendingFile(null)
