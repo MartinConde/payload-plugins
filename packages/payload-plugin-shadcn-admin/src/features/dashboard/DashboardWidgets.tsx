@@ -1,4 +1,8 @@
-'use client'
+/* Widget content for the two built-in dashboard widgets. No 'use client'
+   directive — these render as Server Components, produced by AutoDashboardView
+   and handed to the client-side DashboardGrid as pre-rendered nodes (see
+   DashboardGrid.tsx for why that split is safe: dnd-kit only needs to move
+   opaque nodes around, not re-render their contents). */
 
 import * as React from 'react'
 import Link from 'next/link'
@@ -55,49 +59,55 @@ const relativeTime = (iso: string | null): string => {
   return rtf.format(Math.round(diffMs / 1000), 'second')
 }
 
-export function DashboardClient({
+export function RecentlyUpdatedWidget({
   recent,
-  sections,
+  title,
 }: {
   recent: RecentDoc[]
+  title: string
+}): React.ReactElement {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-base">
+          <Clock className="size-4 text-muted-foreground" />
+          {title}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="p-0">
+        <ul className="divide-y">
+          {recent.map((doc) => (
+            <li key={doc.href}>
+              <Link
+                className="flex items-center justify-between gap-3 px-6 py-2.5 text-sm transition-colors hover:bg-accent"
+                href={doc.href}
+              >
+                <span className="flex min-w-0 items-center gap-2">
+                  <FileText className="size-4 shrink-0 text-muted-foreground" />
+                  <span className="truncate font-medium">{doc.title}</span>
+                  <span className="shrink-0 text-xs text-muted-foreground">
+                    {doc.collectionLabel}
+                  </span>
+                </span>
+                <span className="shrink-0 text-xs text-muted-foreground">
+                  {relativeTime(doc.updatedAt)}
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </CardContent>
+    </Card>
+  )
+}
+
+export function CollectionsWidget({
+  sections,
+}: {
   sections: DashboardSection[]
-}) {
+}): React.ReactElement {
   return (
     <div className="space-y-8">
-      {recent.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Clock className="size-4 text-muted-foreground" />
-              Recently updated
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <ul className="divide-y">
-              {recent.map((doc) => (
-                <li key={doc.href}>
-                  <Link
-                    className="flex items-center justify-between gap-3 px-6 py-2.5 text-sm transition-colors hover:bg-accent"
-                    href={doc.href}
-                  >
-                    <span className="flex min-w-0 items-center gap-2">
-                      <FileText className="size-4 shrink-0 text-muted-foreground" />
-                      <span className="truncate font-medium">{doc.title}</span>
-                      <span className="shrink-0 text-xs text-muted-foreground">
-                        {doc.collectionLabel}
-                      </span>
-                    </span>
-                    <span className="shrink-0 text-xs text-muted-foreground">
-                      {relativeTime(doc.updatedAt)}
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-      )}
-
       {sections.map((section) => (
         <section key={section.label} className="space-y-3">
           <h2 className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">

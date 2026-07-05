@@ -47,6 +47,7 @@ export { Input } from './ui/input.js';
 export { Label } from './ui/label.js';
 export { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from './ui/popover.js';
 export { RadioGroup, RadioGroupItem } from './ui/radio-group.js';
+export { ResizableHandle, ResizablePanel, ResizablePanelGroup } from './ui/resizable.js';
 export { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectScrollDownButton, SelectScrollUpButton, SelectSeparator, SelectTrigger, SelectValue } from './ui/select.js';
 export { Separator } from './ui/separator.js';
 export { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from './ui/sheet.js';

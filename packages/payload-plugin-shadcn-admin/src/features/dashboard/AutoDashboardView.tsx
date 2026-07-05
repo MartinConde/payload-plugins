@@ -1,9 +1,12 @@
-import type { AdminViewServerProps, Payload, PayloadRequest } from '../../internal/payloadAdapter.js'
+import type { AdminViewServerProps, Payload, PayloadRequest, TFunction } from '../../internal/payloadAdapter.js'
 
 import { ViewShell } from 'payload-plugin-shadcn-ui'
 import { stringifyLabel } from 'payload-plugin-shadcn-ui'
-import { DashboardClient } from './DashboardClient.js'
-import type { DashboardSection, RecentDoc } from './DashboardClient.js'
+import { DashboardGrid, type DashboardWidget } from './DashboardGrid.js'
+import { CollectionsWidget, RecentlyUpdatedWidget } from './DashboardWidgets.js'
+import type { DashboardSection, RecentDoc } from './DashboardWidgets.js'
+import { OpenPanelAnalyticsWidget } from './OpenPanelAnalyticsWidget.js'
+import type { ShadcnAdminTranslationsKeys } from '../../translations.js'
 
 /* Shape of an entry in the `navGroups` prop Payload's DashboardView hands us
    (built by `@payloadcms/ui` `groupNavItems`). Already filtered to entities the
@@ -96,9 +99,58 @@ export async function AutoDashboardView(props: DashboardViewProps) {
 
   const recent = await buildRecentDocs({ collectionConfigBySlug, countEntries, req })
 
+  // Built-in widgets, in their default order. DashboardGrid makes this stack
+  // drag-to-reorder and persists the chosen order per-user; a widget with no
+  // content to show is omitted entirely rather than rendered empty.
+  const t = i18n.t as TFunction<ShadcnAdminTranslationsKeys>
+
+  const widgets: DashboardWidget[] = []
+  if (recent.length > 0) {
+    const label = t('shadcnAdmin:recentlyUpdated')
+    widgets.push({
+      id: 'recently-updated',
+      label,
+      node: <RecentlyUpdatedWidget recent={recent} title={label} />,
+    })
+  }
+  if (sections.length > 0) {
+    widgets.push({
+      id: 'collections',
+      label: i18n.t('general:collections'),
+      node: <CollectionsWidget sections={sections} />,
+    })
+  }
+
+  // OpenPanel analytics widget — only shown when the server is configured
+  // with a read/root client for the project. Secrets stay server-side; the
+  // client's browser never sees them (see OpenPanelAnalyticsWidget.tsx).
+  const openPanelClientId = process.env.OPENPANEL_CLIENT_ID
+  const openPanelClientSecret = process.env.OPENPANEL_CLIENT_SECRET
+  const openPanelProjectId = process.env.OPENPANEL_PROJECT_ID
+  if (openPanelClientId && openPanelClientSecret && openPanelProjectId) {
+    const label = t('shadcnAdmin:openPanelAnalytics')
+    const node = await OpenPanelAnalyticsWidget({
+      apiUrl: process.env.OPENPANEL_API_URL || 'https://api.openpanel.dev',
+      clientId: openPanelClientId,
+      clientSecret: openPanelClientSecret,
+      description: t('shadcnAdmin:openPanelAnalyticsLast7Days'),
+      labels: {
+        avgSessionDuration: t('shadcnAdmin:openPanelAvgSessionDuration'),
+        bounceRate: t('shadcnAdmin:openPanelBounceRate'),
+        pageviews: t('shadcnAdmin:openPanelPageviews'),
+        visitors: t('shadcnAdmin:openPanelVisitors'),
+      },
+      projectId: openPanelProjectId,
+      title: label,
+    })
+    if (node) {
+      widgets.push({ id: 'openpanel-analytics', label, node })
+    }
+  }
+
   return (
     <ViewShell breadcrumbs={[{ label: dashboardLabel }]}>
-      <DashboardClient recent={recent} sections={sections} />
+      <DashboardGrid widgets={widgets} />
     </ViewShell>
   )
 }

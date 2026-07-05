@@ -142,6 +142,11 @@ export {
 } from './ui/popover.js'
 export { RadioGroup, RadioGroupItem } from './ui/radio-group.js'
 export {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from './ui/resizable.js'
+export {
   Select,
   SelectContent,
   SelectGroup,

@@ -34,19 +34,13 @@ import type {
   ShadcnAdminTranslationsObject,
 } from '../../../translations.js'
 import { Button } from 'payload-plugin-shadcn-ui'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from 'payload-plugin-shadcn-ui'
 import { Badge } from 'payload-plugin-shadcn-ui'
 import type {
   ExtractedBlock,
   ExtractedField,
 } from 'payload-plugin-shadcn-ui'
 import { SortableRow } from './ArrayInput.js'
+import { BlockPickerSheet } from './BlockPickerSheet.js'
 import type { Perms } from '../access-control/fieldPermissions.js'
 import {
   deriveRowPreview,
@@ -139,7 +133,7 @@ export function BlocksInput({
     return out
   }, [blocks])
 
-  const [pickerSlug, setPickerSlug] = React.useState<string>(blocks[0]?.slug ?? '')
+  const [pickerOpen, setPickerOpen] = React.useState(false)
 
   const { isCollapsed, toggle, collapseAll, expandAll, markExpanded } =
     useRowCollapse(rows.map((r) => r.id))
@@ -158,8 +152,8 @@ export function BlocksInput({
     onChange(arrayMove(rows, oldIndex, newIndex))
   }
 
-  const addBlock = () => {
-    const block = blockBySlug[pickerSlug]
+  const addBlock = (slug: string) => {
+    const block = blockBySlug[slug]
     if (!block) return
     const row = newRow(block)
     markExpanded(row.id)
@@ -244,33 +238,23 @@ export function BlocksInput({
         </>
       )}
       <div className="flex flex-row items-center gap-2">
-        <Select
-          value={pickerSlug}
-          onValueChange={(next) => setPickerSlug(next)}
-          disabled={disabled || blocks.length === 0}
-        >
-          <SelectTrigger className="w-44">
-            <SelectValue placeholder="Block type…" />
-          </SelectTrigger>
-          <SelectContent>
-            {blocks.map((b) => (
-              <SelectItem key={b.slug} value={b.slug}>
-                {blockLabelOf(b)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
         <Button
           type="button"
           variant="outline"
           size="sm"
-          onClick={addBlock}
-          disabled={disabled || !pickerSlug}
+          onClick={() => setPickerOpen(true)}
+          disabled={disabled || blocks.length === 0}
         >
           <PlusIcon className="size-3" />
           {t('shadcnAdmin:addBlock')}
         </Button>
       </div>
+      <BlockPickerSheet
+        open={pickerOpen}
+        onOpenChange={setPickerOpen}
+        blocks={blocks}
+        onSelect={addBlock}
+      />
     </div>
   )
 }

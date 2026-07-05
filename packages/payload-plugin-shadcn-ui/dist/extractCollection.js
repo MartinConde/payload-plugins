@@ -38,6 +38,37 @@
     }
     return null;
 };
+/* Normalizes a Payload block's thumbnail image, preferring the current
+   `admin.images.thumbnail` (string | {url, alt}) over the deprecated
+   top-level `imageURL`/`imageAltText` pair. */ const extractBlockThumbnail = (block)=>{
+    const thumb = block.admin?.images?.thumbnail;
+    if (typeof thumb === 'string') return {
+        url: thumb
+    };
+    if (thumb && typeof thumb === 'object' && typeof thumb.url === 'string') {
+        return {
+            url: thumb.url,
+            alt: thumb.alt
+        };
+    }
+    if (typeof block.imageURL === 'string') {
+        return {
+            url: block.imageURL,
+            alt: block.imageAltText
+        };
+    }
+    return undefined;
+};
+const extractBlockMeta = (block, i18n)=>({
+        slug: String(block.slug),
+        labels: block.labels ? {
+            singular: stringifyLabel(block.labels.singular, i18n),
+            plural: stringifyLabel(block.labels.plural, i18n)
+        } : undefined,
+        fields: Array.isArray(block.fields) ? block.fields.map((f)=>extractField(f, i18n)) : [],
+        thumbnail: extractBlockThumbnail(block),
+        group: stringifyLabel(block.admin?.group, i18n) ?? undefined
+    });
 const STRUCTURAL_WITH_CHILDREN = new Set([
     'row',
     'collapsible',
@@ -125,14 +156,7 @@ export const extractField = (raw, i18n)=>{
     // `richTextRendered` channel built from `serverProps.formState` and lifted
     // by `extractRichTextRenderedFields`. The bridge mounts each in a Form shim.
     if (raw.type === 'blocks' && Array.isArray(raw.blocks)) {
-        out.blocks = raw.blocks.map((block)=>({
-                slug: String(block.slug),
-                labels: block.labels ? {
-                    singular: stringifyLabel(block.labels.singular, i18n),
-                    plural: stringifyLabel(block.labels.plural, i18n)
-                } : undefined,
-                fields: Array.isArray(block.fields) ? block.fields.map((f)=>extractField(f, i18n)) : []
-            }));
+        out.blocks = raw.blocks.map((block)=>extractBlockMeta(block, i18n));
     }
     return out;
 };
@@ -224,7 +248,8 @@ const doExtractCollection = (raw, i18n)=>({
         slug: raw.slug,
         admin: raw.admin ? {
             useAsTitle: raw.admin.useAsTitle,
-            defaultColumns: raw.admin.defaultColumns
+            defaultColumns: raw.admin.defaultColumns,
+            livePreview: Boolean(raw.admin.livePreview)
         } : null,
         labels: raw.labels ? {
             singular: stringifyLabel(raw.labels.singular, i18n),

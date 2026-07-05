@@ -20,6 +20,12 @@ export type ExtractedBlock = {
   slug: string
   labels?: { singular?: string | null; plural?: string | null }
   fields: ExtractedField[]
+  /** Thumbnail for the block-picker sheet grid. Sourced from
+   *  `admin.images.thumbnail`, falling back to the deprecated top-level
+   *  `imageURL`/`imageAltText`. Preferred aspect ratio is 3:2. */
+  thumbnail?: { url: string; alt?: string }
+  /** Groups blocks into labeled sections in the block-picker sheet. */
+  group?: string
 }
 
 export type ExtractedField = {
@@ -126,6 +132,11 @@ export type ExtractedCollection = {
   admin: {
     useAsTitle?: string
     defaultColumns?: string[]
+    /** Mirrors `Boolean(collection.admin?.livePreview)`. Gates the doc form's
+     *  "Live Preview" toggle — payload-plugin-shadcn-admin has no wiring for
+     *  Payload's own Live Preview components, so this just tells it whether
+     *  the collection opted in at all. */
+    livePreview?: boolean
   } | null
   labels?: { singular?: string | null; plural?: string | null }
   fields: ExtractedField[]
@@ -196,6 +207,38 @@ export const stringifyLabel = (
   }
   return null
 }
+
+/* Normalizes a Payload block's thumbnail image, preferring the current
+   `admin.images.thumbnail` (string | {url, alt}) over the deprecated
+   top-level `imageURL`/`imageAltText` pair. */
+const extractBlockThumbnail = (
+  block: any,
+): { url: string; alt?: string } | undefined => {
+  const thumb = block.admin?.images?.thumbnail
+  if (typeof thumb === 'string') return { url: thumb }
+  if (thumb && typeof thumb === 'object' && typeof thumb.url === 'string') {
+    return { url: thumb.url, alt: thumb.alt }
+  }
+  if (typeof block.imageURL === 'string') {
+    return { url: block.imageURL, alt: block.imageAltText }
+  }
+  return undefined
+}
+
+const extractBlockMeta = (block: any, i18n?: ExtractI18n): ExtractedBlock => ({
+  slug: String(block.slug),
+  labels: block.labels
+    ? {
+        singular: stringifyLabel(block.labels.singular, i18n),
+        plural: stringifyLabel(block.labels.plural, i18n),
+      }
+    : undefined,
+  fields: Array.isArray(block.fields)
+    ? block.fields.map((f: any) => extractField(f, i18n))
+    : [],
+  thumbnail: extractBlockThumbnail(block),
+  group: stringifyLabel(block.admin?.group, i18n) ?? undefined,
+})
 
 const STRUCTURAL_WITH_CHILDREN = new Set(['row', 'collapsible', 'group', 'array'])
 
@@ -289,18 +332,9 @@ export const extractField = (raw: any, i18n?: ExtractI18n): ExtractedField => {
   // `richTextRendered` channel built from `serverProps.formState` and lifted
   // by `extractRichTextRenderedFields`. The bridge mounts each in a Form shim.
   if (raw.type === 'blocks' && Array.isArray(raw.blocks)) {
-    out.blocks = raw.blocks.map((block: any) => ({
-      slug: String(block.slug),
-      labels: block.labels
-        ? {
-            singular: stringifyLabel(block.labels.singular, i18n),
-            plural: stringifyLabel(block.labels.plural, i18n),
-          }
-        : undefined,
-      fields: Array.isArray(block.fields)
-        ? block.fields.map((f: any) => extractField(f, i18n))
-        : [],
-    }))
+    out.blocks = raw.blocks.map((block: any) =>
+      extractBlockMeta(block, i18n),
+    )
   }
   return out
 }
@@ -411,6 +445,7 @@ const doExtractCollection = (
     ? {
         useAsTitle: raw.admin.useAsTitle,
         defaultColumns: raw.admin.defaultColumns,
+        livePreview: Boolean(raw.admin.livePreview),
       }
     : null,
   labels: raw.labels

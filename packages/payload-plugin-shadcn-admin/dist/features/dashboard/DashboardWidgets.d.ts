@@ -17,7 +17,10 @@ export type RecentDoc = {
     title: string;
     updatedAt: string | null;
 };
-export declare function DashboardClient({ recent, sections, }: {
+export declare function RecentlyUpdatedWidget({ recent, title, }: {
     recent: RecentDoc[];
+    title: string;
+}): React.ReactElement;
+export declare function CollectionsWidget({ sections, }: {
     sections: DashboardSection[];
-}): React.JSX.Element;
+}): React.ReactElement;

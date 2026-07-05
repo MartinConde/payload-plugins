@@ -26,8 +26,21 @@ Living high-level overview of what the plugin handles and what it deliberately d
 - **API view** (v3.10): full shadcn replacement for Payload's native document API view, installed at the `edit.api` route slot so the header **API** tab lands on the plugin's own chrome. Two-column layout (controls left, JSON right); live re-fetch on `depth` / `draft` / `locale` / `authenticated` change with the same query params (`depth`, `draft`, `locale`, `trash`) and `credentials` toggle as Payload; copyable API URL + new-tab link; custom collapsible JSON tree (shadcn-tokenized). Gated the same as the default edit view, so collections that fall back to Payload's edit view keep Payload's API view (no mixed chrome).
 - **Schedule-publish** (v3.15): opt in with `versions.drafts.schedulePublish` on the collection/global (which is what registers Payload's `schedulePublish` jobs task). A **Schedule** popover next to the Publish button (edit-mode only — a scheduled job needs an existing doc) with shadcn date+time picker, **timezone picker** (from `admin.timezones`), publish/unpublish toggle, and a single-locale picker for any localized collection/global with multiple locales (maps to `publishSpecificLocale`). Lists **upcoming** scheduled events for the doc and **cancels** them. Queues/lists/cancels through Payload's `schedulePublish` server function (same `useServerFunctions()` seam the bridge uses for `getFormState`) — wall-clock→instant conversion via `@date-fns/tz`'s `TZDate`; upcoming list mirrors the native REST query (`POST /api/payload-jobs` with `X-Payload-HTTP-Method-Override: GET`). Works for collections (`doc`) and versioned globals (`global`). **Execution caveat**: the UI only *queues* jobs — the consuming app must run the jobs queue (`jobs.autoRun` / external cron) for scheduled events to actually fire. See [SETUP.md].
 - **Access control**: field-level `access.read` / `access.update` hiding with lock icon; structural containers hide when every child is read-denied (v3.7)
-- **Localization**: locale switcher, per-locale dirty tracking, hybrid `?locale=all` initial fetch with `draft: true`, publish-per-locale + publish-all-locales matching Payload's `PublishButton` wire shape, per-locale `_status` pills (v3.8 / v3.8.1)
+- **Localization**: locale switcher, per-locale dirty tracking, hybrid `?locale=all` initial fetch with `draft: true`, publish-per-locale + publish-all-locales matching Payload's `PublishButton` wire shape, per-locale `_status` pills (v3.8 / v3.8.1) — collapsed into a single segmented locale+status control when both are active (v3.25)
 - **Escape hatches**: per-field `.input` override; **group/tabs-level `.input` override** (v3.19 — a `group`/`tabs` field carrying `custom['plugin-shadcn-admin'].input` is routed through `FieldInput` instead of the structural renderer; the override receives the whole container value live plus `renderChild`, so it can render its own chrome and delegate the real subfield inputs back through the bridge — used by `payload-plugin-seo` for the SERP preview); static `defaultValue` seeding; discard + beforeunload guard
+- **Live Preview** (collections only): a **Live Preview** toggle next to Publish, gated on
+  `Boolean(collection.admin?.livePreview)` (surfaced from the raw config via
+  `extractCollection.ts` — nothing forwarded this before). Opens an iframe panel
+  (`LivePreviewPanel.tsx`) that reads doc state via the bridge's existing
+  `useDocFormValues()`/`useDocIdentity()` context (no prop drilling) and nudges the iframe
+  to refetch via `postMessage` on every form change. **Not** built on Payload's own
+  `LivePreviewProvider`/`Toggler`/`Window` (`@payloadcms/ui`) — those depend on Payload's
+  `<Form>` context, which this bridge doesn't use (it manages its own independent form
+  state). Consumers resolve the iframe URL themselves via a collection endpoint (e.g.
+  `Pages.ts`'s `/:id/preview-url` in `cf-payload-astro-starter`) rather than a plugin-side
+  one, since the plugin doesn't own the consumer's collections. Edit-mode only (matches
+  Payload's own `handleLivePreview`, which also skips `operation === 'create'`). See
+  `cf-payload-astro-starter/LIVE-PREVIEW.md` for the full design writeup.
 
 ### `defaultGlobalView` — auto doc form for globals (v3.14)
 
@@ -36,16 +49,22 @@ Living high-level overview of what the plugin handles and what it deliberately d
 - **Versions** use the global Local API (`findGlobalVersions`, `findGlobalVersionByID`, `restoreGlobalVersion` → `POST /api/globals/{slug}/versions/{id}`); the version slots install only when the global has `versions` enabled, so a **non-versioned global shows no Versions tab**.
 - Globals appear in the sidebar via `NavItem.globalSlug` (`/admin/globals/{slug}`).
 - **Deferred**: global Live Preview (same as collections).
-- **Upstream bug worked around via patch** (`experimental.localizeStatus` + globals + D1): Payload 3.84.1's `countGlobalVersionsOperation` omits `locale` (the collection `countVersionsOperation` passes it), so its own `getVersions` runs a global version-count whose localized `version._status` join binds an undefined locale — D1 rejects it once a published version exists. Fixed by `patches/payload@3.84.1.patch` (one line: `locale: req.locale` in that operation), so the test `Homepage` global runs with `localizeStatus: true` and exercises per-locale pills on a singleton. Not a plugin issue (the failing query is Payload's `Document` view); re-check the patch on Payload upgrade and report upstream.
+- **Upstream bug worked around via patch** (`experimental.localizeStatus` + globals + D1): Payload's `countGlobalVersionsOperation` omits `locale` (the collection `countVersionsOperation` passes it), so its own `getVersions` runs a global version-count whose localized `version._status` join binds an undefined locale — D1 rejects it once a published version exists. Fixed by `patches/payload@3.85.1.patch` (one line: `locale: req.locale` in that operation), so the test `Homepage` global runs with `localizeStatus: true` and exercises per-locale pills on a singleton. Not a plugin issue (the failing query is Payload's `Document` view); re-check the patch on Payload upgrade and report upstream.
 
 ### `defaultNav` — auto sidebar Nav
 
 - Branding (name, subtitle)
-- Sidebar groups + items: collection links (with auto count badges), custom items, nested item trees, separators
+- Sidebar groups + items: collection links, custom items, nested item trees (rendered as collapsible sub-menus)
+- Optional **Rebuild Frontend** button in the sidebar footer, wired via the root-level `rebuildFrontend` plugin option (see README.md) — requires `defaultNav`
+
+### `galleryField()` — ready-made image gallery field
+
+- Exported helper (`import { galleryField } from 'payload-plugin-shadcn-admin'`) that returns a Payload `ArrayField` (an `upload` sub-field + optional `localized` `caption`) pre-wired with a drag-and-drop gallery editor (`GalleryArrayInput`) via `custom['plugin-shadcn-admin'].input` — drop it into any collection's `fields` array to get a gallery UI with no hand-rolled override. Storage shape is a plain array (`[{id, image, caption}]`), so it's drop-in compatible with an existing hand-built array field using the same sub-field names.
 
 ### Chrome
 
 - `ViewShell` (breadcrumbs + content frame), optional custom dashboard, shadcn theme + Tailwind CSS surface
+- Light/dark toggle plus a **minimal/vibrant** color-flavor switcher (`ThemeSwitcher`, in the account menu of `defaultNav`'s sidebar footer) — flavor tokens ship in the optional `payload-plugin-shadcn-admin/themes.css` import, keyed off `[data-ui-theme='vibrant']` alongside Payload's own `[data-theme='dark']`
 
 ### `defaultAuthViews` — Account + auth views (v3.11)
 
@@ -63,7 +82,7 @@ Living high-level overview of what the plugin handles and what it deliberately d
   posts to `/first-register` rendering the collection's fields (so the first user can set `roles`);
   forgot posts to `/forgot-password` with email/username + success state; logout calls `useAuth().logOut()`.
 - **Deferred**: reset-password (`/reset/:token`) and verify (`/:collection/verify/:token`) are NOT
-  overridable in Payload 3.84.1 and fall through to Payload's default views.
+  overridable in Payload 3.85.1 and fall through to Payload's default views.
 
 ### `defaultFolderView` — shadcn folder browser (v3.13)
 
@@ -121,6 +140,12 @@ Living high-level overview of what the plugin handles and what it deliberately d
   shows the top ~8 with relative time. Payload has no single-query recent-across-collections, hence the cap.
 - **Chrome:** renders through `ViewShell` with a single "Dashboard" breadcrumb. No `.shadcn-auto-doc-view`
   marker (that hides the doc-header, a doc-view artifact absent here; `.app-header` is already hidden globally).
+- **Arrangeable widget grid:** "Recently updated" and "Collections" render as independent widgets in a
+  `dnd-kit` grid — drag to reorder, resize per-widget (Small / Medium / Full width), hide, and bring back via
+  an "Add widget" menu. Layout (order, size, hidden) persists per-user through the `payload-preferences`
+  collection, same REST find→create|patch pattern as the list view's column prefs. Widgets are currently
+  plugin-internal only (no consumer-facing registry) — see
+  [DASHBOARD-WIDGETS.md](./DASHBOARD-WIDGETS.md) for how to add one.
 - **v1 limitations:** counts are point-in-time (no live refresh); the recent strip is capped, not exhaustive;
   no per-card create-access gating (server still enforces).
 
@@ -134,7 +159,7 @@ Living high-level overview of what the plugin handles and what it deliberately d
 - **Container-denied subfield propagation** — when an `array` / `blocks` field's own `update` is denied, its subfields can still render editable (per-subfield gating recomputes from `docPermissions` independently of the container's denied state; the container's `disabled` does not propagate into the subfield recursion). Pre-existing v3.7 limitation surfaced while building v3.18. Niche — the server rejects the writes either way; revisit if a real case needs the subfields visibly locked.
 - **Live preview pane** integration (`@payloadcms/live-preview`).
 - **Mid-keystroke locale-switch race** in Lexical richText — final keystrokes during a switch may land in the previous locale's slot. Lexical's `onChange` is async-committed; not solved in v3.8. Wait until someone hits it in practice.
-- **Cloud-storage client-side direct upload** — wired (v3.23, capability-detected via `useUploadHandlers`) but **blocked on R2 in Payload 3.84.1**: `@payloadcms/storage-r2`'s `initClientUploads` omits `extraClientHandlerProps`, so the client handler crashes on `extra.chunkSize`. Disabled (`clientUploads` off → server multipart). Re-enable on an R2 fix or via a pnpm patch defaulting `extra = {}`.
+- **Cloud-storage client-side direct upload** — wired (v3.23, capability-detected via `useUploadHandlers`) but **blocked on R2 in `@payloadcms/storage-r2@3.85.1`**: its `initClientUploads` omits `extraClientHandlerProps`, so the client handler crashes on `extra.chunkSize`. Disabled (`clientUploads` off → server multipart). Re-enable on an R2 fix or via a pnpm patch defaulting `extra = {}`.
 
 ### Localization / multi-tenancy
 
@@ -169,8 +194,8 @@ Opt in with `defaultAuthViews: true` (see the feature subsection above). Full-pa
 - ✅ **Login** (`Login`) — v3.11
 - ✅ **Create First User** (`CreateFirstUser`) — v3.11
 - ✅ **Forgot Password** (`ForgotPassword`) — v3.11
-- ⬜ **Reset Password** (`ResetPassword`) — **deferred**: not cleanly overridable in Payload 3.84.1 (the `/reset/:token` view is hardcoded before any custom-view lookup; the only workaround desyncs the reset-link email). Falls through to Payload's default.
-- ⬜ **Verify** email (`Verify`) — **deferred**: not overridable in Payload 3.84.1 (`/:collection/verify/:token` matches a literal string with no component slot). Falls through to Payload's default.
+- ⬜ **Reset Password** (`ResetPassword`) — **deferred**: not cleanly overridable in Payload 3.85.1 (the `/reset/:token` view is hardcoded before any custom-view lookup; the only workaround desyncs the reset-link email). Falls through to Payload's default.
+- ⬜ **Verify** email (`Verify`) — **deferred**: not overridable in Payload 3.85.1 (`/:collection/verify/:token` matches a literal string with no component slot). Falls through to Payload's default.
 - ✅ **Logout** (`Logout`) + **Unauthorized** (`Unauthorized`) — v3.11
 
 ### Root & misc

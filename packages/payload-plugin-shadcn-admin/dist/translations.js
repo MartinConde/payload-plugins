@@ -66,6 +66,14 @@
             pickTimeInFuture: 'Pick a time in the future',
             // doc-form header + status bar
             discard: 'Discard',
+            livePreview: 'Live Preview',
+            hidePreview: 'Hide preview',
+            sidebarFields: 'Sidebar fields',
+            previewDeviceWidth: 'Preview width',
+            previewMobile: 'Mobile',
+            previewTablet: 'Tablet',
+            previewDesktop: 'Desktop',
+            openPreviewInNewTab: 'Open in new tab',
             creating: 'Creating',
             autosaving: 'Autosaving',
             saveFailed: 'Save failed',
@@ -155,7 +163,23 @@
             noGalleryItems: 'No images yet. Add from the library or upload new files.',
             // Rebuild frontend button
             rebuildFrontend: 'Rebuild Frontend',
-            rebuilding: 'Rebuilding…'
+            rebuilding: 'Rebuilding…',
+            // Dashboard widgets
+            recentlyUpdated: 'Recently updated',
+            addWidget: 'Add widget',
+            hiddenWidgets: 'Hidden widgets',
+            widgetWidth: 'Widget width',
+            widgetSizeSmall: 'Small',
+            widgetSizeMedium: 'Medium',
+            widgetSizeFull: 'Full width',
+            resizeWidget: 'Resize {{label}}',
+            hideWidget: 'Hide {{label}}',
+            openPanelAnalytics: 'Analytics',
+            openPanelAnalyticsLast7Days: 'Last 7 days',
+            openPanelVisitors: 'Visitors',
+            openPanelPageviews: 'Pageviews',
+            openPanelBounceRate: 'Bounce rate',
+            openPanelAvgSessionDuration: 'Avg. session'
         }
     },
     fr: {
@@ -205,6 +229,14 @@
             pickDateAndTime: 'Choisir une date et une heure',
             pickTimeInFuture: 'Choisissez une heure dans le futur',
             discard: 'Annuler les modifications',
+            livePreview: 'Aperçu en direct',
+            hidePreview: "Masquer l'aperçu",
+            sidebarFields: 'Champs latéraux',
+            previewDeviceWidth: "Largeur d'aperçu",
+            previewMobile: 'Mobile',
+            previewTablet: 'Tablette',
+            previewDesktop: 'Bureau',
+            openPreviewInNewTab: 'Ouvrir dans un nouvel onglet',
             creating: 'Création',
             autosaving: 'Enregistrement auto',
             saveFailed: 'Échec de l’enregistrement',
@@ -292,7 +324,23 @@
             noGalleryItems: 'Aucune image pour le moment. Ajoutez-en depuis la bibliothèque ou téléversez de nouveaux fichiers.',
             // Rebuild frontend button
             rebuildFrontend: 'Reconstruire le frontend',
-            rebuilding: 'Reconstruction…'
+            rebuilding: 'Reconstruction…',
+            // Dashboard widgets
+            recentlyUpdated: 'Mis à jour récemment',
+            addWidget: 'Ajouter un widget',
+            hiddenWidgets: 'Widgets masqués',
+            widgetWidth: 'Largeur du widget',
+            widgetSizeSmall: 'Petit',
+            widgetSizeMedium: 'Moyen',
+            widgetSizeFull: 'Pleine largeur',
+            resizeWidget: 'Redimensionner {{label}}',
+            hideWidget: 'Masquer {{label}}',
+            openPanelAnalytics: 'Analytique',
+            openPanelAnalyticsLast7Days: '7 derniers jours',
+            openPanelVisitors: 'Visiteurs',
+            openPanelPageviews: 'Pages vues',
+            openPanelBounceRate: 'Taux de rebond',
+            openPanelAvgSessionDuration: 'Session moy.'
         }
     },
     de: {
@@ -342,6 +390,14 @@
             pickDateAndTime: 'Datum und Uhrzeit wählen',
             pickTimeInFuture: 'Wählen Sie eine Uhrzeit in der Zukunft',
             discard: 'Änderungen verwerfen',
+            livePreview: 'Live-Vorschau',
+            hidePreview: 'Vorschau ausblenden',
+            sidebarFields: 'Seitenleistenfelder',
+            previewDeviceWidth: 'Vorschaubreite',
+            previewMobile: 'Mobil',
+            previewTablet: 'Tablet',
+            previewDesktop: 'Desktop',
+            openPreviewInNewTab: 'In neuem Tab öffnen',
             creating: 'Wird erstellt',
             autosaving: 'Automatisches Speichern',
             saveFailed: 'Speichern fehlgeschlagen',
@@ -429,7 +485,23 @@
             noGalleryItems: 'Noch keine Bilder. Fügen Sie welche aus der Bibliothek hinzu oder laden Sie neue Dateien hoch.',
             // Rebuild frontend button
             rebuildFrontend: 'Frontend neu erstellen',
-            rebuilding: 'Wird erstellt…'
+            rebuilding: 'Wird erstellt…',
+            // Dashboard widgets
+            recentlyUpdated: 'Zuletzt aktualisiert',
+            addWidget: 'Widget hinzufügen',
+            hiddenWidgets: 'Ausgeblendete Widgets',
+            widgetWidth: 'Widget-Breite',
+            widgetSizeSmall: 'Klein',
+            widgetSizeMedium: 'Mittel',
+            widgetSizeFull: 'Volle Breite',
+            resizeWidget: 'Größe von {{label}} ändern',
+            hideWidget: '{{label}} ausblenden',
+            openPanelAnalytics: 'Analytics',
+            openPanelAnalyticsLast7Days: 'Letzte 7 Tage',
+            openPanelVisitors: 'Besucher',
+            openPanelPageviews: 'Seitenaufrufe',
+            openPanelBounceRate: 'Absprungrate',
+            openPanelAvgSessionDuration: 'Ø Sitzung'
         }
     },
     es: {
@@ -479,6 +551,14 @@
             pickDateAndTime: 'Elegir fecha y hora',
             pickTimeInFuture: 'Elija una hora en el futuro',
             discard: 'Descartar cambios',
+            livePreview: 'Vista previa en vivo',
+            hidePreview: 'Ocultar vista previa',
+            sidebarFields: 'Campos laterales',
+            previewDeviceWidth: 'Ancho de vista previa',
+            previewMobile: 'Móvil',
+            previewTablet: 'Tableta',
+            previewDesktop: 'Escritorio',
+            openPreviewInNewTab: 'Abrir en una pestaña nueva',
             creating: 'Creando',
             autosaving: 'Guardado automático',
             saveFailed: 'Error al guardar',
@@ -566,7 +646,23 @@
             noGalleryItems: 'Aún no hay imágenes. Añade desde la biblioteca o sube nuevos archivos.',
             // Rebuild frontend button
             rebuildFrontend: 'Reconstruir el frontend',
-            rebuilding: 'Reconstruyendo…'
+            rebuilding: 'Reconstruyendo…',
+            // Dashboard widgets
+            recentlyUpdated: 'Actualizado recientemente',
+            addWidget: 'Añadir widget',
+            hiddenWidgets: 'Widgets ocultos',
+            widgetWidth: 'Ancho del widget',
+            widgetSizeSmall: 'Pequeño',
+            widgetSizeMedium: 'Mediano',
+            widgetSizeFull: 'Ancho completo',
+            resizeWidget: 'Cambiar el tamaño de {{label}}',
+            hideWidget: 'Ocultar {{label}}',
+            openPanelAnalytics: 'Analíticas',
+            openPanelAnalyticsLast7Days: 'Últimos 7 días',
+            openPanelVisitors: 'Visitantes',
+            openPanelPageviews: 'Páginas vistas',
+            openPanelBounceRate: 'Tasa de rebote',
+            openPanelAvgSessionDuration: 'Sesión media'
         }
     }
 };

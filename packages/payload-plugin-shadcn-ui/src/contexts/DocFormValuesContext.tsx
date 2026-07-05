@@ -53,6 +53,12 @@ type DocFormValuesContextValue = {
    *  placement/transform from a single top-level ui field). Falls back to a
    *  no-op outside the bridge so consumers don't have to null-check. */
   setValueAtPath: (path: string, next: unknown) => void
+  /** `Date.now()` of the bridge's last successful save (autosave or manual),
+   *  null before the first save. Unlike `values`, this only changes once the
+   *  doc is actually persisted server-side — consumers that need to react to
+   *  "the server now has this edit" (e.g. Live Preview's refetch nudge)
+   *  should key off this instead of `values`. */
+  lastSavedAt: number | null
 }
 
 const NOOP_SET = (_path: string, _next: unknown): void => {}
@@ -61,6 +67,7 @@ const DocFormValuesContext = React.createContext<DocFormValuesContextValue>({
   values: {},
   activeLocale: null,
   setValueAtPath: NOOP_SET,
+  lastSavedAt: null,
 })
 
 export const DocFormValuesProvider = DocFormValuesContext.Provider

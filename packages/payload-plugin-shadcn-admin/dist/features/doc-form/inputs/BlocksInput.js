@@ -13,9 +13,9 @@ import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 import { SortableContext, arrayMove, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useTranslation } from '../../../internal/payloadAdapter.js';
 import { Button } from 'payload-plugin-shadcn-ui';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from 'payload-plugin-shadcn-ui';
 import { Badge } from 'payload-plugin-shadcn-ui';
 import { SortableRow } from './ArrayInput.js';
+import { BlockPickerSheet } from './BlockPickerSheet.js';
 import { deriveRowPreview, RowCollapseControls, useRowCollapse } from './rowCollapse.js';
 const newRow = (block)=>{
     const row = {
@@ -56,7 +56,7 @@ export function BlocksInput({ id, field, value, onChange, nestedPath, renderChil
     }, [
         blocks
     ]);
-    const [pickerSlug, setPickerSlug] = React.useState(blocks[0]?.slug ?? '');
+    const [pickerOpen, setPickerOpen] = React.useState(false);
     const { isCollapsed, toggle, collapseAll, expandAll, markExpanded } = useRowCollapse(rows.map((r)=>r.id));
     const sensors = useSensors(useSensor(PointerSensor, {
         activationConstraint: {
@@ -73,8 +73,8 @@ export function BlocksInput({ id, field, value, onChange, nestedPath, renderChil
         if (oldIndex < 0 || newIndex < 0) return;
         onChange(arrayMove(rows, oldIndex, newIndex));
     };
-    const addBlock = ()=>{
-        const block = blockBySlug[pickerSlug];
+    const addBlock = (slug)=>{
+        const block = blockBySlug[slug];
         if (!block) return;
         const row = newRow(block);
         markExpanded(row.id);
@@ -141,42 +141,27 @@ export function BlocksInput({ id, field, value, onChange, nestedPath, renderChil
                     })
                 ]
             }),
-            /*#__PURE__*/ _jsxs("div", {
+            /*#__PURE__*/ _jsx("div", {
                 className: "flex flex-row items-center gap-2",
-                children: [
-                    /*#__PURE__*/ _jsxs(Select, {
-                        value: pickerSlug,
-                        onValueChange: (next)=>setPickerSlug(next),
-                        disabled: disabled || blocks.length === 0,
-                        children: [
-                            /*#__PURE__*/ _jsx(SelectTrigger, {
-                                className: "w-44",
-                                children: /*#__PURE__*/ _jsx(SelectValue, {
-                                    placeholder: "Block type…"
-                                })
-                            }),
-                            /*#__PURE__*/ _jsx(SelectContent, {
-                                children: blocks.map((b)=>/*#__PURE__*/ _jsx(SelectItem, {
-                                        value: b.slug,
-                                        children: blockLabelOf(b)
-                                    }, b.slug))
-                            })
-                        ]
-                    }),
-                    /*#__PURE__*/ _jsxs(Button, {
-                        type: "button",
-                        variant: "outline",
-                        size: "sm",
-                        onClick: addBlock,
-                        disabled: disabled || !pickerSlug,
-                        children: [
-                            /*#__PURE__*/ _jsx(PlusIcon, {
-                                className: "size-3"
-                            }),
-                            t('shadcnAdmin:addBlock')
-                        ]
-                    })
-                ]
+                children: /*#__PURE__*/ _jsxs(Button, {
+                    type: "button",
+                    variant: "outline",
+                    size: "sm",
+                    onClick: ()=>setPickerOpen(true),
+                    disabled: disabled || blocks.length === 0,
+                    children: [
+                        /*#__PURE__*/ _jsx(PlusIcon, {
+                            className: "size-3"
+                        }),
+                        t('shadcnAdmin:addBlock')
+                    ]
+                })
+            }),
+            /*#__PURE__*/ _jsx(BlockPickerSheet, {
+                open: pickerOpen,
+                onOpenChange: setPickerOpen,
+                blocks: blocks,
+                onSelect: addBlock
             })
         ]
     });

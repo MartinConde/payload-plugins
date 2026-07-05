@@ -1,7 +1,9 @@
 import { jsx as _jsx } from "react/jsx-runtime";
 import { ViewShell } from 'payload-plugin-shadcn-ui';
 import { stringifyLabel } from 'payload-plugin-shadcn-ui';
-import { DashboardClient } from './DashboardClient.js';
+import { DashboardGrid } from './DashboardGrid.js';
+import { CollectionsWidget, RecentlyUpdatedWidget } from './DashboardWidgets.js';
+import { OpenPanelAnalyticsWidget } from './OpenPanelAnalyticsWidget.js';
 const titleCase = (slug)=>slug.replace(/[-_]/g, ' ').replace(/\b\w/g, (c)=>c.toUpperCase());
 /* RSC installed at `admin.components.views.dashboard` by the `defaultDashboard`
    plugin option. The root `/admin` route is hardcoded to Payload's DashboardView,
@@ -63,15 +65,69 @@ const titleCase = (slug)=>slug.replace(/[-_]/g, ' ').replace(/\b\w/g, (c)=>c.toU
         countEntries,
         req
     });
+    // Built-in widgets, in their default order. DashboardGrid makes this stack
+    // drag-to-reorder and persists the chosen order per-user; a widget with no
+    // content to show is omitted entirely rather than rendered empty.
+    const t = i18n.t;
+    const widgets = [];
+    if (recent.length > 0) {
+        const label = t('shadcnAdmin:recentlyUpdated');
+        widgets.push({
+            id: 'recently-updated',
+            label,
+            node: /*#__PURE__*/ _jsx(RecentlyUpdatedWidget, {
+                recent: recent,
+                title: label
+            })
+        });
+    }
+    if (sections.length > 0) {
+        widgets.push({
+            id: 'collections',
+            label: i18n.t('general:collections'),
+            node: /*#__PURE__*/ _jsx(CollectionsWidget, {
+                sections: sections
+            })
+        });
+    }
+    // OpenPanel analytics widget — only shown when the server is configured
+    // with a read/root client for the project. Secrets stay server-side; the
+    // client's browser never sees them (see OpenPanelAnalyticsWidget.tsx).
+    const openPanelClientId = process.env.OPENPANEL_CLIENT_ID;
+    const openPanelClientSecret = process.env.OPENPANEL_CLIENT_SECRET;
+    const openPanelProjectId = process.env.OPENPANEL_PROJECT_ID;
+    if (openPanelClientId && openPanelClientSecret && openPanelProjectId) {
+        const label = t('shadcnAdmin:openPanelAnalytics');
+        const node = await OpenPanelAnalyticsWidget({
+            apiUrl: process.env.OPENPANEL_API_URL || 'https://api.openpanel.dev',
+            clientId: openPanelClientId,
+            clientSecret: openPanelClientSecret,
+            description: t('shadcnAdmin:openPanelAnalyticsLast7Days'),
+            labels: {
+                avgSessionDuration: t('shadcnAdmin:openPanelAvgSessionDuration'),
+                bounceRate: t('shadcnAdmin:openPanelBounceRate'),
+                pageviews: t('shadcnAdmin:openPanelPageviews'),
+                visitors: t('shadcnAdmin:openPanelVisitors')
+            },
+            projectId: openPanelProjectId,
+            title: label
+        });
+        if (node) {
+            widgets.push({
+                id: 'openpanel-analytics',
+                label,
+                node
+            });
+        }
+    }
     return /*#__PURE__*/ _jsx(ViewShell, {
         breadcrumbs: [
             {
                 label: dashboardLabel
             }
         ],
-        children: /*#__PURE__*/ _jsx(DashboardClient, {
-            recent: recent,
-            sections: sections
+        children: /*#__PURE__*/ _jsx(DashboardGrid, {
+            widgets: widgets
         })
     });
 }

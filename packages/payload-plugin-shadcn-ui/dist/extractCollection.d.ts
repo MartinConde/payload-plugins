@@ -16,6 +16,15 @@ export type ExtractedBlock = {
         plural?: string | null;
     };
     fields: ExtractedField[];
+    /** Thumbnail for the block-picker sheet grid. Sourced from
+     *  `admin.images.thumbnail`, falling back to the deprecated top-level
+     *  `imageURL`/`imageAltText`. Preferred aspect ratio is 3:2. */
+    thumbnail?: {
+        url: string;
+        alt?: string;
+    };
+    /** Groups blocks into labeled sections in the block-picker sheet. */
+    group?: string;
 };
 export type ExtractedField = {
     type: string;
@@ -118,6 +127,11 @@ export type ExtractedCollection = {
     admin: {
         useAsTitle?: string;
         defaultColumns?: string[];
+        /** Mirrors `Boolean(collection.admin?.livePreview)`. Gates the doc form's
+         *  "Live Preview" toggle — payload-plugin-shadcn-admin has no wiring for
+         *  Payload's own Live Preview components, so this just tells it whether
+         *  the collection opted in at all. */
+        livePreview?: boolean;
     } | null;
     labels?: {
         singular?: string | null;

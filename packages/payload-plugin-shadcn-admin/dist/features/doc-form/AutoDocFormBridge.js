@@ -19,16 +19,17 @@ import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-run
      correct dirty cleanup), Version history dialog. */ import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import { toast, useDocumentDrawerContext, useDocumentInfo, useServerFunctions, useTranslation, useUploadHandlers } from '../../internal/payloadAdapter.js';
-import { Button } from 'payload-plugin-shadcn-ui';
+import { Button, cn } from 'payload-plugin-shadcn-ui';
 import { CollectionUploadHeader } from './upload/CollectionUploadHeader.js';
 import { buildUploadFormData, parsePayloadErrorResponse } from './upload/uploadWireFormat.js';
 import { DocStatusBar } from './drafts/DocStatusBar.js';
-import { DocFormValuesProvider, DocIdentityProvider, LocaleProvider } from 'payload-plugin-shadcn-ui';
+import { DocFormValuesProvider, DocIdentityProvider, LocaleProvider, ResizableHandle, ResizablePanel, ResizablePanelGroup, useIsMobile } from 'payload-plugin-shadcn-ui';
 import { isJsonParseError, JSON_PARSE_ERROR_KEY } from './inputs/JsonInput.js';
 import { isFieldSupportedForDocForm } from './eligibility/isSupportedForDocForm.js';
 import { hasDraftsEnabled, getAutosaveInterval, shouldShowSaveDraftButton } from './drafts/draftsConfig.js';
 import { SchedulePublishPopover } from './schedule/SchedulePublishPopover.js';
 import { getSchedulePublishConfig } from './schedule/scheduleConfig.js';
+import { LivePreviewPanel } from './live-preview/LivePreviewPanel.js';
 import { canRead, subPerms } from './access-control/fieldPermissions.js';
 import { extractRichTextRenderedFields } from './richtext/extractRichTextRenderedFields.js';
 import { makeFieldTreeRenderer } from './fieldTree/FieldTreeRenderer.js';
@@ -560,6 +561,39 @@ export function AutoDocFormBridge({ mode, collectionSlug, globalSlug, docId, col
     const schedulePublishConfig = getSchedulePublishConfig(collection);
     const [status, setStatus] = React.useState('idle');
     const [lastSavedAt, setLastSavedAt] = React.useState(null);
+    // Live Preview toggle — gated on the collection actually having opted in
+    // (see `admin.livePreview` in the consumer's collection config). Create-mode
+    // and globals are excluded: Payload's own live-preview URL resolution skips
+    // `operation === 'create'` too (no doc to preview yet), and this starter's
+    // panel only targets collection docs (see LivePreviewPanel + Pages.ts's
+    // `/:id/preview-url` endpoint).
+    const livePreviewEnabled = mode === 'edit' && !isGlobal && Boolean(collection.admin?.livePreview);
+    const [livePreviewOpen, setLivePreviewOpen] = React.useState(false);
+    // Below `md`, panels stack — dragging a resize handle on a touchscreen-width
+    // form isn't useful, and react-resizable-panels' `orientation` prop is the
+    // one thing here that genuinely needs a runtime check rather than a
+    // Tailwind breakpoint (it drives the library's own layout math, not just
+    // CSS).
+    const isMobile = useIsMobile();
+    const previewPanelRef = React.useRef(null);
+    // Animate only our own programmatic resize()/collapse() below, never a
+    // user's drag (which must track the pointer 1:1) — flipped on right before
+    // the imperative call and back off once the transition's had time to run.
+    const [previewAnimating, setPreviewAnimating] = React.useState(false);
+    React.useEffect(()=>{
+        const panel = previewPanelRef.current;
+        if (!panel) return;
+        setPreviewAnimating(true);
+        // Bare numbers are pixels to this library (only unit-suffixed strings —
+        // or unitless strings, which it treats as "%" — are percentages), so
+        // `50` here would resize to 50px, not 50%.
+        if (livePreviewOpen) panel.resize('50%');
+        else panel.collapse();
+        const timeout = setTimeout(()=>setPreviewAnimating(false), 300);
+        return ()=>clearTimeout(timeout);
+    }, [
+        livePreviewOpen
+    ]);
     // Upload-collection state. The dropzone owns visual file state; the bridge
     // carries it across to the submit branch.
     const isUploadCollection = Boolean(collection.upload);
@@ -1430,12 +1464,37 @@ export function AutoDocFormBridge({ mode, collectionSlug, globalSlug, docId, col
     const docFormValuesCtx = React.useMemo(()=>({
             values,
             activeLocale,
-            setValueAtPath
+            setValueAtPath,
+            lastSavedAt
         }), [
         values,
         activeLocale,
-        setValueAtPath
+        setValueAtPath,
+        lastSavedAt
     ]);
+    // Shared between the plain and Resizable-wrapped layouts below so the two
+    // don't drift out of sync.
+    const mainFieldsContent = /*#__PURE__*/ _jsxs(_Fragment, {
+        children: [
+            isUploadCollection && uploadConfig ? /*#__PURE__*/ _jsx(CollectionUploadHeader, {
+                mode: mode,
+                // Upload header only renders for upload COLLECTIONS (globals are
+                // never upload entities), so collectionSlug is always defined here.
+                collectionSlug: collectionSlug,
+                uploadConfig: uploadConfig,
+                uploadCollectionsBySlug: uploadCollectionsBySlug,
+                useAsTitleBySlug: useAsTitleBySlug,
+                existing: initialUploadDoc ?? null,
+                pendingFile: pendingFile,
+                onPendingFileChange: setPendingFile,
+                uploadEdits: uploadEdits,
+                onUploadEditsChange: setUploadEdits,
+                disabled: submitting
+            }) : null,
+            mainTop.map((f)=>renderChild(f, '', documentInfo.docPermissions)),
+            authExtras.map((f)=>renderField(f, ''))
+        ]
+    });
     return /*#__PURE__*/ _jsx(LocaleProvider, {
         value: localeCtx,
         children: /*#__PURE__*/ _jsx(DocIdentityProvider, {
@@ -1482,6 +1541,14 @@ export function AutoDocFormBridge({ mode, collectionSlug, globalSlug, docId, col
                                 /*#__PURE__*/ _jsxs("div", {
                                     className: "flex flex-wrap items-center justify-end gap-2",
                                     children: [
+                                        livePreviewEnabled ? /*#__PURE__*/ _jsx(Button, {
+                                            type: "button",
+                                            variant: "outline",
+                                            size: "sm",
+                                            onClick: ()=>setLivePreviewOpen((o)=>!o),
+                                            "aria-pressed": livePreviewOpen,
+                                            children: livePreviewOpen ? t('shadcnAdmin:hidePreview') : t('shadcnAdmin:livePreview')
+                                        }) : null,
                                         draftsEnabled && schedulePublishConfig && mode === 'edit' ? /*#__PURE__*/ _jsx(SchedulePublishPopover, {
                                             collectionSlug: collectionSlug,
                                             globalSlug: globalSlug,
@@ -1540,30 +1607,94 @@ export function AutoDocFormBridge({ mode, collectionSlug, globalSlug, docId, col
                             className: "mb-4 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive",
                             children: topError
                         }) : null,
+                        livePreviewEnabled ? // Always inside a ResizablePanelGroup once the collection has Live
+                        // Preview wired up — even while it's closed (collapsed to 0). That
+                        // way toggling it only ever resizes/collapses panels; it never swaps
+                        // out the surrounding tree (see the effect above driving
+                        // `previewPanelRef`), so the form fields never remount mid-edit.
+                        //
+                        // `overflow: visible` overrides react-resizable-panels' own default
+                        // (`hidden` on the group, `auto` on each panel) on both the group and
+                        // every panel below. That default assumes a fixed-height container
+                        // with each panel scrolling independently inside it; this form is a
+                        // normal long scrolling page instead, and the doc-sidebar's/preview's
+                        // `sticky` positioning (further down) only works against the page's
+                        // own scroll — any ancestor with non-`visible` overflow becomes its
+                        // own scroll container and breaks that.
+                        /*#__PURE__*/ _jsxs(ResizablePanelGroup, {
+                            orientation: isMobile ? 'vertical' : 'horizontal',
+                            className: "items-stretch gap-0",
+                            style: {
+                                overflow: 'visible'
+                            },
+                            children: [
+                                /*#__PURE__*/ _jsx(ResizablePanel, {
+                                    defaultSize: "100%",
+                                    minSize: "30%",
+                                    className: cn('min-w-0', previewAnimating && 'transition-[flex-basis] duration-300 ease-in-out'),
+                                    style: {
+                                        overflow: 'visible'
+                                    },
+                                    children: /*#__PURE__*/ _jsxs("div", {
+                                        className: cn('flex flex-col gap-6', hasSidebar && !livePreviewOpen && 'lg:flex-row', livePreviewOpen && 'lg:pr-6'),
+                                        children: [
+                                            /*#__PURE__*/ _jsx("div", {
+                                                className: hasSidebar ? 'flex flex-1 min-w-0 flex-col gap-4' : 'contents',
+                                                children: mainFieldsContent
+                                            }),
+                                            hasSidebar ? // Beside the main fields when the preview is closed (today's
+                                            // layout, unchanged); drops below them once the preview
+                                            // opens, so the main/preview split gets that width back.
+                                            /*#__PURE__*/ _jsxs("div", {
+                                                className: cn('flex flex-col gap-4', livePreviewOpen ? 'border-t pt-4' : 'shrink-0 lg:sticky lg:top-16 lg:w-72 lg:border-l lg:pl-6'),
+                                                children: [
+                                                    livePreviewOpen ? /*#__PURE__*/ _jsx("span", {
+                                                        className: "text-sm font-medium text-muted-foreground",
+                                                        children: t('shadcnAdmin:sidebarFields')
+                                                    }) : null,
+                                                    sidebarTop.map((f)=>renderChild(f, '', documentInfo.docPermissions))
+                                                ]
+                                            }) : null
+                                        ]
+                                    })
+                                }),
+                                /*#__PURE__*/ _jsx(ResizableHandle, {
+                                    withHandle: true,
+                                    className: cn(!livePreviewOpen && 'hidden')
+                                }),
+                                /*#__PURE__*/ _jsx(ResizablePanel, {
+                                    panelRef: previewPanelRef,
+                                    collapsible: true,
+                                    collapsedSize: "0%",
+                                    defaultSize: "0%",
+                                    minSize: "25%",
+                                    className: cn('min-w-0', previewAnimating && 'transition-[flex-basis] duration-300 ease-in-out'),
+                                    style: {
+                                        overflow: 'visible'
+                                    },
+                                    // Dragging the handle can collapse this panel directly (below
+                                    // its minSize snaps to collapsedSize) without going through the
+                                    // toggle button — keep `livePreviewOpen` (and the button's
+                                    // label) in sync either way. Also fires from our own
+                                    // resize()/collapse() calls above and on mount; setting the same
+                                    // boolean value React already has is a no-op.
+                                    onResize: (size)=>setLivePreviewOpen(size.asPercentage > 0),
+                                    children: /*#__PURE__*/ _jsx("div", {
+                                        className: livePreviewOpen ? 'h-full lg:pl-6' : undefined,
+                                        children: /*#__PURE__*/ _jsx(LivePreviewPanel, {
+                                            open: livePreviewOpen
+                                        })
+                                    })
+                                })
+                            ]
+                        }) : // No Live Preview on this collection — today's plain two-column
+                        // split, no Resizable overhead.
                         /*#__PURE__*/ _jsxs("div", {
                             className: hasSidebar ? 'flex flex-col gap-6 lg:flex-row' : 'flex flex-col gap-4',
                             children: [
-                                /*#__PURE__*/ _jsxs("div", {
+                                /*#__PURE__*/ _jsx("div", {
                                     className: hasSidebar ? 'flex flex-1 min-w-0 flex-col gap-4' : 'contents',
-                                    children: [
-                                        isUploadCollection && uploadConfig ? /*#__PURE__*/ _jsx(CollectionUploadHeader, {
-                                            mode: mode,
-                                            // Upload header only renders for upload COLLECTIONS (globals are
-                                            // never upload entities), so collectionSlug is always defined here.
-                                            collectionSlug: collectionSlug,
-                                            uploadConfig: uploadConfig,
-                                            uploadCollectionsBySlug: uploadCollectionsBySlug,
-                                            useAsTitleBySlug: useAsTitleBySlug,
-                                            existing: initialUploadDoc ?? null,
-                                            pendingFile: pendingFile,
-                                            onPendingFileChange: setPendingFile,
-                                            uploadEdits: uploadEdits,
-                                            onUploadEditsChange: setUploadEdits,
-                                            disabled: submitting
-                                        }) : null,
-                                        mainTop.map((f)=>renderChild(f, '', documentInfo.docPermissions)),
-                                        authExtras.map((f)=>renderField(f, ''))
-                                    ]
+                                    children: mainFieldsContent
                                 }),
                                 hasSidebar ? // The <aside> stretches to the row height so its left divider runs
                                 // the full form length; the inner wrapper is the sticky part —
