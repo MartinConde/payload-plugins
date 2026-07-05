@@ -109,10 +109,17 @@ export function LayersPanel({
   }
 
   return (
-    <div className="flex h-full w-56 shrink-0 flex-col gap-2 overflow-y-auto border-r pr-3">
-      <span className="px-1 text-xs font-medium text-muted-foreground">
-        {t('shadcnAdmin:layersPanel')}
-      </span>
+    <div className="flex h-full w-56 shrink-0 flex-col gap-2 overflow-y-auto border-r bg-muted/20 pr-3">
+      <div className="flex items-center justify-between px-1 pt-0.5">
+        <span className="text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+          {t('shadcnAdmin:layersPanel')}
+        </span>
+        {rows.length > 0 ? (
+          <span className="text-[11px] tabular-nums text-muted-foreground/70">
+            {rows.length}
+          </span>
+        ) : null}
+      </div>
       {rows.length === 0 ? (
         <p className="px-1 text-xs text-muted-foreground">
           {t('shadcnAdmin:noBlocks')}
@@ -196,8 +203,10 @@ function LayerRow({
       ref={setNodeRef}
       style={style}
       className={cn(
-        'flex items-center gap-1 rounded-md border px-1 py-1',
-        selected ? 'border-primary bg-accent' : 'border-transparent hover:bg-accent/50',
+        'group flex items-center gap-1 rounded-md border px-1 py-1.5 transition-colors',
+        selected
+          ? 'border-primary/40 bg-accent ring-1 ring-primary/40'
+          : 'border-transparent hover:bg-accent/50',
       )}
     >
       <button
@@ -223,26 +232,33 @@ function LayerRow({
           <span className="truncate text-muted-foreground/60">{preview}</span>
         ) : null}
       </button>
-      <button
-        type="button"
-        onClick={onDuplicate}
-        disabled={disabled}
-        aria-label={duplicateLabel}
-        title={duplicateLabel}
-        className="flex shrink-0 cursor-pointer text-muted-foreground hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
+      <div
+        className={cn(
+          'flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100',
+          selected && 'opacity-100',
+        )}
       >
-        <CopyIcon className="size-3.5" />
-      </button>
-      <button
-        type="button"
-        onClick={onDelete}
-        disabled={disabled}
-        aria-label={deleteLabel}
-        title={deleteLabel}
-        className="flex shrink-0 cursor-pointer text-muted-foreground hover:text-destructive disabled:cursor-not-allowed disabled:opacity-50"
-      >
-        <TrashIcon className="size-3.5" />
-      </button>
+        <button
+          type="button"
+          onClick={onDuplicate}
+          disabled={disabled}
+          aria-label={duplicateLabel}
+          title={duplicateLabel}
+          className="flex shrink-0 cursor-pointer items-center justify-center rounded-sm p-0.5 text-muted-foreground hover:bg-accent hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <CopyIcon className="size-3.5" />
+        </button>
+        <button
+          type="button"
+          onClick={onDelete}
+          disabled={disabled}
+          aria-label={deleteLabel}
+          title={deleteLabel}
+          className="flex shrink-0 cursor-pointer items-center justify-center rounded-sm p-0.5 text-muted-foreground hover:bg-accent hover:text-destructive disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <TrashIcon className="size-3.5" />
+        </button>
+      </div>
     </div>
   )
 }

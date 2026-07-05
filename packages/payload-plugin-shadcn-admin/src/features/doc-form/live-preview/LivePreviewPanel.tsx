@@ -462,10 +462,10 @@ export function LivePreviewPanel({
   const deviceWidth = DEVICE_WIDTH[device]
 
   return (
-    <div className="flex flex-col overflow-hidden rounded-md border lg:sticky lg:top-16 lg:h-[calc(100vh-5rem)]">
-      <div className="flex shrink-0 items-center justify-between gap-1 border-b bg-muted/40 px-2 py-1">
+    <div className="flex flex-col overflow-hidden rounded-lg border bg-card lg:sticky lg:top-16 lg:h-[calc(100vh-5rem)]">
+      <div className="flex shrink-0 items-center justify-between gap-2 border-b px-2 py-1.5">
         <div
-          className="flex items-center gap-1"
+          className="inline-flex items-center gap-0.5 rounded-md bg-muted p-0.5"
           role="group"
           aria-label={t('shadcnAdmin:previewDeviceWidth')}
         >
@@ -478,15 +478,15 @@ export function LivePreviewPanel({
               title={label}
               onClick={() => setDevice(mode)}
               className={cn(
-                'inline-flex size-6 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground',
-                device === mode && 'bg-accent text-accent-foreground',
+                'inline-flex size-7 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:text-foreground',
+                device === mode && 'bg-background text-foreground shadow-sm',
               )}
             >
               <Icon className="size-3.5" />
             </button>
           ))}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           {isUpdating ? (
             <span
               className="flex items-center gap-1.5 text-xs text-muted-foreground"
@@ -502,17 +502,23 @@ export function LivePreviewPanel({
             title={t('shadcnAdmin:openPreviewInNewTab')}
             onClick={openInNewTab}
             disabled={!previewUrl}
-            className="inline-flex size-6 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-40"
+            className="inline-flex size-7 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-40"
           >
             <ExternalLinkIcon className="size-3.5" />
           </button>
         </div>
       </div>
 
-      <div className="h-[70vh] min-h-0 overflow-auto bg-muted/20 lg:h-auto lg:flex-1">
+      <div
+        className="h-[70vh] min-h-0 overflow-auto bg-muted/40 p-4 lg:h-auto lg:flex-1"
+        style={{
+          backgroundImage: 'radial-gradient(var(--border) 1px, transparent 1px)',
+          backgroundSize: '16px 16px',
+        }}
+      >
         {iframeSrc ? (
           <div
-            className="mx-auto h-full"
+            className="mx-auto h-full overflow-hidden rounded-lg border bg-background shadow-sm"
             style={deviceWidth ? { width: deviceWidth } : undefined}
           >
             <iframe
@@ -523,7 +529,7 @@ export function LivePreviewPanel({
             />
           </div>
         ) : (
-          <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+          <div className="flex h-full items-center justify-center rounded-lg border border-dashed bg-background text-sm text-muted-foreground">
             Loading preview…
           </div>
         )}

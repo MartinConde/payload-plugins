@@ -23,6 +23,11 @@
 import * as React from 'react'
 import { Badge, usePageBuilder } from 'payload-plugin-shadcn-ui'
 import type { ExtractedBlock } from 'payload-plugin-shadcn-ui'
+import { useTranslation } from '../../../internal/payloadAdapter.js'
+import type {
+  ShadcnAdminTranslationsKeys,
+  ShadcnAdminTranslationsObject,
+} from '../../../translations.js'
 import type { FieldTreeRenderer } from '../fieldTree/FieldTreeRenderer.js'
 import type { Perms } from '../access-control/fieldPermissions.js'
 import type { BlockRow } from '../inputs/BlocksInput.js'
@@ -58,6 +63,10 @@ export function BlockSettingsPanel({
   blockPerms,
   disabled,
 }: BlockSettingsPanelProps): React.ReactElement {
+  const { t } = useTranslation<
+    ShadcnAdminTranslationsObject,
+    ShadcnAdminTranslationsKeys
+  >()
   const { selectedBlockId } = usePageBuilder()
 
   const blockBySlug = React.useMemo<Record<string, ExtractedBlock>>(() => {
@@ -70,7 +79,7 @@ export function BlockSettingsPanel({
   const selectedBlock = selectedRow ? blockBySlug[selectedRow.blockType] : undefined
 
   return (
-    <div className="flex h-full flex-col gap-4 overflow-y-auto p-4">
+    <div className="flex h-full flex-col overflow-y-auto">
       {/* No "nothing selected" hint here: the enclosing panel is collapsed to
           `0%` exactly when `selectedRow` is falsy (see the bridge's
           resize effect) — and the panel group needs `overflow: visible` for
@@ -79,8 +88,11 @@ export function BlockSettingsPanel({
           box rather than being clipped. Only render chrome when there's
           actually width to show it in. */}
       {selectedRow ? (
-        <div className="flex items-center gap-2 border-b pb-3">
-          <Badge variant="outline" className="text-[10px] uppercase">
+        <div className="flex shrink-0 flex-col gap-1 border-b bg-muted/20 px-4 py-3">
+          <span className="text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+            {t('shadcnAdmin:blockSettings')}
+          </span>
+          <Badge variant="outline" className="w-fit text-[10px] uppercase">
             {selectedBlock
               ? blockLabelOf(selectedBlock)
               : selectedRow.blockType || 'Unknown'}
@@ -88,25 +100,27 @@ export function BlockSettingsPanel({
         </div>
       ) : null}
 
-      {rows.map((row, idx) => {
-        const block = blockBySlug[row.blockType]
-        if (!block) return null
-        const perBlockPerms = blockPerms
-          ? (blockPerms as { blocks?: Record<string, unknown> }).blocks?.[
-              row.blockType
-            ]
-          : undefined
-        return (
-          <div
-            key={row.id}
-            className={row.id === selectedBlockId ? 'flex flex-col gap-4' : 'hidden'}
-          >
-            {block.fields.map((sub) =>
-              renderChild(sub, `${layoutBasePath}.${idx}.`, perBlockPerms, disabled),
-            )}
-          </div>
-        )
-      })}
+      <div className="flex flex-col gap-4 p-4">
+        {rows.map((row, idx) => {
+          const block = blockBySlug[row.blockType]
+          if (!block) return null
+          const perBlockPerms = blockPerms
+            ? (blockPerms as { blocks?: Record<string, unknown> }).blocks?.[
+                row.blockType
+              ]
+            : undefined
+          return (
+            <div
+              key={row.id}
+              className={row.id === selectedBlockId ? 'flex flex-col gap-4' : 'hidden'}
+            >
+              {block.fields.map((sub) =>
+                renderChild(sub, `${layoutBasePath}.${idx}.`, perBlockPerms, disabled),
+              )}
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }
