@@ -32,6 +32,7 @@ import { SchedulePublishPopover } from './schedule/SchedulePublishPopover.js';
 import { getSchedulePublishConfig } from './schedule/scheduleConfig.js';
 import { LivePreviewPanel } from './live-preview/LivePreviewPanel.js';
 import { BlockSettingsPanel } from './live-preview/BlockSettingsPanel.js';
+import { LayersPanel } from './live-preview/LayersPanel.js';
 import { newRow, ensureRowId } from './inputs/BlocksInput.js';
 import { BlockPickerSheet } from './inputs/BlockPickerSheet.js';
 import { canRead, subPerms } from './access-control/fieldPermissions.js';
@@ -2046,59 +2047,77 @@ export function AutoDocFormBridge({ mode, collectionSlug, globalSlug, docId, col
                                         onResize: (size)=>setLivePreviewOpen(size.asPercentage > 0),
                                         children: /*#__PURE__*/ _jsx("div", {
                                             className: livePreviewOpen ? 'h-full lg:pl-6' : undefined,
-                                            children: pageBuilderAvailable ? // Nested group, not a 3rd flat sibling of (main | preview) —
-                                            // `react-resizable-panels`' imperative `resize()` only trades
-                                            // space with ONE adjacent sibling, so the settings panel needs
-                                            // its own 2-panel group to correctly take space from the
-                                            // preview alone. See `blockSettingsPanelRef`'s doc comment
-                                            // above for the full story (this is the fix for a real bug,
-                                            // not a style preference).
-                                            /*#__PURE__*/ _jsxs(ResizablePanelGroup, {
-                                                orientation: isMobile ? 'vertical' : 'horizontal',
-                                                className: "h-full items-stretch gap-0",
+                                            children: pageBuilderAvailable ? // `overflow: visible` here too — same sticky-positioning
+                                            // contract every other panel wrapper in this tree keeps (see
+                                            // LIVE-PREVIEW.md). The layers column is a plain flex sibling,
+                                            // NOT part of the nested (preview | settings) ResizablePanelGroup
+                                            // below — see LayersPanel's own doc comment for why a 3rd flat
+                                            // panel there would reintroduce the pivot-index bug
+                                            // `blockSettingsPanelRef` already had to work around once.
+                                            // Hidden on mobile: the nested group switches to vertical
+                                            // stacking there, which a fixed-width side column doesn't fit.
+                                            /*#__PURE__*/ _jsxs("div", {
+                                                className: "flex h-full",
                                                 style: {
                                                     overflow: 'visible'
                                                 },
                                                 children: [
-                                                    /*#__PURE__*/ _jsx(ResizablePanel, {
-                                                        defaultSize: "100%",
-                                                        minSize: "40%",
-                                                        className: "min-w-0",
+                                                    builderModeOpen && !isMobile ? /*#__PURE__*/ _jsx(LayersPanel, {
+                                                        rows: layoutRows,
+                                                        blocks: layoutField?.blocks ?? [],
+                                                        onReorder: (next)=>setValueAtPath(layoutBasePath, next),
+                                                        onDuplicate: duplicateBlock,
+                                                        onDelete: deleteBlock,
+                                                        disabled: submitting
+                                                    }) : null,
+                                                    /*#__PURE__*/ _jsxs(ResizablePanelGroup, {
+                                                        orientation: isMobile ? 'vertical' : 'horizontal',
+                                                        className: "h-full flex-1 min-w-0 items-stretch gap-0",
                                                         style: {
                                                             overflow: 'visible'
                                                         },
-                                                        children: /*#__PURE__*/ _jsx(LivePreviewPanel, {
-                                                            open: livePreviewOpen,
-                                                            onBlockAction: handlePageBuilderAction,
-                                                            builderMode: builderModeOpen,
-                                                            previewData: previewData
-                                                        })
-                                                    }),
-                                                    /*#__PURE__*/ _jsx(ResizableHandle, {
-                                                        withHandle: true,
-                                                        className: cn(!selectedBlockId && 'hidden')
-                                                    }),
-                                                    /*#__PURE__*/ _jsx(ResizablePanel, {
-                                                        panelRef: blockSettingsPanelRef,
-                                                        collapsible: true,
-                                                        collapsedSize: "0%",
-                                                        defaultSize: "0%",
-                                                        minSize: "25%",
-                                                        className: cn('min-w-0', blockSettingsAnimating && 'transition-[flex-basis] duration-300 ease-in-out'),
-                                                        style: {
-                                                            overflow: 'visible'
-                                                        },
-                                                        children: /*#__PURE__*/ _jsx("div", {
-                                                            className: selectedBlockId ? 'h-full lg:pl-6' : undefined,
-                                                            children: /*#__PURE__*/ _jsx(BlockSettingsPanel, {
-                                                                rows: layoutRows,
-                                                                blocks: layoutField?.blocks ?? [],
-                                                                layoutBasePath: layoutBasePath,
-                                                                renderChild: renderChild,
-                                                                blockPerms: layoutFieldPerms,
-                                                                disabled: submitting
+                                                        children: [
+                                                            /*#__PURE__*/ _jsx(ResizablePanel, {
+                                                                defaultSize: "100%",
+                                                                minSize: "40%",
+                                                                className: "min-w-0",
+                                                                style: {
+                                                                    overflow: 'visible'
+                                                                },
+                                                                children: /*#__PURE__*/ _jsx(LivePreviewPanel, {
+                                                                    open: livePreviewOpen,
+                                                                    onBlockAction: handlePageBuilderAction,
+                                                                    builderMode: builderModeOpen,
+                                                                    previewData: previewData
+                                                                })
+                                                            }),
+                                                            /*#__PURE__*/ _jsx(ResizableHandle, {
+                                                                withHandle: true,
+                                                                className: cn(!selectedBlockId && 'hidden')
+                                                            }),
+                                                            /*#__PURE__*/ _jsx(ResizablePanel, {
+                                                                panelRef: blockSettingsPanelRef,
+                                                                collapsible: true,
+                                                                collapsedSize: "0%",
+                                                                defaultSize: "0%",
+                                                                minSize: "25%",
+                                                                className: cn('min-w-0', blockSettingsAnimating && 'transition-[flex-basis] duration-300 ease-in-out'),
+                                                                style: {
+                                                                    overflow: 'visible'
+                                                                },
+                                                                children: /*#__PURE__*/ _jsx("div", {
+                                                                    className: selectedBlockId ? 'h-full lg:pl-6' : undefined,
+                                                                    children: /*#__PURE__*/ _jsx(BlockSettingsPanel, {
+                                                                        rows: layoutRows,
+                                                                        blocks: layoutField?.blocks ?? [],
+                                                                        layoutBasePath: layoutBasePath,
+                                                                        renderChild: renderChild,
+                                                                        blockPerms: layoutFieldPerms,
+                                                                        disabled: submitting
+                                                                    })
+                                                                })
                                                             })
-                                                        })
+                                                        ]
                                                     })
                                                 ]
                                             }) : /*#__PURE__*/ _jsx(LivePreviewPanel, {
