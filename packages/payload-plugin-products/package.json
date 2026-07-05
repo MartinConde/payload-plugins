@@ -65,6 +65,12 @@
   "peerDependenciesMeta": {
     "drizzle-orm": {
       "optional": true
+    },
+    "payload-plugin-shadcn-admin": {
+      "optional": true
+    },
+    "payload-plugin-shadcn-ui": {
+      "optional": true
     }
   },
   "devDependencies": {

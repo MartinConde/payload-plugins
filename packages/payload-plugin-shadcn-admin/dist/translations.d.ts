@@ -61,6 +61,7 @@ export declare const shadcnAdminTranslations: {
             openPreviewInNewTab: string;
             previewUpdating: string;
             layersPanel: string;
+            blockSettings: string;
             duplicateBlock: string;
             deleteBlock: string;
             creating: string;
@@ -225,6 +226,7 @@ export declare const shadcnAdminTranslations: {
             openPreviewInNewTab: string;
             previewUpdating: string;
             layersPanel: string;
+            blockSettings: string;
             duplicateBlock: string;
             deleteBlock: string;
             creating: string;
@@ -389,6 +391,7 @@ export declare const shadcnAdminTranslations: {
             openPreviewInNewTab: string;
             previewUpdating: string;
             layersPanel: string;
+            blockSettings: string;
             duplicateBlock: string;
             deleteBlock: string;
             creating: string;
@@ -553,6 +556,7 @@ export declare const shadcnAdminTranslations: {
             openPreviewInNewTab: string;
             previewUpdating: string;
             layersPanel: string;
+            blockSettings: string;
             duplicateBlock: string;
             deleteBlock: string;
             creating: string;

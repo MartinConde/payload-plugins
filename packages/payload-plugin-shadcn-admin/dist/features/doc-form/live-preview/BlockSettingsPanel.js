@@ -20,11 +20,13 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
    matters because `RichTextInput` reseeds its editor state on remount — fine
    for an occasional flash, not something we want on every block click. */ import * as React from 'react';
 import { Badge, usePageBuilder } from 'payload-plugin-shadcn-ui';
+import { useTranslation } from '../../../internal/payloadAdapter.js';
 const blockLabelOf = (block)=>{
     if (block.labels?.singular && block.labels.singular.length > 0) return block.labels.singular;
     return block.slug;
 };
 export function BlockSettingsPanel({ rows, blocks, layoutBasePath, renderChild, blockPerms, disabled }) {
+    const { t } = useTranslation();
     const { selectedBlockId } = usePageBuilder();
     const blockBySlug = React.useMemo(()=>{
         const out = {};
@@ -36,24 +38,33 @@ export function BlockSettingsPanel({ rows, blocks, layoutBasePath, renderChild, 
     const selectedRow = rows.find((r)=>r.id === selectedBlockId);
     const selectedBlock = selectedRow ? blockBySlug[selectedRow.blockType] : undefined;
     return /*#__PURE__*/ _jsxs("div", {
-        className: "flex h-full flex-col gap-4 overflow-y-auto p-4",
+        className: "flex h-full flex-col overflow-y-auto",
         children: [
-            selectedRow ? /*#__PURE__*/ _jsx("div", {
-                className: "flex items-center gap-2 border-b pb-3",
-                children: /*#__PURE__*/ _jsx(Badge, {
-                    variant: "outline",
-                    className: "text-[10px] uppercase",
-                    children: selectedBlock ? blockLabelOf(selectedBlock) : selectedRow.blockType || 'Unknown'
-                })
+            selectedRow ? /*#__PURE__*/ _jsxs("div", {
+                className: "flex shrink-0 flex-col gap-1 border-b bg-muted/20 px-4 py-3",
+                children: [
+                    /*#__PURE__*/ _jsx("span", {
+                        className: "text-[11px] font-semibold tracking-wide text-muted-foreground uppercase",
+                        children: t('shadcnAdmin:blockSettings')
+                    }),
+                    /*#__PURE__*/ _jsx(Badge, {
+                        variant: "outline",
+                        className: "w-fit text-[10px] uppercase",
+                        children: selectedBlock ? blockLabelOf(selectedBlock) : selectedRow.blockType || 'Unknown'
+                    })
+                ]
             }) : null,
-            rows.map((row, idx)=>{
-                const block = blockBySlug[row.blockType];
-                if (!block) return null;
-                const perBlockPerms = blockPerms ? blockPerms.blocks?.[row.blockType] : undefined;
-                return /*#__PURE__*/ _jsx("div", {
-                    className: row.id === selectedBlockId ? 'flex flex-col gap-4' : 'hidden',
-                    children: block.fields.map((sub)=>renderChild(sub, `${layoutBasePath}.${idx}.`, perBlockPerms, disabled))
-                }, row.id);
+            /*#__PURE__*/ _jsx("div", {
+                className: "flex flex-col gap-4 p-4",
+                children: rows.map((row, idx)=>{
+                    const block = blockBySlug[row.blockType];
+                    if (!block) return null;
+                    const perBlockPerms = blockPerms ? blockPerms.blocks?.[row.blockType] : undefined;
+                    return /*#__PURE__*/ _jsx("div", {
+                        className: row.id === selectedBlockId ? 'flex flex-col gap-4' : 'hidden',
+                        children: block.fields.map((sub)=>renderChild(sub, `${layoutBasePath}.${idx}.`, perBlockPerms, disabled))
+                    }, row.id);
+                })
             })
         ]
     });

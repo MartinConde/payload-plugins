@@ -59,6 +59,11 @@
     "react": ">=19 <20",
     "react-dom": ">=19 <20"
   },
+  "peerDependenciesMeta": {
+    "payload-plugin-shadcn-ui": {
+      "optional": true
+    }
+  },
   "devDependencies": {
     "@payloadcms/translations": "^3.85.1",
     "@swc/cli": "^0.8.1",

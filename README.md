@@ -33,8 +33,11 @@ pnpm's `path:` git syntax (pnpm v9+; npm/Yarn do not support this). Always pin a
 }
 ```
 
-`seo` and `menus` both require `payload-plugin-shadcn-admin` (peer) — install it
-alongside them. The packages build on install via their `prepare` hook (SWC + tsc).
+`menus` requires `payload-plugin-shadcn-ui` (peer); `products` requires both
+`payload-plugin-shadcn-ui` and `payload-plugin-shadcn-admin` (peers). These are marked
+optional in `peerDependenciesMeta` so the install itself doesn't fail without them, but
+they're required at runtime — add their GitHub pins alongside `menus`/`products`. Each
+package's built `dist/` is committed to git; there is no `prepare`/build-on-install step.
 
 Since the repo is private, installs use your local git auth (SSH key or credential
 helper / a PAT in CI).
