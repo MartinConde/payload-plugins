@@ -2212,9 +2212,18 @@ export function AutoDocFormBridge({
     }),
     [collectionSlug, docId],
   )
+  // Same in-flight cascade `DocStatusBar`'s own pill already uses (`hasDirty`
+  // below mirrors its `dirty` prop), except `error` wins over `dirty` here —
+  // a failed save already has its own dedicated error surface, and the
+  // in-flight edit was never persisted either way, so this shouldn't also
+  // read as "still updating."
+  const isUpdating =
+    status === 'saving' ||
+    status === 'autosaving' ||
+    (hasDirty && status !== 'error')
   const docFormValuesCtx = React.useMemo(
-    () => ({ values, activeLocale, setValueAtPath, lastSavedAt }),
-    [values, activeLocale, setValueAtPath, lastSavedAt],
+    () => ({ values, activeLocale, setValueAtPath, lastSavedAt, isUpdating }),
+    [values, activeLocale, setValueAtPath, lastSavedAt, isUpdating],
   )
 
   // Shared between the plain and Resizable-wrapped layouts below so the two

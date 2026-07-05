@@ -14,6 +14,14 @@ type DocFormValuesContextValue = {
      *  "the server now has this edit" (e.g. Live Preview's refetch nudge)
      *  should key off this instead of `values`. */
     lastSavedAt: number | null;
+    /** True while there's an edit the server doesn't have yet: either an
+     *  unsaved dirty field, or a save/autosave PATCH currently in flight.
+     *  False again once a save lands (or on a save error — an error has its
+     *  own dedicated surface via `DocStatusBar`, so this shouldn't also stay
+     *  stuck "updating" indefinitely). Consumers like the Live Preview panel
+     *  use this for a lightweight in-flight indicator distinct from the
+     *  preview's own merge-request loading state. */
+    isUpdating: boolean;
 };
 export declare const DocFormValuesProvider: React.Provider<DocFormValuesContextValue>;
 /** The full doc-root value tree + active locale. See the note above on leaf

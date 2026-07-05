@@ -59,6 +59,7 @@ export declare const shadcnAdminTranslations: {
             previewTablet: string;
             previewDesktop: string;
             openPreviewInNewTab: string;
+            previewUpdating: string;
             creating: string;
             autosaving: string;
             saveFailed: string;
@@ -219,6 +220,7 @@ export declare const shadcnAdminTranslations: {
             previewTablet: string;
             previewDesktop: string;
             openPreviewInNewTab: string;
+            previewUpdating: string;
             creating: string;
             autosaving: string;
             saveFailed: string;
@@ -379,6 +381,7 @@ export declare const shadcnAdminTranslations: {
             previewTablet: string;
             previewDesktop: string;
             openPreviewInNewTab: string;
+            previewUpdating: string;
             creating: string;
             autosaving: string;
             saveFailed: string;
@@ -539,6 +542,7 @@ export declare const shadcnAdminTranslations: {
             previewTablet: string;
             previewDesktop: string;
             openPreviewInNewTab: string;
+            previewUpdating: string;
             creating: string;
             autosaving: string;
             saveFailed: string;

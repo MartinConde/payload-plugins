@@ -63,7 +63,7 @@ export function LivePreviewPanel({ open, onBlockAction, builderMode = false, pre
     const apiRoute = config.routes?.api;
     const serverURL = config.serverURL;
     const { collectionSlug, documentId } = useDocIdentity();
-    const { activeLocale, lastSavedAt } = useDocFormValues();
+    const { activeLocale, lastSavedAt, isUpdating } = useDocFormValues();
     const { selectedBlockId, setSelectedBlockId } = usePageBuilder();
     const locale = activeLocale ?? 'en';
     const [previewUrl, setPreviewUrl] = React.useState(null);
@@ -306,6 +306,12 @@ export function LivePreviewPanel({ open, onBlockAction, builderMode = false, pre
                 setSelectedBlockId(typeof event.data.blockId === 'string' ? event.data.blockId : null);
                 return;
             }
+            // Esc in the iframe (Phase 1b) clears its own local selection and
+            // mirrors that out here, same as a `select` with no blockId.
+            if (action === 'deselect') {
+                setSelectedBlockId(null);
+                return;
+            }
             if (action === 'move' || action === 'duplicate' || action === 'delete' || action === 'addRequest') {
                 onBlockAction?.(event.data);
             }
@@ -314,6 +320,53 @@ export function LivePreviewPanel({ open, onBlockAction, builderMode = false, pre
         return ()=>window.removeEventListener('message', handleMessage);
     }, [
         previewUrl,
+        onBlockAction,
+        setSelectedBlockId
+    ]);
+    // Phase 1b — keyboard shortcuts on the selected block, admin-side mirror.
+    // `page-builder.ts` installs the same shortcuts inside the iframe itself
+    // (cross-origin, so this admin can't listen to keydowns in there); this
+    // covers the case where focus is on the admin side instead (e.g. the
+    // block settings panel). Guarded against text-entry targets so Delete/
+    // Backspace don't hijack normal editing in a field.
+    React.useEffect(()=>{
+        if (!open || !builderMode || selectedBlockId == null) return;
+        const onKeyDown = (e)=>{
+            const target = e.target;
+            if (target?.isContentEditable || target?.tagName === 'INPUT' || target?.tagName === 'TEXTAREA' || target?.tagName === 'SELECT') {
+                return;
+            }
+            if (e.key === 'Delete' || e.key === 'Backspace') {
+                e.preventDefault();
+                onBlockAction?.({
+                    action: 'delete',
+                    blockId: selectedBlockId
+                });
+            } else if (e.key === 'Escape') {
+                e.preventDefault();
+                setSelectedBlockId(null);
+            } else if (e.altKey && e.key === 'ArrowUp') {
+                e.preventDefault();
+                onBlockAction?.({
+                    action: 'move',
+                    blockId: selectedBlockId,
+                    dir: 'up'
+                });
+            } else if (e.altKey && e.key === 'ArrowDown') {
+                e.preventDefault();
+                onBlockAction?.({
+                    action: 'move',
+                    blockId: selectedBlockId,
+                    dir: 'down'
+                });
+            }
+        };
+        window.addEventListener('keydown', onKeyDown);
+        return ()=>window.removeEventListener('keydown', onKeyDown);
+    }, [
+        open,
+        builderMode,
+        selectedBlockId,
         onBlockAction,
         setSelectedBlockId
     ]);
@@ -412,16 +465,31 @@ export function LivePreviewPanel({ open, onBlockAction, builderMode = false, pre
                                 })
                             }, mode))
                     }),
-                    /*#__PURE__*/ _jsx("button", {
-                        type: "button",
-                        "aria-label": t('shadcnAdmin:openPreviewInNewTab'),
-                        title: t('shadcnAdmin:openPreviewInNewTab'),
-                        onClick: openInNewTab,
-                        disabled: !previewUrl,
-                        className: "inline-flex size-6 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-40",
-                        children: /*#__PURE__*/ _jsx(ExternalLinkIcon, {
-                            className: "size-3.5"
-                        })
+                    /*#__PURE__*/ _jsxs("div", {
+                        className: "flex items-center gap-2",
+                        children: [
+                            isUpdating ? /*#__PURE__*/ _jsxs("span", {
+                                className: "flex items-center gap-1.5 text-xs text-muted-foreground",
+                                "aria-live": "polite",
+                                children: [
+                                    /*#__PURE__*/ _jsx("span", {
+                                        className: "size-1.5 animate-pulse rounded-full bg-amber-500"
+                                    }),
+                                    t('shadcnAdmin:previewUpdating')
+                                ]
+                            }) : null,
+                            /*#__PURE__*/ _jsx("button", {
+                                type: "button",
+                                "aria-label": t('shadcnAdmin:openPreviewInNewTab'),
+                                title: t('shadcnAdmin:openPreviewInNewTab'),
+                                onClick: openInNewTab,
+                                disabled: !previewUrl,
+                                className: "inline-flex size-6 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-40",
+                                children: /*#__PURE__*/ _jsx(ExternalLinkIcon, {
+                                    className: "size-3.5"
+                                })
+                            })
+                        ]
                     })
                 ]
             }),
