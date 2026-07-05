@@ -151,6 +151,10 @@ export type AutoDocFormBridgeProps = {
   /** v3.8 — locale to start in. Set by the RSC wrapper from URL `?locale=`
    *  or `defaultLocale`. */
   initialLocale?: string
+  /** Name of the `blocks` field the page-builder layer treats as the editable
+   *  layout, resolved by the RSC wrapper from the plugin's `livePreview`
+   *  option (default `'layout'`). */
+  blocksFieldName?: string
 }
 
 const PLUGIN_NAMESPACE = 'plugin-shadcn-admin'
@@ -805,6 +809,7 @@ export function AutoDocFormBridge({
   locales,
   defaultLocale,
   initialLocale,
+  blocksFieldName = 'layout',
 }: AutoDocFormBridgeProps): React.ReactElement {
   const { t } = useTranslation<
     ShadcnAdminTranslationsObject,
@@ -1025,28 +1030,31 @@ export function AutoDocFormBridge({
 
   // ── Page-builder layer (see LIVE-PREVIEW.md) ────────────────────────────
   // Click-to-select/reorder/duplicate/delete/add blocks, driven from the
-  // Live Preview iframe's own floating toolbar rather than this form. Scoped
-  // to the `pages` collection's `layout` blocks field — the same scope the
-  // rest of Live Preview already has (apps/web's `ALLOWED_COLLECTIONS` hard-
-  // codes `pages`); this just makes that scoping explicit admin-side too.
-  // `layout` isn't necessarily a TOP-level field — Pages.ts nests it inside
-  // an unnamed "Content" tab (`collectLocalizedSchemaPaths` above already has
-  // to walk this same shape for the same reason: an unnamed tab contributes
-  // no path segment, so `layout`'s VALUE path is still bare `layout`, but its
-  // FIELD DEFINITION isn't in `collection.fields` directly).
+  // Live Preview iframe's own floating toolbar rather than this form.
+  // Auto-activates for ANY collection with `admin.livePreview` on that also
+  // has a `blocks` field named `blocksFieldName` (default `'layout'`,
+  // configurable via the plugin's `livePreview` option) — `admin.livePreview`
+  // is already the per-collection opt-in, so no separate allowlist is
+  // needed. apps/web's `ALLOWED_COLLECTIONS` still needs its own one-line
+  // addition per collection (a consumer-side wiring step, not this plugin's
+  // concern). `blocksFieldName` isn't necessarily a TOP-level field —
+  // Pages.ts nests it inside an unnamed "Content" tab
+  // (`collectLocalizedSchemaPaths` above already has to walk this same shape
+  // for the same reason: an unnamed tab contributes no path segment, so the
+  // field's VALUE path is still bare, but its FIELD DEFINITION isn't in
+  // `collection.fields` directly).
   const layoutField = React.useMemo(
-    () => findBlocksField(collection.fields, 'layout'),
-    [collection.fields],
+    () => findBlocksField(collection.fields, blocksFieldName),
+    [collection.fields, blocksFieldName],
   )
   // Whether this collection HAS the page-builder layer wired up at all —
   // a static per-collection capability, never toggled at runtime. Keeps the
   // nested (preview | settings) `ResizablePanelGroup` below permanently
-  // mounted for `pages` regardless of the "Edit blocks" toggle
-  // (`builderModeOpen`, below) — swapping THIS flag at runtime would remount
-  // `LivePreviewPanel` (reloading the iframe, losing `detachedWindowRef`),
-  // so it must only ever reflect collection shape, not UI state.
-  const pageBuilderAvailable =
-    livePreviewEnabled && collectionSlug === 'pages' && Boolean(layoutField)
+  // mounted regardless of the "Edit blocks" toggle (`builderModeOpen`,
+  // below) — swapping THIS flag at runtime would remount `LivePreviewPanel`
+  // (reloading the iframe, losing `detachedWindowRef`), so it must only ever
+  // reflect collection shape, not UI state.
+  const pageBuilderAvailable = livePreviewEnabled && Boolean(layoutField)
 
   // Live Preview Pass 2 (server-merge protocol, see LIVE-PREVIEW.md) — the
   // doc projected to the active locale, fed to `LivePreviewPanel`'s merge
@@ -1094,14 +1102,14 @@ export function AutoDocFormBridge({
     if (!builderModeOpen) setSelectedBlockId(null)
   }, [builderModeOpen])
 
-  // Locale-aware base path for `layout`'s rows — mirrors how
+  // Locale-aware base path for the blocks field's rows — mirrors how
   // `makeFieldTreeRenderer`'s `renderField` computes `childBasePath` for a
-  // localized array/blocks field, rather than hardcoding `'layout'`. Kept in
-  // sync with that logic so this stays correct if `layout` is ever localized.
+  // localized array/blocks field. Kept in sync with that logic so this stays
+  // correct if the field is ever localized.
   const layoutBasePath =
     layoutField?.localized && localizationEnabled && activeLocale
-      ? `layout.${activeLocale}`
-      : 'layout'
+      ? `${layoutField.name}.${activeLocale}`
+      : (layoutField?.name ?? blocksFieldName)
 
   // Normalized mirror of `values` at `layoutBasePath` — same shape/defaulting
   // `BlocksInput` uses internally, kept independent here since the settings
@@ -1121,7 +1129,7 @@ export function AutoDocFormBridge({
   const layoutFieldPerms = React.useMemo(
     () =>
       layoutField
-        ? (subPerms(documentInfo.docPermissions as Perms, 'layout') as
+        ? (subPerms(documentInfo.docPermissions as Perms, layoutField.name) as
             | Perms
             | undefined)
         : undefined,
@@ -2109,13 +2117,14 @@ export function AutoDocFormBridge({
     // settings panel to have taken it over in that mode, and the main form
     // stays fully visible beside the preview. Only entering builder mode
     // (which hides the main form's content wrapper entirely, see below)
-    // moves `layout`'s editor into BlockSettingsPanel. `layout` isn't
-    // necessarily top-level (Pages.ts nests it inside a tab), so this has to
-    // be checked at the point every field bottoms out (`renderField`), not by
-    // filtering `collection.fields` — see `skipField`'s own doc comment.
+    // moves the blocks field's editor into BlockSettingsPanel. The field
+    // isn't necessarily top-level (Pages.ts nests `layout` inside a tab), so
+    // this has to be checked at the point every field bottoms out
+    // (`renderField`), not by filtering `collection.fields` — see
+    // `skipField`'s own doc comment.
     skipField:
       pageBuilderAvailable && builderModeOpen
-        ? (field) => field.type === 'blocks' && field.name === 'layout'
+        ? (field) => field.type === 'blocks' && field.name === layoutField?.name
         : undefined,
   })
 

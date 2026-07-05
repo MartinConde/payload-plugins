@@ -126,6 +126,24 @@ export interface PluginConfig {
      * - object: enable with the given options (all sub-fields optional).
      */
     rebuildFrontend?: RebuildFrontendConfig | false;
+    /**
+     * Configure the page-builder layer (see LIVE-PREVIEW.md). Page builder
+     * auto-activates for any collection that has `admin.livePreview` enabled
+     * AND a top-level or nested `blocks` field named `blocksFieldName` — no
+     * per-collection allowlist needed, since `admin.livePreview` is already the
+     * per-collection opt-in signal.
+     */
+    livePreview?: LivePreviewConfig;
+}
+export interface LivePreviewConfig {
+    /**
+     * Name of the `blocks` field the page-builder layer treats as the editable
+     * layout (looked up via a recursive search through row/tabs/group/
+     * collapsible wrappers, so it doesn't need to be top-level).
+     *
+     * Default: `'layout'`.
+     */
+    blocksFieldName?: string;
 }
 export interface RebuildFrontendConfig {
     /**

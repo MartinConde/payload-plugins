@@ -316,6 +316,12 @@ export const shadcnAdminPlugin =
       // Always stash the skip list (empty array when none) so the client
       // AdminProviders banner can rely on a stable shape.
       skippedDocViews,
+      // Always stash a resolved livePreview config (default blocksFieldName
+      // 'layout') so AutoCollectionDocView can read a stable shape regardless
+      // of whether the consumer passed the option.
+      livePreview: {
+        blocksFieldName: options.livePreview?.blocksFieldName ?? 'layout',
+      },
     }
 
     // defaultNav: install DefaultNav at admin.components.Nav, stash branding

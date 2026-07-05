@@ -291,6 +291,17 @@ export async function AutoCollectionDocView(
 
   const hasVersions = Boolean(serializableCollection.versions)
 
+  // Page-builder blocks-field name — resolved from the plugin's own
+  // config.custom stash (written by shadcnAdminPlugin's `livePreview` option),
+  // same read-back pattern DefaultNav.tsx uses for `nav`/`rebuildFrontend`.
+  // Defaults to 'layout' when the plugin option was never set.
+  const blocksFieldName =
+    (
+      payload?.config?.custom as
+        | { 'plugin-shadcn-admin'?: { livePreview?: { blocksFieldName?: string } } }
+        | undefined
+    )?.['plugin-shadcn-admin']?.livePreview?.blocksFieldName ?? 'layout'
+
   const t = serverProps.i18n.t
   const breadcrumbs = isGlobal
     ? [
@@ -338,6 +349,7 @@ export async function AutoCollectionDocView(
         locales={locales}
         defaultLocale={defaultLocale}
         initialLocale={initialLocale}
+        blocksFieldName={blocksFieldName}
       />
     </ViewShell>
   )

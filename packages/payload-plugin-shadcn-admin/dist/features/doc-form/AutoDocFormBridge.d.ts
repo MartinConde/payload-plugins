@@ -45,6 +45,10 @@ export type AutoDocFormBridgeProps = {
     /** v3.8 — locale to start in. Set by the RSC wrapper from URL `?locale=`
      *  or `defaultLocale`. */
     initialLocale?: string;
+    /** Name of the `blocks` field the page-builder layer treats as the editable
+     *  layout, resolved by the RSC wrapper from the plugin's `livePreview`
+     *  option (default `'layout'`). */
+    blocksFieldName?: string;
 };
-export declare function AutoDocFormBridge({ mode, collectionSlug, globalSlug, docId, collection, useAsTitleBySlug, uploadCollectionsBySlug, initialValues, initialRichTextRendered, operation: operationProp, initialUploadDoc, locales, defaultLocale, initialLocale, }: AutoDocFormBridgeProps): React.ReactElement;
+export declare function AutoDocFormBridge({ mode, collectionSlug, globalSlug, docId, collection, useAsTitleBySlug, uploadCollectionsBySlug, initialValues, initialRichTextRendered, operation: operationProp, initialUploadDoc, locales, defaultLocale, initialLocale, blocksFieldName, }: AutoDocFormBridgeProps): React.ReactElement;
 export {};
