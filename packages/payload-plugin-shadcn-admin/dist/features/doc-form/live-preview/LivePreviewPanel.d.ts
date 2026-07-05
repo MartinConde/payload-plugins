@@ -22,6 +22,13 @@ export type LivePreviewPanelProps = {
      *  message listener below still installs regardless, since a non-page-
      *  builder frontend will simply never send these messages. */
     onBlockAction?: (action: PageBuilderBlockAction) => void;
+    /** The doc-root form state, projected to the active locale (see
+     *  `AutoDocFormBridge`'s `previewData` — reuses `projectLocaleAtLeaves`,
+     *  the same helper `submit()` applies before PATCHing). `null` when Live
+     *  Preview isn't enabled for this collection. Posted to the preview under
+     *  the CANONICAL `payload-live-preview` type — see the merge-sender effect
+     *  below for why that type is reserved for this and not the save nudge. */
+    previewData?: Record<string, unknown> | null;
     /** Whether the "Edit blocks" toggle is on. Baked into the embedded
      *  iframe's URL as a `pageBuilder=1` query param (see LIVE-PREVIEW.md) —
      *  NOT a postMessage toggle. The frontend's `installPageBuilder` only
@@ -35,4 +42,4 @@ export type LivePreviewPanelProps = {
      *  to there anyway). */
     builderMode?: boolean;
 };
-export declare function LivePreviewPanel({ open, onBlockAction, builderMode, }: LivePreviewPanelProps): React.JSX.Element;
+export declare function LivePreviewPanel({ open, onBlockAction, builderMode, previewData, }: LivePreviewPanelProps): React.JSX.Element;

@@ -57,7 +57,7 @@ const DEVICE_WIDTH = {
     tablet: '768px',
     desktop: null
 };
-export function LivePreviewPanel({ open, onBlockAction, builderMode = false }) {
+export function LivePreviewPanel({ open, onBlockAction, builderMode = false, previewData = null }) {
     const { t } = useTranslation();
     const { config } = useConfig();
     const apiRoute = config.routes?.api;
@@ -150,6 +150,15 @@ export function LivePreviewPanel({ open, onBlockAction, builderMode = false }) {
     // autosaveInterval) before a save even happens, and `lastSavedAt` only
     // changes once per completed save.
     //
+    // Posted under `payload-live-preview-refetch`, NOT the canonical
+    // `payload-live-preview` type (Live Preview Pass 2) — `PreviewApp`'s
+    // `@payloadcms/live-preview` `subscribe()` treats ANY `payload-live-preview`
+    // message with no `collectionSlug` as "reset to initialData" (verified in
+    // its `handleMessage` source), which is exactly this nudge's shape. Renaming
+    // it keeps it invisible to `subscribe()` entirely; only this component's own
+    // `onMessage`-style listener (below, and the frontend's mirror of it) acts
+    // on it, as a save/error reconciliation backstop for the merge sender below.
+    //
     // The detached-tab branch deliberately ignores `open` (the embedded
     // panel's visibility) — this component never actually unmounts when
     // toggled closed (see `if (!open) return null` below; same component
@@ -169,7 +178,7 @@ export function LivePreviewPanel({ open, onBlockAction, builderMode = false }) {
             if (iframeWin) {
                 try {
                     iframeWin.postMessage({
-                        type: 'payload-live-preview'
+                        type: 'payload-live-preview-refetch'
                     }, targetOrigin);
                 } catch  {
                 // Ignore — best-effort nudge.
@@ -180,7 +189,7 @@ export function LivePreviewPanel({ open, onBlockAction, builderMode = false }) {
         if (detachedWin && !detachedWin.closed) {
             try {
                 detachedWin.postMessage({
-                    type: 'payload-live-preview'
+                    type: 'payload-live-preview-refetch'
                 }, targetOrigin);
             } catch  {
             // Ignore — best-effort nudge.
@@ -190,6 +199,91 @@ export function LivePreviewPanel({ open, onBlockAction, builderMode = false }) {
         lastSavedAt,
         open,
         previewUrl
+    ]);
+    // Live Preview Pass 2 — merge sender. Posts `previewData` (the doc-root
+    // form state, locale-projected by the bridge) under the CANONICAL
+    // `payload-live-preview` type — the one `PreviewApp`'s `subscribe()`
+    // listens for, which POSTs it to Payload's findByID via a same-origin
+    // proxy and gets back fresh `richText_html`/populated media computed from
+    // this UNSAVED state (see LIVE-PREVIEW.md). Debounced ~200ms (keystroke
+    // rate) — much shorter than the persisted-save nudge above, which stays as
+    // a reconciliation backstop (e.g. after a save error).
+    const previewDataRef = React.useRef(previewData);
+    React.useEffect(()=>{
+        previewDataRef.current = previewData;
+    }, [
+        previewData
+    ]);
+    const postMergeData = React.useCallback((targetOrigin)=>{
+        const data = previewDataRef.current;
+        if (data == null) return;
+        const msg = {
+            type: 'payload-live-preview',
+            data,
+            collectionSlug,
+            locale: activeLocale
+        };
+        if (open) {
+            const iframeWin = iframeRef.current?.contentWindow;
+            if (iframeWin) {
+                try {
+                    iframeWin.postMessage(msg, targetOrigin);
+                } catch  {
+                // Ignore — best-effort.
+                }
+            }
+        }
+        const detachedWin = detachedWindowRef.current;
+        if (detachedWin && !detachedWin.closed) {
+            try {
+                detachedWin.postMessage(msg, targetOrigin);
+            } catch  {
+            // Ignore — best-effort.
+            }
+        }
+    }, [
+        open,
+        collectionSlug,
+        activeLocale
+    ]);
+    React.useEffect(()=>{
+        if (!previewUrl || previewData == null) return;
+        let targetOrigin;
+        try {
+            targetOrigin = new URL(previewUrl).origin;
+        } catch  {
+            return;
+        }
+        const timer = window.setTimeout(()=>postMergeData(targetOrigin), 200);
+        return ()=>window.clearTimeout(timer);
+    }, [
+        previewData,
+        previewUrl,
+        postMergeData
+    ]);
+    // Send once, immediately (no debounce), the moment the preview reports
+    // `ready` (its outbound `{type:'payload-live-preview', ready:true}`
+    // handshake) — syncs the preview before the first edit rather than waiting
+    // on a `previewData` change.
+    React.useEffect(()=>{
+        if (!previewUrl) return;
+        let targetOrigin;
+        try {
+            targetOrigin = new URL(previewUrl).origin;
+        } catch  {
+            return;
+        }
+        const onReady = (event)=>{
+            if (event.origin !== targetOrigin) return;
+            if (event.data?.type === 'payload-live-preview' && event.data?.ready === true) {
+                postMergeData(targetOrigin);
+            }
+        };
+        window.addEventListener('message', onReady);
+        return ()=>window.removeEventListener('message', onReady);
+    }, [
+        previewUrl,
+        postMergeData
     ]);
     // Inbound half of the page-builder protocol — see the file header comment.
     // Origin-checked against the resolved preview URL (same trust boundary the

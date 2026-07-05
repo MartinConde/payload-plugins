@@ -768,6 +768,22 @@ export function AutoDocFormBridge({ mode, collectionSlug, globalSlug, docId, col
     // `LivePreviewPanel` (reloading the iframe, losing `detachedWindowRef`),
     // so it must only ever reflect collection shape, not UI state.
     const pageBuilderAvailable = livePreviewEnabled && collectionSlug === 'pages' && Boolean(layoutField);
+    // Live Preview Pass 2 (server-merge protocol, see LIVE-PREVIEW.md) — the
+    // doc projected to the active locale, fed to `LivePreviewPanel`'s merge
+    // sender. Reuses the SAME `projectLocaleAtLeaves` helper `submit()` already
+    // applies before PATCHing (below), so the preview receives exactly the
+    // flat, single-locale shape `getDraftDoc`/`BlocksRenderer` already consume —
+    // not the raw `{en:…, fr:…}`-keyed `values` this form holds internally.
+    // Computed here (not in the panel) because it needs `collection.fields`,
+    // the schema `projectLocaleAtLeaves` walks; the panel only owns the
+    // postMessage transport.
+    const previewData = React.useMemo(()=>livePreviewEnabled ? projectLocaleAtLeaves(values, collection.fields, activeLocale ?? fallbackLocale ?? 'en') : null, [
+        livePreviewEnabled,
+        values,
+        collection.fields,
+        activeLocale,
+        fallbackLocale
+    ]);
     const [selectedBlockId, setSelectedBlockId] = React.useState(null);
     const pageBuilderCtx = React.useMemo(()=>({
             selectedBlockId,
@@ -2046,7 +2062,8 @@ export function AutoDocFormBridge({ mode, collectionSlug, globalSlug, docId, col
                                                         children: /*#__PURE__*/ _jsx(LivePreviewPanel, {
                                                             open: livePreviewOpen,
                                                             onBlockAction: handlePageBuilderAction,
-                                                            builderMode: builderModeOpen
+                                                            builderMode: builderModeOpen,
+                                                            previewData: previewData
                                                         })
                                                     }),
                                                     /*#__PURE__*/ _jsx(ResizableHandle, {
@@ -2077,7 +2094,8 @@ export function AutoDocFormBridge({ mode, collectionSlug, globalSlug, docId, col
                                                     })
                                                 ]
                                             }) : /*#__PURE__*/ _jsx(LivePreviewPanel, {
-                                                open: livePreviewOpen
+                                                open: livePreviewOpen,
+                                                previewData: previewData
                                             })
                                         })
                                     })
