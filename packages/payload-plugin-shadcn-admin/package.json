@@ -5,40 +5,35 @@
   "license": "MIT",
   "private": true,
   "type": "module",
-  "sideEffects": [
-    "**/*.css"
-  ],
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
       "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
       "default": "./dist/index.js"
     },
     "./client": {
-      "import": "./dist/exports/client.js",
       "types": "./dist/exports/client.d.ts",
+      "import": "./dist/exports/client.js",
       "default": "./dist/exports/client.js"
     },
     "./rsc": {
-      "import": "./dist/exports/rsc.js",
       "types": "./dist/exports/rsc.d.ts",
+      "import": "./dist/exports/rsc.js",
       "default": "./dist/exports/rsc.js"
     },
     "./types": {
-      "import": "./dist/exports/types.js",
       "types": "./dist/exports/types.d.ts",
+      "import": "./dist/exports/types.js",
       "default": "./dist/exports/types.js"
-    },
-    "./styles.css": "./dist/styles.css",
-    "./themes.css": "./dist/themes.css"
+    }
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "pnpm run copyfiles && pnpm run build:types && pnpm run build:swc",
+    "build": "pnpm run clean && pnpm run copyfiles && pnpm run build:types && pnpm run build:swc && pnpm run check:internals",
     "build:swc": "swc ./src -d ./dist --config-file .swcrc --strip-leading-paths",
     "build:types": "tsc --emitDeclarationOnly --outDir dist",
     "copyfiles": "copyfiles -u 1 \"src/**/*.css\" dist/",
@@ -54,14 +49,9 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@tanstack/react-table": "^8.21.3",
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
-    "cmdk": "^1.1.1",
     "lucide-react": "^1.18.0",
     "qs-esm": "^8.0.1",
-    "react-day-picker": "^10.0.1",
-    "react-resizable-panels": "^4.12.1",
-    "tailwind-merge": "^3.6.0"
+    "react-resizable-panels": "^4.12.1"
   },
   "peerDependencies": {
     "@payloadcms/next": ">=3.84 <3.90",

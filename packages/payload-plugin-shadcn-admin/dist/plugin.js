@@ -32,7 +32,6 @@ const REBUILD_FRONTEND_DEFAULT_LABEL = 'Rebuild Frontend';
     inactivity: 'payload-plugin-shadcn-admin/rsc#AutoLogoutInactivityView',
     unauthorized: 'payload-plugin-shadcn-admin/rsc#AutoUnauthorizedView'
 };
-const warnedSkips = new Set();
 const buildSelector = (target)=>{
     if (target === 'all') return ()=>true;
     const set = new Set(target);
@@ -57,7 +56,7 @@ const installAutoListView = (collection)=>{
         }
     };
 };
-const installAutoDocView = (collection, skipped)=>{
+const installAutoDocView = (collection, skipped, warnedSkips)=>{
     // Consumer-defined edit view (any non-empty value) wins.
     if (collection.admin?.components?.views?.edit) return collection;
     // Pre-flight: skip if any required field is outside the v1 doc-form matrix
@@ -124,7 +123,7 @@ const installAutoDocView = (collection, skipped)=>{
    the RSC components branch on `initPageResult.globalConfig` at render time —
    so we reuse the exact same component paths. Singletons have no list view and
    no create mode; the differences (upsert wire, no doc ID) live in the
-   components, not the registration. */ const installAutoGlobalDocView = (global, skipped)=>{
+   components, not the registration. */ const installAutoGlobalDocView = (global, skipped, warnedSkips)=>{
     // Consumer-defined edit view (any non-empty value) wins.
     if (global.admin?.components?.views?.edit) return global;
     // Same eligibility skip as collections. `findBlockingRequiredFields` reads
@@ -220,13 +219,18 @@ const installAutoDocView = (collection, skipped)=>{
         // to wrap. Surfaced on `config.custom['plugin-shadcn-admin'].skippedDocViews`
         // below so the client banner can list them.
         const skippedDocViews = [];
+        // Per-invocation "warned once" state (not module-scope) so repeated
+        // `shadcnAdminPlugin()` calls in one process — HMR, tests, multi-tenant
+        // configs — each get a fresh warning pass instead of silently inheriting
+        // suppression from an earlier build.
+        const warnedSkips = new Set();
         // defaultDocView: install AutoCollectionDocView on matching collections.
         // Runs over the (possibly already list-view-wrapped) collections from the
         // previous pass so consumer-wins guards still apply.
         const docTarget = options.defaultDocView ?? false;
         if (docTarget !== false) {
             const selector = buildSelector(docTarget);
-            next.collections = (next.collections ?? config.collections ?? []).map((collection)=>selector(collection.slug) ? installAutoDocView(collection, skippedDocViews) : collection);
+            next.collections = (next.collections ?? config.collections ?? []).map((collection)=>selector(collection.slug) ? installAutoDocView(collection, skippedDocViews, warnedSkips) : collection);
         }
         // defaultGlobalView: install AutoCollectionDocView (global branch) on
         // matching globals. Mirrors the defaultDocView pass but walks
@@ -234,7 +238,7 @@ const installAutoDocView = (collection, skipped)=>{
         const globalTarget = options.defaultGlobalView ?? false;
         if (globalTarget !== false) {
             const selector = buildSelector(globalTarget);
-            next.globals = (config.globals ?? []).map((global)=>selector(global.slug) ? installAutoGlobalDocView(global, skippedDocViews) : global);
+            next.globals = (config.globals ?? []).map((global)=>selector(global.slug) ? installAutoGlobalDocView(global, skippedDocViews, warnedSkips) : global);
         }
         // Build the plugin's config.custom stash incrementally so that all keys
         // (`skippedDocViews`, `nav`, `rebuildFrontend`) coexist regardless of

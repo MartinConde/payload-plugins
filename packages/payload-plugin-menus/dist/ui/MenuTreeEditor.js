@@ -183,11 +183,13 @@ export function MenuTreeEditor(props) {
     const collectionLabels = React.useMemo(()=>{
         const out = {};
         const cols = config?.collections;
+        const defaultLocale = config?.localization?.defaultLocale;
+        const localeFallback = typeof defaultLocale === 'string' ? defaultLocale : 'en';
         for (const c of cols ?? []){
             const slug = String(c.slug);
             const labels = c.labels;
             const singular = labels?.singular;
-            out[slug] = typeof singular === 'string' ? singular : singular && typeof singular === 'object' ? String(singular[activeLocale ?? 'en'] ?? Object.values(singular)[0] ?? slug) : slug;
+            out[slug] = typeof singular === 'string' ? singular : singular && typeof singular === 'object' ? String(singular[activeLocale ?? localeFallback] ?? Object.values(singular)[0] ?? slug) : slug;
         }
         return out;
     }, [

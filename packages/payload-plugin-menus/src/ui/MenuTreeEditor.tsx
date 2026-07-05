@@ -271,6 +271,11 @@ export function MenuTreeEditor(props: FieldInputProps): React.ReactElement {
     const out: Record<string, string> = {}
     const cols = (config as { collections?: Array<Record<string, unknown>> } | undefined)
       ?.collections
+    const defaultLocale =
+      (config as { localization?: { defaultLocale?: unknown } } | undefined)
+        ?.localization?.defaultLocale
+    const localeFallback =
+      typeof defaultLocale === 'string' ? defaultLocale : 'en'
     for (const c of cols ?? []) {
       const slug = String(c.slug)
       const labels = c.labels as { singular?: unknown } | undefined
@@ -280,7 +285,9 @@ export function MenuTreeEditor(props: FieldInputProps): React.ReactElement {
           ? singular
           : singular && typeof singular === 'object'
             ? String(
-                (singular as Record<string, unknown>)[activeLocale ?? 'en'] ??
+                (singular as Record<string, unknown>)[
+                  activeLocale ?? localeFallback
+                ] ??
                   Object.values(singular as Record<string, unknown>)[0] ??
                   slug,
               )

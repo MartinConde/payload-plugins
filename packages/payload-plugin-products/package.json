@@ -5,30 +5,27 @@
   "license": "MIT",
   "private": true,
   "type": "module",
-  "sideEffects": [
-    "**/*.css"
-  ],
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
       "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
       "default": "./dist/index.js"
     },
     "./client": {
-      "import": "./dist/exports/client.js",
       "types": "./dist/exports/client.d.ts",
+      "import": "./dist/exports/client.js",
       "default": "./dist/exports/client.js"
     },
     "./types": {
-      "import": "./dist/exports/types.js",
       "types": "./dist/exports/types.d.ts",
+      "import": "./dist/exports/types.js",
       "default": "./dist/exports/types.js"
     },
     "./migrations": {
-      "import": "./dist/exports/migrations.js",
       "types": "./dist/exports/migrations.d.ts",
+      "import": "./dist/exports/migrations.js",
       "default": "./dist/exports/migrations.js"
     }
   },
@@ -36,7 +33,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "pnpm run build:types && pnpm run build:swc",
+    "build": "pnpm run clean && pnpm run build:types && pnpm run build:swc",
     "build:swc": "swc ./src -d ./dist --config-file .swcrc --strip-leading-paths",
     "build:types": "tsc --emitDeclarationOnly --outDir dist",
     "clean": "rimraf dist *.tsbuildinfo",
@@ -44,10 +41,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "clsx": "^2.1.1",
     "fabric": "^7.4.0",
-    "lucide-react": "^1.18.0",
-    "tailwind-merge": "^3.6.0"
+    "lucide-react": "^1.18.0"
   },
   "peerDependencies": {
     "@payloadcms/next": ">=3.84 <3.90",

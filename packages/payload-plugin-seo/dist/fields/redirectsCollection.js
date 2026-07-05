@@ -11,8 +11,14 @@ import { seoStatic, seoT } from '../translations.js';
             singular: seoStatic('pluginSeo:redirectSingular'),
             plural: seoStatic('pluginSeo:redirectPlural')
         },
+        // `access`/`admin`/`fields` are merged with `overrides` (not wholesale-
+        // replaced by a terminal spread) so a consumer adding e.g. `access.create`
+        // doesn't silently drop the public `read` rule, and `overrides.fields`
+        // extends rather than replaces `from`/`to`/`type`. Mirrors the
+        // menus/products collection builders.
         access: {
-            read: ()=>true
+            read: ()=>true,
+            ...overrides?.access
         },
         admin: {
             useAsTitle: 'from',
@@ -20,7 +26,8 @@ import { seoStatic, seoT } from '../translations.js';
                 'from',
                 'type'
             ],
-            description: seoT('pluginSeo:redirectsDesc')
+            description: seoT('pluginSeo:redirectsDesc'),
+            ...overrides?.admin
         },
         fields: [
             {
@@ -89,7 +96,12 @@ import { seoStatic, seoT } from '../translations.js';
                         value: '302'
                     }
                 ]
-            }
+            },
+            ...overrides?.fields ?? []
         ],
-        ...overrides
+        ...overrides ? Object.fromEntries(Object.entries(overrides).filter(([k])=>![
+                'access',
+                'admin',
+                'fields'
+            ].includes(k))) : {}
     });

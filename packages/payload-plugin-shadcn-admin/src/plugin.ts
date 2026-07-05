@@ -53,8 +53,6 @@ const AUTH_VIEW_PATHS: Record<string, string> = {
   unauthorized: 'payload-plugin-shadcn-admin/rsc#AutoUnauthorizedView',
 }
 
-const warnedSkips = new Set<string>()
-
 /* One entry per collection/global the plugin declined to auto-wrap because a
    required field falls outside the doc-form matrix. Stashed on
    `config.custom['plugin-shadcn-admin'].skippedDocViews` so the client
@@ -94,6 +92,7 @@ const installAutoListView = (collection: CollectionConfig): CollectionConfig => 
 const installAutoDocView = (
   collection: CollectionConfig,
   skipped: SkippedDocView[],
+  warnedSkips: Set<string>,
 ): CollectionConfig => {
   // Consumer-defined edit view (any non-empty value) wins.
   if (collection.admin?.components?.views?.edit) return collection
@@ -163,6 +162,7 @@ const installAutoDocView = (
 const installAutoGlobalDocView = (
   global: GlobalConfig,
   skipped: SkippedDocView[],
+  warnedSkips: Set<string>,
 ): GlobalConfig => {
   // Consumer-defined edit view (any non-empty value) wins.
   if (global.admin?.components?.views?.edit) return global
@@ -271,6 +271,11 @@ export const shadcnAdminPlugin =
     // to wrap. Surfaced on `config.custom['plugin-shadcn-admin'].skippedDocViews`
     // below so the client banner can list them.
     const skippedDocViews: SkippedDocView[] = []
+    // Per-invocation "warned once" state (not module-scope) so repeated
+    // `shadcnAdminPlugin()` calls in one process — HMR, tests, multi-tenant
+    // configs — each get a fresh warning pass instead of silently inheriting
+    // suppression from an earlier build.
+    const warnedSkips = new Set<string>()
 
     // defaultDocView: install AutoCollectionDocView on matching collections.
     // Runs over the (possibly already list-view-wrapped) collections from the
@@ -281,7 +286,7 @@ export const shadcnAdminPlugin =
       next.collections = (next.collections ?? config.collections ?? []).map(
         (collection) =>
           selector(collection.slug)
-            ? installAutoDocView(collection, skippedDocViews)
+            ? installAutoDocView(collection, skippedDocViews, warnedSkips)
             : collection,
       )
     }
@@ -294,7 +299,7 @@ export const shadcnAdminPlugin =
       const selector = buildSelector(globalTarget)
       next.globals = (config.globals ?? []).map((global) =>
         selector(global.slug)
-          ? installAutoGlobalDocView(global, skippedDocViews)
+          ? installAutoGlobalDocView(global, skippedDocViews, warnedSkips)
           : global,
       )
     }

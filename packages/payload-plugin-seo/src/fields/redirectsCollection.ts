@@ -26,11 +26,17 @@ export const buildRedirectsCollection = ({
     singular: seoStatic('pluginSeo:redirectSingular'),
     plural: seoStatic('pluginSeo:redirectPlural'),
   },
-  access: { read: () => true },
+  // `access`/`admin`/`fields` are merged with `overrides` (not wholesale-
+  // replaced by a terminal spread) so a consumer adding e.g. `access.create`
+  // doesn't silently drop the public `read` rule, and `overrides.fields`
+  // extends rather than replaces `from`/`to`/`type`. Mirrors the
+  // menus/products collection builders.
+  access: { read: () => true, ...overrides?.access },
   admin: {
     useAsTitle: 'from',
     defaultColumns: ['from', 'type'],
     description: seoT('pluginSeo:redirectsDesc'),
+    ...overrides?.admin,
   },
   fields: [
     {
@@ -88,6 +94,13 @@ export const buildRedirectsCollection = ({
         { label: seoT('pluginSeo:type302'), value: '302' },
       ],
     },
+    ...(overrides?.fields ?? []),
   ],
-  ...overrides,
+  ...(overrides
+    ? Object.fromEntries(
+        Object.entries(overrides).filter(
+          ([k]) => !['access', 'admin', 'fields'].includes(k),
+        ),
+      )
+    : {}),
 })

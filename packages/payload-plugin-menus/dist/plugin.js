@@ -21,6 +21,14 @@ const DEFAULT_LINKABLE = [
         const slug = options.slug ?? DEFAULT_SLUG;
         const linkableCollections = options.linkableCollections && options.linkableCollections.length > 0 ? options.linkableCollections : DEFAULT_LINKABLE;
         const localized = options.localized ?? true;
+        // Catch a mistyped/renamed slug early rather than failing silently at
+        // link-resolution time in the admin UI or the frontend's `resolveUrl`.
+        const existingCollectionSlugs = new Set((config.collections ?? []).map((c)=>c.slug));
+        const unknownLinkable = linkableCollections.filter((s)=>!existingCollectionSlugs.has(s));
+        if (unknownLinkable.length > 0) {
+            // eslint-disable-next-line no-console
+            console.warn(`[plugin-menus] linkableCollections includes unknown collection slug(s): ` + `${unknownLinkable.join(', ')}. Menu items targeting these will fail to resolve.`);
+        }
         const next = {
             ...config,
             // Merge our admin-UI translations under the `pluginMenus` namespace.

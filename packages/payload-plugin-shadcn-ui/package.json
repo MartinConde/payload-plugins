@@ -12,8 +12,8 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
       "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
       "default": "./dist/index.js"
     },
     "./styles.css": "./dist/styles.css",
@@ -23,7 +23,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "pnpm run copyfiles && pnpm run build:types && pnpm run build:swc",
+    "build": "pnpm run clean && pnpm run copyfiles && pnpm run build:types && pnpm run build:swc",
     "build:swc": "swc ./src -d ./dist --config-file .swcrc --strip-leading-paths",
     "build:types": "tsc --emitDeclarationOnly --outDir dist",
     "copyfiles": "copyfiles -u 1 \"src/**/*.css\" dist/",
@@ -33,10 +33,6 @@
     "print-source": "node scripts/print-source.mjs"
   },
   "dependencies": {
-    "@dnd-kit/core": "^6.3.1",
-    "@dnd-kit/modifiers": "^9.0.0",
-    "@dnd-kit/sortable": "^10.0.0",
-    "@dnd-kit/utilities": "^3.2.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",

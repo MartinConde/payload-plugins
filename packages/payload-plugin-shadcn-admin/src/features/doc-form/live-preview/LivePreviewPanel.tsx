@@ -126,7 +126,8 @@ export function LivePreviewPanel({
   const { collectionSlug, documentId } = useDocIdentity()
   const { activeLocale, lastSavedAt, isUpdating } = useDocFormValues()
   const { selectedBlockId, setSelectedBlockId } = usePageBuilder()
-  const locale = activeLocale ?? 'en'
+  const locale =
+    activeLocale ?? (config.localization && config.localization.defaultLocale) ?? 'en'
 
   const [previewUrl, setPreviewUrl] = React.useState<string | null>(null)
   // What the embedded iframe actually navigates to — `previewUrl` plus the
