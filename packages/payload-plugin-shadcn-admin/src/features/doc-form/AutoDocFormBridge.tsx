@@ -35,6 +35,7 @@ import type {
   ShadcnAdminTranslationsObject,
 } from '../../translations.js'
 
+import { arrayMove } from '@dnd-kit/sortable'
 import { Button, cn } from 'payload-plugin-shadcn-ui'
 import { CollectionUploadHeader } from './upload/CollectionUploadHeader.js'
 import {
@@ -47,6 +48,7 @@ import {
   DocFormValuesProvider,
   DocIdentityProvider,
   LocaleProvider,
+  PageBuilderProvider,
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
@@ -69,7 +71,13 @@ import {
 } from './drafts/draftsConfig.js'
 import { SchedulePublishPopover } from './schedule/SchedulePublishPopover.js'
 import { getSchedulePublishConfig } from './schedule/scheduleConfig.js'
-import { LivePreviewPanel } from './live-preview/LivePreviewPanel.js'
+import {
+  LivePreviewPanel,
+  type PageBuilderBlockAction,
+} from './live-preview/LivePreviewPanel.js'
+import { BlockSettingsPanel } from './live-preview/BlockSettingsPanel.js'
+import { newRow, ensureRowId, type BlockRow } from './inputs/BlocksInput.js'
+import { BlockPickerSheet } from './inputs/BlockPickerSheet.js'
 import {
   canRead,
   subPerms,
@@ -362,6 +370,42 @@ const topLevelOf = (path: string): string => {
    look up `field.localized` for paths that traverse repeating containers. */
 const stripPathIndices = (path: string): string =>
   path.replace(/\.\d+/g, '')
+
+/* Finds a top-level-NAMED `blocks` field anywhere in the schema — including
+   nested inside `tabs` (Pages.ts's `layout` lives inside an unnamed "Content"
+   tab, not directly in `collection.fields`), `group`, `row`, or `collapsible`.
+   Mirrors `collectLocalizedSchemaPaths`'s tree-walk just above. Does NOT
+   descend into `array`/other `blocks` fields' own subfields — `layout` is
+   never itself nested inside another blocks/array container in practice, and
+   stopping there keeps this a cheap targeted lookup rather than a full-schema
+   walk. */
+const findBlocksField = (
+  fields: ExtractedField[],
+  name: string,
+): (ExtractedField & { type: 'blocks' }) | undefined => {
+  for (const f of fields) {
+    if (f.type === 'blocks' && f.name === name) {
+      return f as ExtractedField & { type: 'blocks' }
+    }
+    if (f.type === 'row' || f.type === 'collapsible') {
+      const found = f.fields && findBlocksField(f.fields, name)
+      if (found) return found
+      continue
+    }
+    if (f.type === 'tabs') {
+      for (const tab of f.tabs ?? []) {
+        const found = findBlocksField(tab.fields, name)
+        if (found) return found
+      }
+      continue
+    }
+    if (f.type === 'group' && f.fields) {
+      const found = findBlocksField(f.fields, name)
+      if (found) return found
+    }
+  }
+  return undefined
+}
 
 /* v3.8 — walk the field schema once to collect the index-less paths that
    correspond to `localized: true` leaves. Used by `isPathLocalized` to decide
@@ -833,6 +877,16 @@ export function AutoDocFormBridge({
   const livePreviewEnabled =
     mode === 'edit' && !isGlobal && Boolean(collection.admin?.livePreview)
   const [livePreviewOpen, setLivePreviewOpen] = React.useState(false)
+  // "Edit blocks" — the second, opt-in mode on top of plain Live Preview
+  // (see LIVE-PREVIEW.md's "Preview-only vs builder mode"). Off by default:
+  // opening Live Preview alone gives the old preview-only experience (no
+  // clickable overlay in the iframe, no settings panel, main form fields
+  // stay visible beside a 50/50 split) — this flips on the click-to-
+  // select/reorder/duplicate/delete layer and takes over the full content
+  // area, since main-form + preview + settings all at once is too cramped
+  // to use. Declared up here (not beside the rest of the page-builder state
+  // further down) because the panel-resize effect right below reads it.
+  const [builderModeOpen, setBuilderModeOpen] = React.useState(false)
 
   // Below `md`, panels stack — dragging a resize handle on a touchscreen-width
   // form isn't useful, and react-resizable-panels' `orientation` prop is the
@@ -841,22 +895,59 @@ export function AutoDocFormBridge({
   // CSS).
   const isMobile = useIsMobile()
   const previewPanelRef = React.useRef<PanelImperativeHandle | null>(null)
+  // The outer group's OTHER panel (main form fields). Only needed so builder
+  // mode can collapse it to `0%` explicitly — plain `resize('100%')` on
+  // `previewPanelRef` would be clamped by main's own `minSize="30%"`, since
+  // that's a drag limit, not something an imperative `resize()` call
+  // overrides. `collapse()` is the one call that bypasses `minSize` and jumps
+  // straight to `collapsedSize` — the same reason `previewPanelRef` itself
+  // uses `.collapse()` above rather than `.resize('0%')`.
+  const mainPanelRef = React.useRef<PanelImperativeHandle | null>(null)
   // Animate only our own programmatic resize()/collapse() below, never a
   // user's drag (which must track the pointer 1:1) — flipped on right before
   // the imperative call and back off once the transition's had time to run.
   const [previewAnimating, setPreviewAnimating] = React.useState(false)
   React.useEffect(() => {
-    const panel = previewPanelRef.current
-    if (!panel) return
+    const previewPanel = previewPanelRef.current
+    const mainPanel = mainPanelRef.current
+    if (!previewPanel || !mainPanel) return
     setPreviewAnimating(true)
     // Bare numbers are pixels to this library (only unit-suffixed strings —
     // or unitless strings, which it treats as "%" — are percentages), so
     // `50` here would resize to 50px, not 50%.
-    if (livePreviewOpen) panel.resize('50%')
-    else panel.collapse()
+    //
+    // Both panels are driven EXPLICITLY in every branch below — this isn't
+    // redundant. The original 2-state version of this effect only ever
+    // touched `previewPanel`, relying on `resize()`/`collapse()` trading
+    // space with its ONE sibling to bring `mainPanel` along for free — true
+    // as long as `mainPanel` was NEVER itself explicitly collapsed. Now that
+    // builder mode DOES explicitly `mainPanel.collapse()` it, a transition
+    // straight from builder mode to fully-closed (or back to preview-only)
+    // skips the 50/50 middle state entirely, and the panel that was never
+    // told to move again (implicitly relying on "the trade already handled
+    // it") was left stuck at its stale 0%/collapsed size — a razor-thin
+    // sliver, not the intended layout. Always setting both explicitly (the
+    // shrinking side via `collapse()`, which is the one call that bypasses
+    // `minSize` and can reach a true 0%, followed by the growing side's
+    // `resize()` to its exact target) makes every transition correct
+    // regardless of which two states it's moving between.
+    if (!livePreviewOpen) {
+      previewPanel.collapse()
+      mainPanel.resize('100%')
+    } else if (builderModeOpen) {
+      // Builder mode: main collapses to 0%, preview takes the full 100% —
+      // the "takes over the entire content area" layout the page-builder
+      // needs (see LIVE-PREVIEW.md).
+      mainPanel.collapse()
+      previewPanel.resize('100%')
+    } else {
+      // Preview-only: the original 50/50 split.
+      mainPanel.resize('50%')
+      previewPanel.resize('50%')
+    }
     const timeout = setTimeout(() => setPreviewAnimating(false), 300)
     return () => clearTimeout(timeout)
-  }, [livePreviewOpen])
+  }, [livePreviewOpen, builderModeOpen])
 
   // Upload-collection state. The dropzone owns visual file state; the bridge
   // carries it across to the submit branch.
@@ -930,6 +1021,157 @@ export function AutoDocFormBridge({
       localizationEnabled && localizedSchemaPaths.has(stripPathIndices(path)),
     [localizationEnabled, localizedSchemaPaths],
   )
+
+  // ── Page-builder layer (see LIVE-PREVIEW.md) ────────────────────────────
+  // Click-to-select/reorder/duplicate/delete/add blocks, driven from the
+  // Live Preview iframe's own floating toolbar rather than this form. Scoped
+  // to the `pages` collection's `layout` blocks field — the same scope the
+  // rest of Live Preview already has (apps/web's `ALLOWED_COLLECTIONS` hard-
+  // codes `pages`); this just makes that scoping explicit admin-side too.
+  // `layout` isn't necessarily a TOP-level field — Pages.ts nests it inside
+  // an unnamed "Content" tab (`collectLocalizedSchemaPaths` above already has
+  // to walk this same shape for the same reason: an unnamed tab contributes
+  // no path segment, so `layout`'s VALUE path is still bare `layout`, but its
+  // FIELD DEFINITION isn't in `collection.fields` directly).
+  const layoutField = React.useMemo(
+    () => findBlocksField(collection.fields, 'layout'),
+    [collection.fields],
+  )
+  // Whether this collection HAS the page-builder layer wired up at all —
+  // a static per-collection capability, never toggled at runtime. Keeps the
+  // nested (preview | settings) `ResizablePanelGroup` below permanently
+  // mounted for `pages` regardless of the "Edit blocks" toggle
+  // (`builderModeOpen`, below) — swapping THIS flag at runtime would remount
+  // `LivePreviewPanel` (reloading the iframe, losing `detachedWindowRef`),
+  // so it must only ever reflect collection shape, not UI state.
+  const pageBuilderAvailable =
+    livePreviewEnabled && collectionSlug === 'pages' && Boolean(layoutField)
+
+  const [selectedBlockId, setSelectedBlockId] = React.useState<string | null>(
+    null,
+  )
+  const pageBuilderCtx = React.useMemo(
+    () => ({ selectedBlockId, setSelectedBlockId }),
+    [selectedBlockId],
+  )
+  // Closing the preview leaves no visual reference for what was selected —
+  // clear it (and drop out of builder mode) rather than let either go
+  // stale. Without clearing `selectedBlockId`, re-opening later (or even
+  // just the settings panel's collapse effect below, which also keys off
+  // `builderModeOpen`) would leave `BlockSettingsPanel` believing something
+  // is still selected while its panel is collapsed to `0%`, reintroducing
+  // the bleed-past-a-zero-width-box issue its doc comment describes.
+  React.useEffect(() => {
+    if (!livePreviewOpen) {
+      setSelectedBlockId(null)
+      setBuilderModeOpen(false)
+    }
+  }, [livePreviewOpen])
+  // Leaving builder mode (preview still open) drops the selection the same
+  // way — nothing in preview-only mode can select a block (no overlay
+  // installed in the iframe at all, see `pageBuilder` query param below), so
+  // a stale `selectedBlockId` from before exiting would only ever cause the
+  // same bleed-past-zero-width issue on re-entry.
+  React.useEffect(() => {
+    if (!builderModeOpen) setSelectedBlockId(null)
+  }, [builderModeOpen])
+
+  // Locale-aware base path for `layout`'s rows — mirrors how
+  // `makeFieldTreeRenderer`'s `renderField` computes `childBasePath` for a
+  // localized array/blocks field, rather than hardcoding `'layout'`. Kept in
+  // sync with that logic so this stays correct if `layout` is ever localized.
+  const layoutBasePath =
+    layoutField?.localized && localizationEnabled && activeLocale
+      ? `layout.${activeLocale}`
+      : 'layout'
+
+  // Normalized mirror of `values` at `layoutBasePath` — same shape/defaulting
+  // `BlocksInput` uses internally, kept independent here since the settings
+  // panel and the block-action handlers below both need to read/index it
+  // without going through that component.
+  const layoutRows = React.useMemo<BlockRow[]>(() => {
+    if (!pageBuilderAvailable) return []
+    const raw = getByPath(values, layoutBasePath)
+    if (!Array.isArray(raw)) return []
+    return raw.map((r) =>
+      r && typeof r === 'object'
+        ? ensureRowId(r as Record<string, unknown>)
+        : ensureRowId({}),
+    )
+  }, [pageBuilderAvailable, values, layoutBasePath])
+
+  const layoutFieldPerms = React.useMemo(
+    () =>
+      layoutField
+        ? (subPerms(documentInfo.docPermissions as Perms, 'layout') as
+            | Perms
+            | undefined)
+        : undefined,
+    [layoutField, documentInfo.docPermissions],
+  )
+
+  // Settings-panel `ResizablePanel`, same resize()/collapse()-on-effect
+  // pattern as `previewPanelRef` above — expands when a block is selected
+  // AND the preview is actually open, collapses otherwise.
+  //
+  // Lives in a NESTED `ResizablePanelGroup` (preview | settings) INSIDE the
+  // outer preview panel, rather than as a 3rd sibling of the outer group's
+  // (main | preview) pair — this is load-bearing, not a style choice.
+  // `react-resizable-panels`' imperative `panel.resize()` only ever trades
+  // space with that panel's ONE adjacent sibling (its internal pivot is
+  // `[index, index+1]`, i.e. exactly the two panels either side of a single
+  // drag handle) — it does not redistribute across the whole group. With 3
+  // flat siblings [main, preview, settings], calling `preview.resize('50%')`
+  // tried to take the space from its NEW neighbor `settings` (index+1)
+  // instead of `main` — and since `settings` starts collapsed at 0% with
+  // nothing to give, the resize was silently rejected and preview stayed at
+  // 0%, which fed back through its `onResize` handler as `asPercentage: 0`
+  // and immediately re-closed `livePreviewOpen` — a fixed-point that made
+  // the toggle button look inert. Confirmed by reading the installed
+  // `react-resizable-panels` source directly (`resize()`'s `pivotIndices`
+  // computation), not guessed from docs. Nesting keeps every group at
+  // exactly 2 panels, so each resize call's adjacent-pair math is exactly
+  // the same shape this file already had working for (main | preview) before
+  // this feature existed.
+  //
+  // Gating on `builderModeOpen` too (not just a selected block) matters: with
+  // the panel group's required `overflow: visible` (sticky positioning), any
+  // panel collapsed to `0%` must have NOTHING rendered inside it, or that
+  // content visibly bleeds out past its own zero-width box instead of being
+  // clipped — see BlockSettingsPanel's own doc comment on this. Only ever
+  // touched when `pageBuilderAvailable`, so it's a no-op for every other
+  // collection. Preview-only mode (`builderModeOpen` false) can never have a
+  // `selectedBlockId` anyway — the iframe doesn't even install the click
+  // overlay in that mode (see `pageBuilder` query param below) — but the
+  // explicit check keeps this panel's collapsed state correct through the
+  // brief window while `selectedBlockId` is being cleared on mode-exit.
+  const blockSettingsPanelRef = React.useRef<PanelImperativeHandle | null>(
+    null,
+  )
+  const [blockSettingsAnimating, setBlockSettingsAnimating] =
+    React.useState(false)
+  React.useEffect(() => {
+    if (!pageBuilderAvailable) return
+    const panel = blockSettingsPanelRef.current
+    if (!panel) return
+    const shouldOpen = builderModeOpen && Boolean(selectedBlockId)
+    // Skip a redundant call when already in the desired state — harmless
+    // now that this panel's group is properly isolated (2 panels), but
+    // still avoids pointless work/animation-flag churn on unrelated
+    // re-renders (e.g. every keystroke touches `builderModeOpen`'s deps via
+    // re-render, not just real open/close transitions).
+    if (shouldOpen === !panel.isCollapsed()) return
+    setBlockSettingsAnimating(true)
+    // Sized relative to the INNER group (preview | settings), which now
+    // occupies the OUTER group's full ~100% in builder mode (not ~50%, as
+    // when this ratio was first tuned for the 3-panel case) — 35% of that
+    // full width keeps the settings column a similar absolute size to
+    // before, without crowding out the embedded preview.
+    if (shouldOpen) panel.resize('35%')
+    else panel.collapse()
+    const timeout = setTimeout(() => setBlockSettingsAnimating(false), 300)
+    return () => clearTimeout(timeout)
+  }, [selectedBlockId, pageBuilderAvailable, builderModeOpen])
 
   // Per-locale dirty marker for localized paths. `dirty` (Set<string>) stays
   // as the union — drives "any dirty?" UX. `dirtyLocalesRef` tells us WHICH
@@ -1115,6 +1357,88 @@ export function AutoDocFormBridge({
     },
     [isPathLocalized, requestRichTextRebuild],
   )
+
+  // ── Page-builder block actions ──────────────────────────────────────────
+  // Driven from the Live Preview iframe's floating toolbar via
+  // LivePreviewPanel's `onBlockAction`. All route through the same
+  // `setValueAtPath(layoutBasePath, nextArray)` every other field write goes
+  // through — its structural array-diff above (keyed on row `id`) already
+  // handles richText rekey on reorder, so a plain splice is enough; there's
+  // no separate "blocks mutation" API to call, unlike payload-better-editor's
+  // dedicated MOVE_ROW/DUPLICATE_ROW/REMOVE_ROW form-reducer actions (this
+  // bridge has no such reducer — every write is just a value replacement).
+  const [addBlockPickerOpen, setAddBlockPickerOpen] = React.useState(false)
+  const [addAfterBlockId, setAddAfterBlockId] = React.useState<string | null>(
+    null,
+  )
+
+  const moveBlock = (blockId: string, dir: 'up' | 'down') => {
+    const idx = layoutRows.findIndex((r) => r.id === blockId)
+    if (idx < 0) return
+    const nextIdx = dir === 'up' ? idx - 1 : idx + 1
+    if (nextIdx < 0 || nextIdx >= layoutRows.length) return
+    setValueAtPath(layoutBasePath, arrayMove(layoutRows, idx, nextIdx))
+  }
+
+  const duplicateBlock = (blockId: string) => {
+    const idx = layoutRows.findIndex((r) => r.id === blockId)
+    if (idx < 0) return
+    const clone: BlockRow = {
+      ...layoutRows[idx],
+      id:
+        globalThis.crypto?.randomUUID?.() ??
+        `block-${Math.random().toString(36).slice(2, 10)}`,
+    }
+    const next = [...layoutRows]
+    next.splice(idx + 1, 0, clone)
+    setValueAtPath(layoutBasePath, next)
+    setSelectedBlockId(clone.id)
+  }
+
+  const deleteBlock = (blockId: string) => {
+    setValueAtPath(
+      layoutBasePath,
+      layoutRows.filter((r) => r.id !== blockId),
+    )
+    setSelectedBlockId((current) => (current === blockId ? null : current))
+  }
+
+  const requestAddBlock = (afterBlockId: string | null) => {
+    setAddAfterBlockId(afterBlockId)
+    setAddBlockPickerOpen(true)
+  }
+
+  // `BlockPickerSheet`'s `onSelect` — constructs the new row the same way
+  // `BlocksInput`'s own "+ Add block" button does (`newRow`, exported for
+  // exactly this reuse), so a page-builder-added block and a form-added
+  // block are indistinguishable afterward.
+  const handleBlockPicked = (slug: string) => {
+    const block = layoutField?.blocks?.find((b) => b.slug === slug)
+    if (!block) return
+    const row = newRow(block)
+    const insertAt =
+      addAfterBlockId == null
+        ? 0
+        : (() => {
+            const idx = layoutRows.findIndex((r) => r.id === addAfterBlockId)
+            return idx < 0 ? layoutRows.length : idx + 1
+          })()
+    const next = [...layoutRows]
+    next.splice(insertAt, 0, row)
+    setValueAtPath(layoutBasePath, next)
+    // A brand-new row may render as nothing in the preview until its
+    // required fields are filled in — auto-select regardless so the
+    // settings panel opens right away rather than leaving the user unsure
+    // anything happened.
+    setSelectedBlockId(row.id)
+  }
+
+  const handlePageBuilderAction = (action: PageBuilderBlockAction) => {
+    if (action.action === 'move') moveBlock(action.blockId, action.dir)
+    else if (action.action === 'duplicate') duplicateBlock(action.blockId)
+    else if (action.action === 'delete') deleteBlock(action.blockId)
+    else if (action.action === 'addRequest') requestAddBlock(action.afterBlockId)
+  }
 
   const discard = () => {
     setValues(baseline)
@@ -1756,6 +2080,25 @@ export function AutoDocFormBridge({
     useAsTitleBySlug,
     uploadCollectionsBySlug,
     operation,
+    // When the page-builder settings panel is actually ON SCREEN (builder
+    // mode, not just preview-only), don't ALSO render `layout`'s fields in
+    // the main form — a collapsed `SortableRow` in `BlocksInput` stays
+    // mounted (grid `0fr`, not unmount), so rendering the same block fields
+    // in both places at once would double-mount every richText editor in
+    // the layout. Gated on `builderModeOpen`, not `livePreviewOpen`:
+    // preview-ONLY mode (the default once Live Preview is open) shows
+    // `layout` right here via the ordinary `BlocksInput` — there's no
+    // settings panel to have taken it over in that mode, and the main form
+    // stays fully visible beside the preview. Only entering builder mode
+    // (which hides the main form's content wrapper entirely, see below)
+    // moves `layout`'s editor into BlockSettingsPanel. `layout` isn't
+    // necessarily top-level (Pages.ts nests it inside a tab), so this has to
+    // be checked at the point every field bottoms out (`renderField`), not by
+    // filtering `collection.fields` — see `skipField`'s own doc comment.
+    skipField:
+      pageBuilderAvailable && builderModeOpen
+        ? (field) => field.type === 'blocks' && field.name === 'layout'
+        : undefined,
   })
 
   const visibleTopLevel = React.useMemo(
@@ -1887,6 +2230,7 @@ export function AutoDocFormBridge({
     <LocaleProvider value={localeCtx}>
     <DocIdentityProvider value={docIdentityCtx}>
     <DocFormValuesProvider value={docFormValuesCtx}>
+    <PageBuilderProvider value={pageBuilderCtx}>
     <form
       noValidate
       onSubmit={(e) => {
@@ -1934,8 +2278,37 @@ export function AutoDocFormBridge({
               size="sm"
               onClick={() => setLivePreviewOpen((o) => !o)}
               aria-pressed={livePreviewOpen}
+              // Closing the preview out from under an open builder-mode
+              // session is what produced the stuck/sliver layout bug this
+              // comment is next to — the panel-resize effect above now
+              // handles that transition correctly regardless, but forcing
+              // "Exit block editor" first is still the clearer path for a
+              // user: closing Live Preview while mid-edit-a-block is
+              // surprising UX even when the layout itself no longer breaks.
+              disabled={builderModeOpen}
+              title={
+                builderModeOpen
+                  ? t('shadcnAdmin:exitBuilderModeFirst')
+                  : undefined
+              }
             >
               {livePreviewOpen ? t('shadcnAdmin:hidePreview') : t('shadcnAdmin:livePreview')}
+            </Button>
+          ) : null}
+          {/* Only once the preview is actually open — builder mode edits
+              blocks THROUGH the preview (click-to-select), so it doesn't mean
+              anything with the preview closed. */}
+          {pageBuilderAvailable && livePreviewOpen ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setBuilderModeOpen((o) => !o)}
+              aria-pressed={builderModeOpen}
+            >
+              {builderModeOpen
+                ? t('shadcnAdmin:exitBuilderMode')
+                : t('shadcnAdmin:builderMode')}
             </Button>
           ) : null}
           {draftsEnabled && schedulePublishConfig && mode === 'edit' ? (
@@ -2047,6 +2420,16 @@ export function AutoDocFormBridge({
           style={{ overflow: 'visible' }}
         >
           <ResizablePanel
+            panelRef={mainPanelRef}
+            // `collapsible`/`collapsedSize="0%"` so builder mode can take
+            // this down to a true 0 via `.collapse()` — a plain `resize()`
+            // call would stop at `minSize` instead (see `mainPanelRef`'s doc
+            // comment above). `minSize` stays as the drag limit for the
+            // ordinary preview-only 2-panel case; builder mode never drags
+            // this, it only ever calls `.collapse()`/`.resize()`
+            // imperatively.
+            collapsible
+            collapsedSize="0%"
             defaultSize="100%"
             minSize="30%"
             className={cn(
@@ -2055,11 +2438,20 @@ export function AutoDocFormBridge({
             )}
             style={{ overflow: 'visible' }}
           >
+            {/* `hidden` (not unmounted) while builder mode has taken over the
+                content area — same "stay mounted, don't remount" reasoning as
+                every other panel here, applied to the main form fields
+                themselves: unmounting would drop focus/cursor/local input
+                state the instant a user opens the block editor. The panel
+                itself is ALSO collapsed to `0%` (above) — this class only
+                stops its content bleeding past that zero-width box, exactly
+                like BlockSettingsPanel's own zero-width guard. */}
             <div
               className={cn(
                 'flex flex-col gap-6',
                 hasSidebar && !livePreviewOpen && 'lg:flex-row',
                 livePreviewOpen && 'lg:pr-6',
+                builderModeOpen && 'hidden',
               )}
             >
               <div className={hasSidebar ? 'flex flex-1 min-w-0 flex-col gap-4' : 'contents'}>
@@ -2090,7 +2482,10 @@ export function AutoDocFormBridge({
             </div>
           </ResizablePanel>
 
-          <ResizableHandle withHandle className={cn(!livePreviewOpen && 'hidden')} />
+          <ResizableHandle
+            withHandle
+            className={cn((!livePreviewOpen || builderModeOpen) && 'hidden')}
+          />
 
           <ResizablePanel
             panelRef={previewPanelRef}
@@ -2108,11 +2503,73 @@ export function AutoDocFormBridge({
             // toggle button — keep `livePreviewOpen` (and the button's
             // label) in sync either way. Also fires from our own
             // resize()/collapse() calls above and on mount; setting the same
-            // boolean value React already has is a no-op.
+            // boolean value React already has is a no-op. Only ever wired to
+            // `livePreviewOpen`, not `builderModeOpen` — builder mode is
+            // button-driven only (the handle that would let a user drag it
+            // is hidden in that state, see above), so there's no drag
+            // gesture here to sync back from.
             onResize={(size) => setLivePreviewOpen(size.asPercentage > 0)}
           >
             <div className={livePreviewOpen ? 'h-full lg:pl-6' : undefined}>
-              <LivePreviewPanel open={livePreviewOpen} />
+              {pageBuilderAvailable ? (
+                // Nested group, not a 3rd flat sibling of (main | preview) —
+                // `react-resizable-panels`' imperative `resize()` only trades
+                // space with ONE adjacent sibling, so the settings panel needs
+                // its own 2-panel group to correctly take space from the
+                // preview alone. See `blockSettingsPanelRef`'s doc comment
+                // above for the full story (this is the fix for a real bug,
+                // not a style preference).
+                <ResizablePanelGroup
+                  orientation={isMobile ? 'vertical' : 'horizontal'}
+                  className="h-full items-stretch gap-0"
+                  style={{ overflow: 'visible' }}
+                >
+                  <ResizablePanel
+                    defaultSize="100%"
+                    minSize="40%"
+                    className="min-w-0"
+                    style={{ overflow: 'visible' }}
+                  >
+                    <LivePreviewPanel
+                      open={livePreviewOpen}
+                      onBlockAction={handlePageBuilderAction}
+                      builderMode={builderModeOpen}
+                    />
+                  </ResizablePanel>
+
+                  <ResizableHandle
+                    withHandle
+                    className={cn(!selectedBlockId && 'hidden')}
+                  />
+
+                  <ResizablePanel
+                    panelRef={blockSettingsPanelRef}
+                    collapsible
+                    collapsedSize="0%"
+                    defaultSize="0%"
+                    minSize="25%"
+                    className={cn(
+                      'min-w-0',
+                      blockSettingsAnimating &&
+                        'transition-[flex-basis] duration-300 ease-in-out',
+                    )}
+                    style={{ overflow: 'visible' }}
+                  >
+                    <div className={selectedBlockId ? 'h-full lg:pl-6' : undefined}>
+                      <BlockSettingsPanel
+                        rows={layoutRows}
+                        blocks={layoutField?.blocks ?? []}
+                        layoutBasePath={layoutBasePath}
+                        renderChild={renderChild}
+                        blockPerms={layoutFieldPerms}
+                        disabled={submitting}
+                      />
+                    </div>
+                  </ResizablePanel>
+                </ResizablePanelGroup>
+              ) : (
+                <LivePreviewPanel open={livePreviewOpen} />
+              )}
             </div>
           </ResizablePanel>
         </ResizablePanelGroup>
@@ -2140,7 +2597,17 @@ export function AutoDocFormBridge({
         </div>
       )}
 
+      {pageBuilderAvailable ? (
+        <BlockPickerSheet
+          open={addBlockPickerOpen}
+          onOpenChange={setAddBlockPickerOpen}
+          blocks={layoutField?.blocks ?? []}
+          onSelect={handleBlockPicked}
+        />
+      ) : null}
+
     </form>
+    </PageBuilderProvider>
     </DocFormValuesProvider>
     </DocIdentityProvider>
     </LocaleProvider>

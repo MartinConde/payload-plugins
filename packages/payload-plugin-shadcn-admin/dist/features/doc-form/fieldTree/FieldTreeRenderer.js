@@ -22,7 +22,7 @@ import { GroupSection, TabsSection } from '../structuralRenderers.js';
 import { canCreate, canRead, canUpdate, isFieldVisible, subPerms } from '../access-control/fieldPermissions.js';
 import { getByPath, isObject, isFieldRenderable, isRenderableHere, labelOf } from './sharedHelpers.js';
 export function makeFieldTreeRenderer(deps) {
-    const { values, errors, activeLocale, localizationEnabled, disabled, setValueAtPath, richTextRendered, useAsTitleBySlug, uploadCollectionsBySlug, operation, fieldWrapperClassName = 'flex flex-col gap-1.5', showFieldChrome = true, idPrefix = 'doc-form-' } = deps;
+    const { values, errors, activeLocale, localizationEnabled, disabled, setValueAtPath, richTextRendered, useAsTitleBySlug, uploadCollectionsBySlug, operation, fieldWrapperClassName = 'flex flex-col gap-1.5', showFieldChrome = true, idPrefix = 'doc-form-', skipField } = deps;
     // Render a single leaf field, with optional nested path prefix.
     // `parentPerms` is the FieldPermissions of the parent container
     // (`docPermissions` at the top level). The field's own perms are looked up
@@ -30,6 +30,7 @@ export function makeFieldTreeRenderer(deps) {
     // (used by array/blocks to gate row subfields).
     const renderField = (field, pathPrefix, parentPerms, inheritedReadOnly = false)=>{
         if (!field.name) return null;
+        if (skipField?.(field, pathPrefix)) return null;
         if (!isFieldRenderable(field) && !field.name.startsWith('__')) return null;
         // Read gate. Synthesized fields bypass perms.
         if (!field.name.startsWith('__') && !canRead(parentPerms, field.name)) {

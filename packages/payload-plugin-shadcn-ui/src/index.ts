@@ -36,6 +36,7 @@ export {
 } from './contexts/DocFormValuesContext.js'
 export { DocIdentityProvider, useDocIdentity } from './contexts/DocIdentityContext.js'
 export { LocaleProvider, useActiveLocale } from './contexts/LocaleContext.js'
+export { PageBuilderProvider, usePageBuilder } from './contexts/PageBuilderContext.js'
 
 // --- public input-override prop type ---
 export type {

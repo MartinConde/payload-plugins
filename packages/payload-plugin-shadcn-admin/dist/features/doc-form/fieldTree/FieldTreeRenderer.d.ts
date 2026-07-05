@@ -28,6 +28,14 @@ export type FieldTreeDeps = {
     showFieldChrome?: boolean;
     /** Prefix for the per-input DOM id (e.g. `doc-form-` / `bulk-edit-`). */
     idPrefix?: string;
+    /** Optional escape hatch to suppress a field entirely regardless of where
+     *  it lives in the tree (top-level or nested inside tabs/group/row/
+     *  collapsible) — `renderChild`'s recursion always bottoms out in
+     *  `renderField` for a leaf/array/blocks field, so checking here is the
+     *  one place that catches every nesting depth. Used by the page-builder's
+     *  settings panel to hide the `layout` blocks field from the main form
+     *  wherever it's declared, instead of only at the top level. */
+    skipField?: (field: ExtractedField, pathPrefix: string) => boolean;
 };
 export type FieldTreeRenderer = {
     renderField: (field: ExtractedField, pathPrefix: string, parentPerms?: Perms, 

@@ -27,6 +27,7 @@ export { AuthShell } from './shared/AuthShell.js';
 export { DocFormValuesProvider, useDocFormValues, useDocFormFieldValue, useDocFormSetValue } from './contexts/DocFormValuesContext.js';
 export { DocIdentityProvider, useDocIdentity } from './contexts/DocIdentityContext.js';
 export { LocaleProvider, useActiveLocale } from './contexts/LocaleContext.js';
+export { PageBuilderProvider, usePageBuilder } from './contexts/PageBuilderContext.js';
 // --- serializable collection/global extraction (RSC → client boundary) ---
 export { extractCollection, extractField, extractVersionsConfig, stringifyLabel } from './extractCollection.js';
 export { extractGlobal } from './extractGlobal.js';

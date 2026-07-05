@@ -73,6 +73,14 @@ export type FieldTreeDeps = {
   showFieldChrome?: boolean
   /** Prefix for the per-input DOM id (e.g. `doc-form-` / `bulk-edit-`). */
   idPrefix?: string
+  /** Optional escape hatch to suppress a field entirely regardless of where
+   *  it lives in the tree (top-level or nested inside tabs/group/row/
+   *  collapsible) — `renderChild`'s recursion always bottoms out in
+   *  `renderField` for a leaf/array/blocks field, so checking here is the
+   *  one place that catches every nesting depth. Used by the page-builder's
+   *  settings panel to hide the `layout` blocks field from the main form
+   *  wherever it's declared, instead of only at the top level. */
+  skipField?: (field: ExtractedField, pathPrefix: string) => boolean
 }
 
 export type FieldTreeRenderer = {
@@ -107,6 +115,7 @@ export function makeFieldTreeRenderer(deps: FieldTreeDeps): FieldTreeRenderer {
     fieldWrapperClassName = 'flex flex-col gap-1.5',
     showFieldChrome = true,
     idPrefix = 'doc-form-',
+    skipField,
   } = deps
 
   // Render a single leaf field, with optional nested path prefix.
@@ -121,6 +130,7 @@ export function makeFieldTreeRenderer(deps: FieldTreeDeps): FieldTreeRenderer {
     inheritedReadOnly = false,
   ): React.ReactNode => {
     if (!field.name) return null
+    if (skipField?.(field, pathPrefix)) return null
     if (!isFieldRenderable(field) && !field.name.startsWith('__')) return null
     // Read gate. Synthesized fields bypass perms.
     if (!field.name.startsWith('__') && !canRead(parentPerms, field.name)) {

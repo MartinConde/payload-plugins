@@ -17,7 +17,11 @@ import { Badge } from 'payload-plugin-shadcn-ui';
 import { SortableRow } from './ArrayInput.js';
 import { BlockPickerSheet } from './BlockPickerSheet.js';
 import { deriveRowPreview, RowCollapseControls, useRowCollapse } from './rowCollapse.js';
-const newRow = (block)=>{
+/** Builds a fresh row for `block`: a random `id`, `blockType: block.slug`, and
+ *  each subfield's `defaultValue` (undefined ones are simply absent, matching
+ *  how Payload itself omits unset fields rather than writing explicit nulls).
+ *  Exported so the page-builder's "add block" action (driven from the Live
+ *  Preview toolbar, not this component) constructs new rows the same way. */ export const newRow = (block)=>{
     const row = {
         id: globalThis.crypto?.randomUUID?.() ?? `block-${Math.random().toString(36).slice(2, 10)}`,
         blockType: block.slug
@@ -28,7 +32,11 @@ const newRow = (block)=>{
     }
     return row;
 };
-const ensureRowId = (row)=>{
+/** Defensively normalizes a raw layout row to `{id, blockType, ...}` (a legacy
+ *  row missing an `id`, or with a numeric one, gets a stable string id).
+ *  Exported so the page-builder settings panel normalizes `values.layout`
+ *  the same way this component does, keeping both readings of the array
+ *  in agreement on row identity. */ export const ensureRowId = (row)=>{
     const id = typeof row.id === 'string' ? row.id : typeof row.id === 'number' ? String(row.id) : globalThis.crypto?.randomUUID?.() ?? `block-${Math.random().toString(36).slice(2, 10)}`;
     return {
         ...row,

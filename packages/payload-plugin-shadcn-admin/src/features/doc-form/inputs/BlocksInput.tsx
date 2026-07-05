@@ -48,9 +48,14 @@ import {
   useRowCollapse,
 } from './rowCollapse.js'
 
-type BlockRow = { id: string; blockType: string; [key: string]: unknown }
+export type BlockRow = { id: string; blockType: string; [key: string]: unknown }
 
-const newRow = (block: ExtractedBlock): BlockRow => {
+/** Builds a fresh row for `block`: a random `id`, `blockType: block.slug`, and
+ *  each subfield's `defaultValue` (undefined ones are simply absent, matching
+ *  how Payload itself omits unset fields rather than writing explicit nulls).
+ *  Exported so the page-builder's "add block" action (driven from the Live
+ *  Preview toolbar, not this component) constructs new rows the same way. */
+export const newRow = (block: ExtractedBlock): BlockRow => {
   const row: Record<string, unknown> = {
     id:
       globalThis.crypto?.randomUUID?.() ??
@@ -64,7 +69,12 @@ const newRow = (block: ExtractedBlock): BlockRow => {
   return row as BlockRow
 }
 
-const ensureRowId = (row: Record<string, unknown>): BlockRow => {
+/** Defensively normalizes a raw layout row to `{id, blockType, ...}` (a legacy
+ *  row missing an `id`, or with a numeric one, gets a stable string id).
+ *  Exported so the page-builder settings panel normalizes `values.layout`
+ *  the same way this component does, keeping both readings of the array
+ *  in agreement on row identity. */
+export const ensureRowId = (row: Record<string, unknown>): BlockRow => {
   const id =
     typeof row.id === 'string'
       ? row.id

@@ -31,9 +31,23 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
    so the iframe refetched the *previous* save — a permanent one-edit lag.
    `lastSavedAt` (threaded through DocFormValuesContext) only changes once
    the bridge's PATCH actually succeeds, so nudging off it is inherently
-   correctly ordered — no extra debounce needed here. */ import * as React from 'react';
+   correctly ordered — no extra debounce needed here.
+
+   Page-builder half (`pages` only — see AutoDocFormBridge's
+   `pageBuilderActive`): the admin can never reach INTO the iframe (cross-
+   origin), so this is the other direction of that same postMessage channel.
+   `apps/web/src/lib/page-builder.ts` posts `{type:'payload-page-builder',
+   action:'select'|'move'|'duplicate'|'delete'|'addRequest', ...}` out of the
+   iframe on click/toolbar actions; this panel listens for those (origin-
+   checked against the resolved preview URL) and either updates
+   `selectedBlockId` directly (`select`) or forwards the row-mutation actions
+   to `onBlockAction` (owned by the bridge, since only it has `setValueAtPath`
+   and the current `values.layout`). Selection changes are posted back IN as
+   `{action:'highlight', blockId}` so the iframe's own hover/selection overlay
+   stays in sync with whatever's selected here (e.g. a click in
+   BlockSettingsPanel, not just a click in the preview itself). */ import * as React from 'react';
 import { ExternalLinkIcon, MonitorIcon, SmartphoneIcon, TabletIcon } from 'lucide-react';
-import { cn, useDocFormValues, useDocIdentity } from 'payload-plugin-shadcn-ui';
+import { cn, useDocFormValues, useDocIdentity, usePageBuilder } from 'payload-plugin-shadcn-ui';
 import { formatAdminURL, useConfig, useTranslation } from '../../../internal/payloadAdapter.js';
 // Fixed device widths (not user-resizable) — this mirrors the fixed
 // breakpoints most CSS is actually written against, unlike the freeform
@@ -43,15 +57,35 @@ const DEVICE_WIDTH = {
     tablet: '768px',
     desktop: null
 };
-export function LivePreviewPanel({ open }) {
+export function LivePreviewPanel({ open, onBlockAction, builderMode = false }) {
     const { t } = useTranslation();
     const { config } = useConfig();
     const apiRoute = config.routes?.api;
     const serverURL = config.serverURL;
     const { collectionSlug, documentId } = useDocIdentity();
     const { activeLocale, lastSavedAt } = useDocFormValues();
+    const { selectedBlockId, setSelectedBlockId } = usePageBuilder();
     const locale = activeLocale ?? 'en';
     const [previewUrl, setPreviewUrl] = React.useState(null);
+    // What the embedded iframe actually navigates to — `previewUrl` plus the
+    // builder-mode query param. Kept as its own derived value (not folded into
+    // `previewUrl` itself) so `previewUrl` stays the one thing every other
+    // effect below (nudge, highlight-listener origin checks, detached tab)
+    // reasons about, matching the one already-resolved token URL Payload's own
+    // preview link would use.
+    const iframeSrc = React.useMemo(()=>{
+        if (!previewUrl) return null;
+        try {
+            const url = new URL(previewUrl);
+            url.searchParams.set('pageBuilder', builderMode ? '1' : '0');
+            return url.toString();
+        } catch  {
+            return previewUrl;
+        }
+    }, [
+        previewUrl,
+        builderMode
+    ]);
     const [device, setDevice] = React.useState('desktop');
     const iframeRef = React.useRef(null);
     // Deliberately NOT opened with `noopener` — we need the WindowProxy back so
@@ -157,6 +191,92 @@ export function LivePreviewPanel({ open }) {
         open,
         previewUrl
     ]);
+    // Inbound half of the page-builder protocol — see the file header comment.
+    // Origin-checked against the resolved preview URL (same trust boundary the
+    // save-nudge effect above uses to post OUT), not `event.origin` compared
+    // against some separately-configured value, so there's exactly one source
+    // of truth for "what origin is this iframe".
+    React.useEffect(()=>{
+        if (!previewUrl) return;
+        let expectedOrigin;
+        try {
+            expectedOrigin = new URL(previewUrl).origin;
+        } catch  {
+            return;
+        }
+        const handleMessage = (event)=>{
+            if (event.origin !== expectedOrigin) return;
+            if (!event.data || event.data.type !== 'payload-page-builder') return;
+            const { action } = event.data;
+            if (action === 'select') {
+                setSelectedBlockId(typeof event.data.blockId === 'string' ? event.data.blockId : null);
+                return;
+            }
+            if (action === 'move' || action === 'duplicate' || action === 'delete' || action === 'addRequest') {
+                onBlockAction?.(event.data);
+            }
+        };
+        window.addEventListener('message', handleMessage);
+        return ()=>window.removeEventListener('message', handleMessage);
+    }, [
+        previewUrl,
+        onBlockAction,
+        setSelectedBlockId
+    ]);
+    // Outbound highlight — mirrors `selectedBlockId` (which may have changed
+    // from a click in BlockSettingsPanel, not just the preview itself) back
+    // into the iframe/detached tab so its own overlay stays in sync. No
+    // debounce needed: selection changes are user clicks, not a keystroke
+    // stream.
+    //
+    // Skips the `null` (nothing selected) case entirely rather than actively
+    // posting a "clear" message: the only way `selectedBlockId` is non-null in
+    // the first place is a prior click in the iframe itself or an action that
+    // originated from one of its own toolbar buttons — meaning the iframe is
+    // already loaded by the time there's anything real to mirror. Posting on
+    // mount (`selectedBlockId` starts `null`) had nothing useful to say anyway,
+    // and did so before the iframe had necessarily finished navigating to
+    // `previewUrl` — its `contentWindow` briefly has a different origin during
+    // that load, so the post was silently dropped with a harmless but noisy
+    // postMessage origin-mismatch console warning. `page-builder.ts`'s own
+    // `onContentRebuilt` already clears a since-deleted block's outline/
+    // toolbar locally on the next refetch, without needing this message.
+    React.useEffect(()=>{
+        if (!previewUrl || selectedBlockId == null) return;
+        let targetOrigin;
+        try {
+            targetOrigin = new URL(previewUrl).origin;
+        } catch  {
+            return;
+        }
+        const msg = {
+            type: 'payload-page-builder',
+            action: 'highlight',
+            blockId: selectedBlockId
+        };
+        if (open) {
+            const iframeWin = iframeRef.current?.contentWindow;
+            if (iframeWin) {
+                try {
+                    iframeWin.postMessage(msg, targetOrigin);
+                } catch  {
+                // Ignore — best-effort.
+                }
+            }
+        }
+        const detachedWin = detachedWindowRef.current;
+        if (detachedWin && !detachedWin.closed) {
+            try {
+                detachedWin.postMessage(msg, targetOrigin);
+            } catch  {
+            // Ignore — best-effort.
+            }
+        }
+    }, [
+        selectedBlockId,
+        open,
+        previewUrl
+    ]);
     if (!open) return null;
     const deviceOptions = [
         {
@@ -213,14 +333,14 @@ export function LivePreviewPanel({ open }) {
             }),
             /*#__PURE__*/ _jsx("div", {
                 className: "h-[70vh] min-h-0 overflow-auto bg-muted/20 lg:h-auto lg:flex-1",
-                children: previewUrl ? /*#__PURE__*/ _jsx("div", {
+                children: iframeSrc ? /*#__PURE__*/ _jsx("div", {
                     className: "mx-auto h-full",
                     style: deviceWidth ? {
                         width: deviceWidth
                     } : undefined,
                     children: /*#__PURE__*/ _jsx("iframe", {
                         ref: iframeRef,
-                        src: previewUrl,
+                        src: iframeSrc,
                         title: "Live Preview",
                         className: "h-full w-full bg-background"
                     })

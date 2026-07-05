@@ -6,6 +6,7 @@ export { AuthShell } from './shared/AuthShell.js';
 export { DocFormValuesProvider, useDocFormValues, useDocFormFieldValue, useDocFormSetValue, } from './contexts/DocFormValuesContext.js';
 export { DocIdentityProvider, useDocIdentity } from './contexts/DocIdentityContext.js';
 export { LocaleProvider, useActiveLocale } from './contexts/LocaleContext.js';
+export { PageBuilderProvider, usePageBuilder } from './contexts/PageBuilderContext.js';
 export type { FieldInputField, FieldInputOption, FieldInputProps, FieldInputTFunction, } from './types.js';
 export { extractCollection, extractField, extractVersionsConfig, stringifyLabel, type ExtractedBlock, type ExtractedCollection, type ExtractedDraftsConfig, type ExtractedField, type ExtractedFieldOption, type ExtractedTab, type ExtractedUploadConfig, type ExtractedVersionsConfig, type ExtractI18n, } from './extractCollection.js';
 export { extractGlobal } from './extractGlobal.js';

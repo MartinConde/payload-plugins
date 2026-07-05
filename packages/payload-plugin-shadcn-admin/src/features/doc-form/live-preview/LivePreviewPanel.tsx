@@ -31,11 +31,30 @@
    so the iframe refetched the *previous* save — a permanent one-edit lag.
    `lastSavedAt` (threaded through DocFormValuesContext) only changes once
    the bridge's PATCH actually succeeds, so nudging off it is inherently
-   correctly ordered — no extra debounce needed here. */
+   correctly ordered — no extra debounce needed here.
+
+   Page-builder half (`pages` only — see AutoDocFormBridge's
+   `pageBuilderActive`): the admin can never reach INTO the iframe (cross-
+   origin), so this is the other direction of that same postMessage channel.
+   `apps/web/src/lib/page-builder.ts` posts `{type:'payload-page-builder',
+   action:'select'|'move'|'duplicate'|'delete'|'addRequest', ...}` out of the
+   iframe on click/toolbar actions; this panel listens for those (origin-
+   checked against the resolved preview URL) and either updates
+   `selectedBlockId` directly (`select`) or forwards the row-mutation actions
+   to `onBlockAction` (owned by the bridge, since only it has `setValueAtPath`
+   and the current `values.layout`). Selection changes are posted back IN as
+   `{action:'highlight', blockId}` so the iframe's own hover/selection overlay
+   stays in sync with whatever's selected here (e.g. a click in
+   BlockSettingsPanel, not just a click in the preview itself). */
 
 import * as React from 'react'
 import { ExternalLinkIcon, MonitorIcon, SmartphoneIcon, TabletIcon } from 'lucide-react'
-import { cn, useDocFormValues, useDocIdentity } from 'payload-plugin-shadcn-ui'
+import {
+  cn,
+  useDocFormValues,
+  useDocIdentity,
+  usePageBuilder,
+} from 'payload-plugin-shadcn-ui'
 import {
   formatAdminURL,
   useConfig,
@@ -46,8 +65,33 @@ import type {
   ShadcnAdminTranslationsObject,
 } from '../../../translations.js'
 
+/** Row-mutation half of the page-builder protocol — everything except
+ *  `select`, which this panel handles itself via `usePageBuilder()`. */
+export type PageBuilderBlockAction =
+  | { action: 'move'; blockId: string; dir: 'up' | 'down' }
+  | { action: 'duplicate'; blockId: string }
+  | { action: 'delete'; blockId: string }
+  | { action: 'addRequest'; afterBlockId: string | null }
+
 export type LivePreviewPanelProps = {
   open: boolean
+  /** Owned by the bridge (needs `setValueAtPath` + current `values.layout`).
+   *  Absent when the page builder isn't active for this collection — the
+   *  message listener below still installs regardless, since a non-page-
+   *  builder frontend will simply never send these messages. */
+  onBlockAction?: (action: PageBuilderBlockAction) => void
+  /** Whether the "Edit blocks" toggle is on. Baked into the embedded
+   *  iframe's URL as a `pageBuilder=1` query param (see LIVE-PREVIEW.md) —
+   *  NOT a postMessage toggle. The frontend's `installPageBuilder` only
+   *  ever runs when this is true at initial navigation, so preview-only
+   *  mode gets a page with literally zero click/hover listeners, matching
+   *  "the same as before the page-builder layer existed". Toggling this
+   *  reloads the iframe (a deliberate, infrequent mode switch, not a
+   *  keystroke-driven refetch) — the detached tab deliberately ignores it
+   *  and always opens the plain non-builder URL (its `postMessage` target
+   *  is itself, not the admin, so page-builder never had anything to talk
+   *  to there anyway). */
+  builderMode?: boolean
 }
 
 type DeviceMode = 'mobile' | 'tablet' | 'desktop'
@@ -61,7 +105,11 @@ const DEVICE_WIDTH: Record<DeviceMode, string | null> = {
   desktop: null,
 }
 
-export function LivePreviewPanel({ open }: LivePreviewPanelProps) {
+export function LivePreviewPanel({
+  open,
+  onBlockAction,
+  builderMode = false,
+}: LivePreviewPanelProps) {
   const { t } = useTranslation<
     ShadcnAdminTranslationsObject,
     ShadcnAdminTranslationsKeys
@@ -72,9 +120,26 @@ export function LivePreviewPanel({ open }: LivePreviewPanelProps) {
 
   const { collectionSlug, documentId } = useDocIdentity()
   const { activeLocale, lastSavedAt } = useDocFormValues()
+  const { selectedBlockId, setSelectedBlockId } = usePageBuilder()
   const locale = activeLocale ?? 'en'
 
   const [previewUrl, setPreviewUrl] = React.useState<string | null>(null)
+  // What the embedded iframe actually navigates to — `previewUrl` plus the
+  // builder-mode query param. Kept as its own derived value (not folded into
+  // `previewUrl` itself) so `previewUrl` stays the one thing every other
+  // effect below (nudge, highlight-listener origin checks, detached tab)
+  // reasons about, matching the one already-resolved token URL Payload's own
+  // preview link would use.
+  const iframeSrc = React.useMemo(() => {
+    if (!previewUrl) return null
+    try {
+      const url = new URL(previewUrl)
+      url.searchParams.set('pageBuilder', builderMode ? '1' : '0')
+      return url.toString()
+    } catch {
+      return previewUrl
+    }
+  }, [previewUrl, builderMode])
   const [device, setDevice] = React.useState<DeviceMode>('desktop')
   const iframeRef = React.useRef<HTMLIFrameElement>(null)
   // Deliberately NOT opened with `noopener` — we need the WindowProxy back so
@@ -171,6 +236,89 @@ export function LivePreviewPanel({ open }: LivePreviewPanelProps) {
     }
   }, [lastSavedAt, open, previewUrl])
 
+  // Inbound half of the page-builder protocol — see the file header comment.
+  // Origin-checked against the resolved preview URL (same trust boundary the
+  // save-nudge effect above uses to post OUT), not `event.origin` compared
+  // against some separately-configured value, so there's exactly one source
+  // of truth for "what origin is this iframe".
+  React.useEffect(() => {
+    if (!previewUrl) return
+    let expectedOrigin: string
+    try {
+      expectedOrigin = new URL(previewUrl).origin
+    } catch {
+      return
+    }
+    const handleMessage = (event: MessageEvent) => {
+      if (event.origin !== expectedOrigin) return
+      if (!event.data || event.data.type !== 'payload-page-builder') return
+      const { action } = event.data
+      if (action === 'select') {
+        setSelectedBlockId(
+          typeof event.data.blockId === 'string' ? event.data.blockId : null,
+        )
+        return
+      }
+      if (
+        action === 'move' ||
+        action === 'duplicate' ||
+        action === 'delete' ||
+        action === 'addRequest'
+      ) {
+        onBlockAction?.(event.data as PageBuilderBlockAction)
+      }
+    }
+    window.addEventListener('message', handleMessage)
+    return () => window.removeEventListener('message', handleMessage)
+  }, [previewUrl, onBlockAction, setSelectedBlockId])
+
+  // Outbound highlight — mirrors `selectedBlockId` (which may have changed
+  // from a click in BlockSettingsPanel, not just the preview itself) back
+  // into the iframe/detached tab so its own overlay stays in sync. No
+  // debounce needed: selection changes are user clicks, not a keystroke
+  // stream.
+  //
+  // Skips the `null` (nothing selected) case entirely rather than actively
+  // posting a "clear" message: the only way `selectedBlockId` is non-null in
+  // the first place is a prior click in the iframe itself or an action that
+  // originated from one of its own toolbar buttons — meaning the iframe is
+  // already loaded by the time there's anything real to mirror. Posting on
+  // mount (`selectedBlockId` starts `null`) had nothing useful to say anyway,
+  // and did so before the iframe had necessarily finished navigating to
+  // `previewUrl` — its `contentWindow` briefly has a different origin during
+  // that load, so the post was silently dropped with a harmless but noisy
+  // postMessage origin-mismatch console warning. `page-builder.ts`'s own
+  // `onContentRebuilt` already clears a since-deleted block's outline/
+  // toolbar locally on the next refetch, without needing this message.
+  React.useEffect(() => {
+    if (!previewUrl || selectedBlockId == null) return
+    let targetOrigin: string
+    try {
+      targetOrigin = new URL(previewUrl).origin
+    } catch {
+      return
+    }
+    const msg = { type: 'payload-page-builder', action: 'highlight', blockId: selectedBlockId }
+    if (open) {
+      const iframeWin = iframeRef.current?.contentWindow
+      if (iframeWin) {
+        try {
+          iframeWin.postMessage(msg, targetOrigin)
+        } catch {
+          // Ignore — best-effort.
+        }
+      }
+    }
+    const detachedWin = detachedWindowRef.current
+    if (detachedWin && !detachedWin.closed) {
+      try {
+        detachedWin.postMessage(msg, targetOrigin)
+      } catch {
+        // Ignore — best-effort.
+      }
+    }
+  }, [selectedBlockId, open, previewUrl])
+
   if (!open) return null
 
   const deviceOptions: { mode: DeviceMode; icon: typeof SmartphoneIcon; label: string }[] = [
@@ -218,14 +366,14 @@ export function LivePreviewPanel({ open }: LivePreviewPanelProps) {
       </div>
 
       <div className="h-[70vh] min-h-0 overflow-auto bg-muted/20 lg:h-auto lg:flex-1">
-        {previewUrl ? (
+        {iframeSrc ? (
           <div
             className="mx-auto h-full"
             style={deviceWidth ? { width: deviceWidth } : undefined}
           >
             <iframe
               ref={iframeRef}
-              src={previewUrl}
+              src={iframeSrc}
               title="Live Preview"
               className="h-full w-full bg-background"
             />

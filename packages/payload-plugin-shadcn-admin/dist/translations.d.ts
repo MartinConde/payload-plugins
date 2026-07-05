@@ -50,6 +50,9 @@ export declare const shadcnAdminTranslations: {
             discard: string;
             livePreview: string;
             hidePreview: string;
+            builderMode: string;
+            exitBuilderMode: string;
+            exitBuilderModeFirst: string;
             sidebarFields: string;
             previewDeviceWidth: string;
             previewMobile: string;
@@ -207,6 +210,9 @@ export declare const shadcnAdminTranslations: {
             discard: string;
             livePreview: string;
             hidePreview: string;
+            builderMode: string;
+            exitBuilderMode: string;
+            exitBuilderModeFirst: string;
             sidebarFields: string;
             previewDeviceWidth: string;
             previewMobile: string;
@@ -364,6 +370,9 @@ export declare const shadcnAdminTranslations: {
             discard: string;
             livePreview: string;
             hidePreview: string;
+            builderMode: string;
+            exitBuilderMode: string;
+            exitBuilderModeFirst: string;
             sidebarFields: string;
             previewDeviceWidth: string;
             previewMobile: string;
@@ -521,6 +530,9 @@ export declare const shadcnAdminTranslations: {
             discard: string;
             livePreview: string;
             hidePreview: string;
+            builderMode: string;
+            exitBuilderMode: string;
+            exitBuilderModeFirst: string;
             sidebarFields: string;
             previewDeviceWidth: string;
             previewMobile: string;
