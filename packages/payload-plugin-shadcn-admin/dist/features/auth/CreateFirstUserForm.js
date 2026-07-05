@@ -7,7 +7,7 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
    redirects to the admin root. Renders the user collection's own fields via the
    shared FieldList so the first account can set fields like `roles`. */ import * as React from 'react';
 import { useRouter } from 'next/navigation.js';
-import { toast, useAuth, useConfig, useTranslation } from '../../internal/payloadAdapter.js';
+import { toast, useAuth, useConfig, useTranslation } from '../../internal/payloadAdapterUI.js';
 import { formatAdminURL } from '../../internal/payloadAdapter.js';
 import { AuthShell } from 'payload-plugin-shadcn-ui';
 import { Button } from 'payload-plugin-shadcn-ui';

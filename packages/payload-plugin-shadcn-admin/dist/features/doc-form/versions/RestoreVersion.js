@@ -7,7 +7,7 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
    view. Lifts the restore logic out of the old VersionsDialog. v3.9. */ import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import { LoaderIcon, RotateCcwIcon } from 'lucide-react';
-import { useTranslation } from '../../../internal/payloadAdapter.js';
+import { useTranslation } from '../../../internal/payloadAdapterUI.js';
 import { Button } from 'payload-plugin-shadcn-ui';
 export function RestoreVersion({ collectionSlug, globalSlug, versionId, basePath, draftsEnabled }) {
     const { t } = useTranslation();

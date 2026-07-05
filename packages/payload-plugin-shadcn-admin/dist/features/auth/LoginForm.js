@@ -9,7 +9,7 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
    Rendered with vendored shadcn primitives inside the AuthShell card instead
    of Payload's `Form`/`PasswordField` chrome. */ import * as React from 'react';
 import { useRouter, useSearchParams } from 'next/navigation.js';
-import { toast, useAuth, useConfig, useTranslation } from '../../internal/payloadAdapter.js';
+import { toast, useAuth, useConfig, useTranslation } from '../../internal/payloadAdapterUI.js';
 import { formatAdminURL, getSafeRedirect } from '../../internal/payloadAdapter.js';
 import { AuthShell } from 'payload-plugin-shadcn-ui';
 import { Button } from 'payload-plugin-shadcn-ui';

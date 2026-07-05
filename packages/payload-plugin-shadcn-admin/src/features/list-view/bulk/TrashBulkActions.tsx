@@ -4,7 +4,7 @@ import type { Table as TanstackTable } from '@tanstack/react-table'
 import * as React from 'react'
 import { useRouter } from 'next/navigation'
 import { ArchiveRestore, Trash2 } from 'lucide-react'
-import { toast, useLocale, useTranslation } from '../../../internal/payloadAdapter.js'
+import { toast, useLocale, useTranslation } from '../../../internal/payloadAdapterUI.js'
 
 import { Button } from 'payload-plugin-shadcn-ui'
 import { Checkbox } from 'payload-plugin-shadcn-ui'

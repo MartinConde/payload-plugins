@@ -1,7 +1,7 @@
 'use client';
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import * as React from 'react';
-import { useAuth, useConfig } from '../internal/payloadAdapter.js';
+import { useAuth, useConfig } from '../internal/payloadAdapterUI.js';
 import { Badge } from 'payload-plugin-shadcn-ui';
 const STORAGE_KEY = 'shadcn-admin:skipped-doc-views-dismissed';
 const PLUGIN_NAMESPACE = 'plugin-shadcn-admin';

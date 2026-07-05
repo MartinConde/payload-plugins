@@ -16,7 +16,7 @@
 
 import * as React from 'react'
 import { FileIcon, ImageIcon, PencilIcon, RefreshCwIcon, XIcon } from 'lucide-react'
-import { useTranslation } from '../../../internal/payloadAdapter.js'
+import { useTranslation } from '../../../internal/payloadAdapterUI.js'
 
 import type {
   ShadcnAdminTranslationsKeys,

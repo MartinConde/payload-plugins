@@ -23,7 +23,7 @@
 import * as React from 'react'
 import { Badge, usePageBuilder } from 'payload-plugin-shadcn-ui'
 import type { ExtractedBlock } from 'payload-plugin-shadcn-ui'
-import { useTranslation } from '../../../internal/payloadAdapter.js'
+import { useTranslation } from '../../../internal/payloadAdapterUI.js'
 import type {
   ShadcnAdminTranslationsKeys,
   ShadcnAdminTranslationsObject,

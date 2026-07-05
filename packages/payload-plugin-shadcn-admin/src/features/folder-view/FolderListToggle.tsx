@@ -3,7 +3,7 @@
 import * as React from 'react'
 import Link from 'next/link'
 import { LayoutList, FolderTree } from 'lucide-react'
-import { useListQuery, useTranslation } from '../../internal/payloadAdapter.js'
+import { useListQuery, useTranslation } from '../../internal/payloadAdapterUI.js'
 
 import type {
   ShadcnAdminTranslationsKeys,

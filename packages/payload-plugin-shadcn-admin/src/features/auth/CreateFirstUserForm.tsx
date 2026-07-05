@@ -9,7 +9,7 @@
 
 import * as React from 'react'
 import { useRouter } from 'next/navigation.js'
-import { toast, useAuth, useConfig, useTranslation } from '../../internal/payloadAdapter.js'
+import { toast, useAuth, useConfig, useTranslation } from '../../internal/payloadAdapterUI.js'
 import { formatAdminURL } from '../../internal/payloadAdapter.js'
 
 import type { ExtractedField } from 'payload-plugin-shadcn-ui'

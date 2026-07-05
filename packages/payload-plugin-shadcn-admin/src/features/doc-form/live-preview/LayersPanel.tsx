@@ -46,7 +46,7 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 
-import { useTranslation } from '../../../internal/payloadAdapter.js'
+import { useTranslation } from '../../../internal/payloadAdapterUI.js'
 import type {
   ShadcnAdminTranslationsKeys,
   ShadcnAdminTranslationsObject,

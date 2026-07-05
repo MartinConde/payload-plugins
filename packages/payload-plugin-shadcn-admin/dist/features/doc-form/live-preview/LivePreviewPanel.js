@@ -48,7 +48,8 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
    BlockSettingsPanel, not just a click in the preview itself). */ import * as React from 'react';
 import { ExternalLinkIcon, MonitorIcon, SmartphoneIcon, TabletIcon } from 'lucide-react';
 import { cn, useDocFormValues, useDocIdentity, usePageBuilder } from 'payload-plugin-shadcn-ui';
-import { formatAdminURL, useConfig, useTranslation } from '../../../internal/payloadAdapter.js';
+import { formatAdminURL } from '../../../internal/payloadAdapter.js';
+import { useConfig, useTranslation } from '../../../internal/payloadAdapterUI.js';
 // Fixed device widths (not user-resizable) — this mirrors the fixed
 // breakpoints most CSS is actually written against, unlike the freeform
 // drag-resize of the panel itself. `null` (desktop) fills the panel.

@@ -7,7 +7,7 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
    under labeled sections, matching Payload's grouped block drawer; ungrouped
    blocks render first with no heading. */ import * as React from 'react';
 import { BlocksIcon } from 'lucide-react';
-import { useTranslation } from '../../../internal/payloadAdapter.js';
+import { useTranslation } from '../../../internal/payloadAdapterUI.js';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from 'payload-plugin-shadcn-ui';
 import { Input } from 'payload-plugin-shadcn-ui';
 import { cn } from 'payload-plugin-shadcn-ui';

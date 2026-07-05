@@ -7,7 +7,7 @@ import { jsx as _jsx } from "react/jsx-runtime";
    - Inactivity logout: the session is already cleared upstream, so it just
      shows the "logged out due to inactivity" notice + a "log back in" button. */ import * as React from 'react';
 import { useRouter } from 'next/navigation.js';
-import { toast, useAuth, useConfig, useTranslation } from '../../internal/payloadAdapter.js';
+import { toast, useAuth, useConfig, useTranslation } from '../../internal/payloadAdapterUI.js';
 import { formatAdminURL } from '../../internal/payloadAdapter.js';
 import { AuthShell } from 'payload-plugin-shadcn-ui';
 import { Button } from 'payload-plugin-shadcn-ui';

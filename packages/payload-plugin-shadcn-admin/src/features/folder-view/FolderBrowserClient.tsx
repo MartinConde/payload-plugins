@@ -23,7 +23,7 @@ import {
   Pencil,
   Trash2,
 } from 'lucide-react'
-import { toast, useLocale, useTranslation } from '../../internal/payloadAdapter.js'
+import { toast, useLocale, useTranslation } from '../../internal/payloadAdapterUI.js'
 
 import { Button } from 'payload-plugin-shadcn-ui'
 import { Card } from 'payload-plugin-shadcn-ui'

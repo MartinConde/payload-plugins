@@ -26,7 +26,7 @@ import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-run
    - localized leaves are projected to the active locale and the PATCH is scoped
      with ?locale=<active>, matching the doc form and trash-restore. */ import * as React from 'react';
 import { PlusIcon, RotateCcwIcon } from 'lucide-react';
-import { useConfig, useLocale, useTranslation } from '../../../internal/payloadAdapter.js';
+import { useConfig, useLocale, useTranslation } from '../../../internal/payloadAdapterUI.js';
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from 'payload-plugin-shadcn-ui';
 import { Button } from 'payload-plugin-shadcn-ui';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from 'payload-plugin-shadcn-ui';

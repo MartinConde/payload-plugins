@@ -27,7 +27,7 @@ import {
   useLocale,
   useConfig,
   useTranslation,
-} from '../../../internal/payloadAdapter.js'
+} from '../../../internal/payloadAdapterUI.js'
 
 import {
   Dialog,

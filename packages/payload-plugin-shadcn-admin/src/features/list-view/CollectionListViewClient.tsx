@@ -4,7 +4,7 @@ import * as React from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Plus, Trash2 } from 'lucide-react'
-import { useTranslation, useListDrawerContext } from '../../internal/payloadAdapter.js'
+import { useTranslation, useListDrawerContext } from '../../internal/payloadAdapterUI.js'
 import type {
   ColumnDef,
   Row,

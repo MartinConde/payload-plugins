@@ -2,7 +2,7 @@
 
 import { SlidersHorizontal } from 'lucide-react'
 import type { Table } from '@tanstack/react-table'
-import { useTranslation } from '../../../internal/payloadAdapter.js'
+import { useTranslation } from '../../../internal/payloadAdapterUI.js'
 
 import type {
   ShadcnAdminTranslationsKeys,

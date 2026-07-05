@@ -7,7 +7,7 @@
    comes back rendered. We refetch when the `trigger` changes (e.g. the set of
    picked/structural paths) or the locale changes — never per keystroke (a
    mounted Lexical editor owns its own state, exactly like the doc form). */ import * as React from 'react';
-import { useServerFunctions } from '../../../internal/payloadAdapter.js';
+import { useServerFunctions } from '../../../internal/payloadAdapterUI.js';
 import { extractRichTextRenderedFields } from './extractRichTextRenderedFields.js';
 export function useDocFormRichText({ collectionFields, collectionSlug, getProjectedData, trigger, activeLocale, operation }) {
     const serverFunctions = useServerFunctions();

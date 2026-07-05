@@ -17,7 +17,7 @@ import { DndContext, KeyboardSensor, PointerSensor, closestCenter, useSensor, us
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 import { SortableContext, arrayMove, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { useTranslation } from '../../../internal/payloadAdapter.js';
+import { useTranslation } from '../../../internal/payloadAdapterUI.js';
 import { Button } from 'payload-plugin-shadcn-ui';
 import { Card, CardContent } from 'payload-plugin-shadcn-ui';
 import { cn } from 'payload-plugin-shadcn-ui';

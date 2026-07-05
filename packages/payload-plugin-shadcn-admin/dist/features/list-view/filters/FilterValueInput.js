@@ -4,7 +4,7 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
    Operator is chosen separately; this component only renders the value
    control appropriate to (field.type, operator). */ import * as React from 'react';
 import { CalendarIcon } from 'lucide-react';
-import { useTranslation } from '../../../internal/payloadAdapter.js';
+import { useTranslation } from '../../../internal/payloadAdapterUI.js';
 import { Button } from 'payload-plugin-shadcn-ui';
 import { Calendar } from 'payload-plugin-shadcn-ui';
 import { Checkbox } from 'payload-plugin-shadcn-ui';

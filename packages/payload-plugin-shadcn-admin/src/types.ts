@@ -4,6 +4,7 @@ import type {
   NavGroup,
   NavItem,
 } from './features/nav/DefaultAdminSidebar.js'
+import type { PayloadRequest } from './internal/payloadAdapter.js'
 
 export interface PluginConfig {
   /**
@@ -154,6 +155,17 @@ export interface RebuildFrontendConfig {
    * Default: `'/rebuild-frontend'`.
    */
   endpointPath?: string
+  /**
+   * Extra access check for the endpoint, evaluated after the built-in
+   * `req.user` (authenticated) check. Return `true` to allow the request.
+   *
+   * Default: restrict to users authenticated against the admin collection
+   * (`req.user.collection === config.admin.user`) — otherwise ANY
+   * authenticated user of ANY auth-enabled collection (e.g. a read-only
+   * frontend service user, or future customer-facing accounts) could trigger
+   * a production deploy hook.
+   */
+  access?: (req: PayloadRequest) => boolean
 }
 
 export type DefaultNavConfig = {

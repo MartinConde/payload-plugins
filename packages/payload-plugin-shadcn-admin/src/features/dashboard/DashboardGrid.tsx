@@ -43,7 +43,7 @@ import {
   DropdownMenuTrigger,
 } from 'payload-plugin-shadcn-ui'
 import { cn } from 'payload-plugin-shadcn-ui'
-import { useTranslation } from '../../internal/payloadAdapter.js'
+import { useTranslation } from '../../internal/payloadAdapterUI.js'
 import type { TFunction } from '../../internal/payloadAdapter.js'
 import type {
   ShadcnAdminTranslationsKeys,

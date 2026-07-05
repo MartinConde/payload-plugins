@@ -31,7 +31,7 @@ import { Plus, SearchIcon } from 'lucide-react'
 import {
   useListDrawerContext,
   useTranslation,
-} from '../../../internal/payloadAdapter.js'
+} from '../../../internal/payloadAdapterUI.js'
 import type {
   ShadcnAdminTranslationsKeys,
   ShadcnAdminTranslationsObject,

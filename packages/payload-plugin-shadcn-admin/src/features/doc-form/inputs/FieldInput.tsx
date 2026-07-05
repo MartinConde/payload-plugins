@@ -23,7 +23,7 @@
 
 import * as React from 'react'
 import { CheckIcon, ChevronsUpDownIcon, XIcon } from 'lucide-react'
-import { useTranslation } from '../../../internal/payloadAdapter.js'
+import { useTranslation } from '../../../internal/payloadAdapterUI.js'
 import type { TFunction } from '../../../internal/payloadAdapter.js'
 
 import type {

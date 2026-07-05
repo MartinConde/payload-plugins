@@ -9,7 +9,7 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
    - Remove
 */ import * as React from 'react';
 import { ArrowLeftIcon, ArrowRightIcon, ChevronsUpDownIcon, Trash2Icon } from 'lucide-react';
-import { useTranslation } from '../../../internal/payloadAdapter.js';
+import { useTranslation } from '../../../internal/payloadAdapterUI.js';
 import { Button } from 'payload-plugin-shadcn-ui';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from 'payload-plugin-shadcn-ui';
 import { Popover, PopoverContent, PopoverTrigger } from 'payload-plugin-shadcn-ui';

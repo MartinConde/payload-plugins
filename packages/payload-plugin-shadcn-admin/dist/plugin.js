@@ -317,6 +317,10 @@ const installAutoDocView = (collection, skipped)=>{
             // label is optional in the stash — when absent the component falls back
             // to the shadcnAdmin:rebuildFrontend translation key.
             const label = options.rebuildFrontend.label;
+            // Default: admin-collection users only — otherwise any authenticated
+            // user of any auth-enabled collection (e.g. a read-only frontend
+            // service user) could trigger production deploy hooks / burn quota.
+            const hasRebuildAccess = options.rebuildFrontend.access ?? ((r)=>r.user?.collection === r.payload.config.admin?.user);
             next.endpoints = [
                 ...config.endpoints ?? [],
                 {
@@ -328,6 +332,13 @@ const installAutoDocView = (collection, skipped)=>{
                                 error: 'Unauthorized'
                             }, {
                                 status: 401
+                            });
+                        }
+                        if (!hasRebuildAccess(req)) {
+                            return Response.json({
+                                error: 'Forbidden'
+                            }, {
+                                status: 403
                             });
                         }
                         const url = process.env[deployHookEnv];

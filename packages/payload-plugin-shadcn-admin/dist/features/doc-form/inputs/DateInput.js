@@ -7,7 +7,7 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
    token) a <input type=time> sits below the calendar — shadcn ships no time
    primitive, so a styled native time input is the simplest correct control. */ import * as React from 'react';
 import { CalendarIcon } from 'lucide-react';
-import { useTranslation } from '../../../internal/payloadAdapter.js';
+import { useTranslation } from '../../../internal/payloadAdapterUI.js';
 import { Button } from 'payload-plugin-shadcn-ui';
 import { Calendar } from 'payload-plugin-shadcn-ui';
 import { Input } from 'payload-plugin-shadcn-ui';

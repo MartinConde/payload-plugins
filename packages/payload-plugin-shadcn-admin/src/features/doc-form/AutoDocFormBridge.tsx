@@ -27,7 +27,7 @@ import {
   useServerFunctions,
   useTranslation,
   useUploadHandlers,
-} from '../../internal/payloadAdapter.js'
+} from '../../internal/payloadAdapterUI.js'
 import type { UploadEdits } from '../../internal/payloadAdapter.js'
 
 import type {

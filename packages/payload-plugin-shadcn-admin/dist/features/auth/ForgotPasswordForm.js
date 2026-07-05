@@ -6,7 +6,7 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
    when the collection logs in with usernames). On success it swaps to an
    "email sent" confirmation. The actual reset link in the email still routes to
    Payload's default reset view — that view isn't overridable in 3.84.1. */ import * as React from 'react';
-import { toast, useConfig, useTranslation } from '../../internal/payloadAdapter.js';
+import { toast, useConfig, useTranslation } from '../../internal/payloadAdapterUI.js';
 import { formatAdminURL } from '../../internal/payloadAdapter.js';
 import { AuthShell } from 'payload-plugin-shadcn-ui';
 import { Button } from 'payload-plugin-shadcn-ui';

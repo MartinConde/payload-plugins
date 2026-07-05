@@ -10,7 +10,7 @@
 import * as React from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useListDrawerContext } from '../../../internal/payloadAdapter.js'
+import { useListDrawerContext } from '../../../internal/payloadAdapterUI.js'
 import {
   type ColumnDef,
   flexRender,

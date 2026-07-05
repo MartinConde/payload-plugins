@@ -3,7 +3,7 @@ import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-run
 /* A single filter chip: [field-label] [operator] [value] [×].
    Click on the body (not the ×) opens the editor popover. */ import * as React from 'react';
 import { XIcon } from 'lucide-react';
-import { useTranslation } from '../../../internal/payloadAdapter.js';
+import { useTranslation } from '../../../internal/payloadAdapterUI.js';
 import { Popover, PopoverContent, PopoverTrigger } from 'payload-plugin-shadcn-ui';
 import { cn } from 'payload-plugin-shadcn-ui';
 import { operatorsForField, resolveOperatorLabel } from './filterCodec.js';

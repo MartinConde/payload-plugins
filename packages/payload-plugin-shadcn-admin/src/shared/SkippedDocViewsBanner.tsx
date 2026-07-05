@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 
-import { useAuth, useConfig } from '../internal/payloadAdapter.js'
+import { useAuth, useConfig } from '../internal/payloadAdapterUI.js'
 import { Badge } from 'payload-plugin-shadcn-ui'
 
 /* One-line dismissible banner shown to admins when the plugin declined to

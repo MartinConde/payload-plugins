@@ -11,7 +11,7 @@
 
 import * as React from 'react'
 import { useRouter, useSearchParams } from 'next/navigation.js'
-import { toast, useAuth, useConfig, useTranslation } from '../../internal/payloadAdapter.js'
+import { toast, useAuth, useConfig, useTranslation } from '../../internal/payloadAdapterUI.js'
 import { formatAdminURL, getSafeRedirect } from '../../internal/payloadAdapter.js'
 
 import { AuthShell } from 'payload-plugin-shadcn-ui'

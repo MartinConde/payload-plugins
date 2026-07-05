@@ -3,7 +3,8 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import * as React from 'react';
 import { RotateCw } from 'lucide-react';
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from 'payload-plugin-shadcn-ui';
-import { formatAdminURL, toast, useConfig, useTranslation } from '../../internal/payloadAdapter.js';
+import { formatAdminURL } from '../../internal/payloadAdapter.js';
+import { toast, useConfig, useTranslation } from '../../internal/payloadAdapterUI.js';
 export function RebuildFrontendButton({ label: labelProp, endpointPath }) {
     const { config } = useConfig();
     const apiRoute = config.routes?.api;

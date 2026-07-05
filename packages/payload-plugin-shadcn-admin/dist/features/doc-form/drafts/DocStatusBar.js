@@ -12,7 +12,7 @@ import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-run
    status pills into one h-8 control. Otherwise it falls back to the single pill.
    Pure presentation — all derived state comes in via props. */ import * as React from 'react';
 import { GlobeIcon } from 'lucide-react';
-import { useTranslation } from '../../../internal/payloadAdapter.js';
+import { useTranslation } from '../../../internal/payloadAdapterUI.js';
 import { Badge } from 'payload-plugin-shadcn-ui';
 import { cn } from 'payload-plugin-shadcn-ui';
 import { toneClassName, persistedStatusPill } from './statusPill.js';

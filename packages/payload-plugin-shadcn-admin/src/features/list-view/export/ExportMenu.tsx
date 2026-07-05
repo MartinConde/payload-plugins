@@ -8,7 +8,7 @@
 import * as React from 'react'
 import { Download } from 'lucide-react'
 import type { Table as TanstackTable } from '@tanstack/react-table'
-import { useTranslation } from '../../../internal/payloadAdapter.js'
+import { useTranslation } from '../../../internal/payloadAdapterUI.js'
 
 import type {
   ShadcnAdminTranslationsKeys,

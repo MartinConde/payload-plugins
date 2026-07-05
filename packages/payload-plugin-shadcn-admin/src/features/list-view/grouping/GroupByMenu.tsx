@@ -21,7 +21,7 @@
 import * as React from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { Layers } from 'lucide-react'
-import { useTranslation } from '../../../internal/payloadAdapter.js'
+import { useTranslation } from '../../../internal/payloadAdapterUI.js'
 
 import type {
   ShadcnAdminTranslationsKeys,

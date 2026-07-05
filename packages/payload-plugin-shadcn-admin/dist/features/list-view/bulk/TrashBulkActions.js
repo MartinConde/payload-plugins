@@ -3,7 +3,7 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import { ArchiveRestore, Trash2 } from 'lucide-react';
-import { toast, useLocale, useTranslation } from '../../../internal/payloadAdapter.js';
+import { toast, useLocale, useTranslation } from '../../../internal/payloadAdapterUI.js';
 import { Button } from 'payload-plugin-shadcn-ui';
 import { Checkbox } from 'payload-plugin-shadcn-ui';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from 'payload-plugin-shadcn-ui';

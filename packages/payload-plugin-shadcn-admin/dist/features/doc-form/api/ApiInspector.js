@@ -2,7 +2,7 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import * as React from 'react';
 import { Check, Copy, Maximize2, Minimize2 } from 'lucide-react';
-import { toast, useConfig, useDocumentInfo, useLocale, useTranslation } from '../../../internal/payloadAdapter.js';
+import { toast, useConfig, useDocumentInfo, useLocale, useTranslation } from '../../../internal/payloadAdapterUI.js';
 import { useSearchParams } from 'next/navigation.js';
 import { formatAdminURL, hasDraftsEnabled } from '../../../internal/payloadAdapter.js';
 import { Checkbox } from 'payload-plugin-shadcn-ui';

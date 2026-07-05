@@ -55,11 +55,8 @@ import {
   useDocIdentity,
   usePageBuilder,
 } from 'payload-plugin-shadcn-ui'
-import {
-  formatAdminURL,
-  useConfig,
-  useTranslation,
-} from '../../../internal/payloadAdapter.js'
+import { formatAdminURL } from '../../../internal/payloadAdapter.js'
+import { useConfig, useTranslation } from '../../../internal/payloadAdapterUI.js'
 import type {
   ShadcnAdminTranslationsKeys,
   ShadcnAdminTranslationsObject,

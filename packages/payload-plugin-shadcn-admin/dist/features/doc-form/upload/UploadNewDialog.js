@@ -20,7 +20,7 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
    Rows submit sequentially via the shared `buildUploadFormData` wire-format
    helper — the same path the doc-form bridge uses — so the v3.23 R2
    client-direct upload branch can't drift. */ import * as React from 'react';
-import { useUploadHandlers, useLocale, useConfig, useTranslation } from '../../../internal/payloadAdapter.js';
+import { useUploadHandlers, useLocale, useConfig, useTranslation } from '../../../internal/payloadAdapterUI.js';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from 'payload-plugin-shadcn-ui';
 import { Button } from 'payload-plugin-shadcn-ui';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from 'payload-plugin-shadcn-ui';

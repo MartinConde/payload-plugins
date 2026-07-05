@@ -28,7 +28,7 @@
 
 import * as React from 'react'
 import { PlusIcon, RotateCcwIcon } from 'lucide-react'
-import { useConfig, useLocale, useTranslation } from '../../../internal/payloadAdapter.js'
+import { useConfig, useLocale, useTranslation } from '../../../internal/payloadAdapterUI.js'
 
 import type {
   ShadcnAdminTranslationsKeys,

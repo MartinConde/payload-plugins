@@ -27,7 +27,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
 
-import { useTranslation } from '../../../internal/payloadAdapter.js'
+import { useTranslation } from '../../../internal/payloadAdapterUI.js'
 
 import type {
   ShadcnAdminTranslationsKeys,

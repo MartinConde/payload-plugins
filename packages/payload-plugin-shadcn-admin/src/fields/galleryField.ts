@@ -22,9 +22,15 @@
    fully compatible — just add `galleryField()` to swap the admin UI.
 
    The override component (`GalleryArrayInput`) is a `'use client'` module
-   referenced here via `custom['plugin-shadcn-admin'].input`.  The importMap
+   referenced here via `custom['plugin-shadcn-admin'].input`. The importMap
    in the host Payload config resolves the RSC→client boundary automatically
-   (the same mechanism the SEO plugin uses for its SeoGroupInput). */
+   (the same mechanism the SEO plugin uses for its SeoGroupInput).
+
+   `GalleryArrayInput` itself is a Node-safe `React.lazy` shell — this file
+   (and this package's root, which re-exports `galleryField`) is on the
+   Payload CLI's module graph, so the real implementation
+   (GalleryArrayInputInner, which needs @payloadcms/ui) must never be
+   value-imported here directly. See GalleryArrayInput.tsx's header. */
 
 import type { ArrayField } from 'payload'
 import { GalleryArrayInput } from '../features/doc-form/gallery/GalleryArrayInput.js'

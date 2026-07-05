@@ -6,7 +6,7 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
    Payload's native list (snapshots excluded, all locales shown). Replaces the
    old 20-capped VersionsDialog. v3.9. */ import * as React from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useTranslation } from '../../../internal/payloadAdapter.js';
+import { useTranslation } from '../../../internal/payloadAdapterUI.js';
 import { Badge } from 'payload-plugin-shadcn-ui';
 import { Button } from 'payload-plugin-shadcn-ui';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from 'payload-plugin-shadcn-ui';

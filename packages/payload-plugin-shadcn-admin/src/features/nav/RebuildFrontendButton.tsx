@@ -3,7 +3,8 @@
 import * as React from 'react'
 import { RotateCw } from 'lucide-react'
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from 'payload-plugin-shadcn-ui'
-import { formatAdminURL, toast, useConfig, useTranslation } from '../../internal/payloadAdapter.js'
+import { formatAdminURL } from '../../internal/payloadAdapter.js'
+import { toast, useConfig, useTranslation } from '../../internal/payloadAdapterUI.js'
 
 export type RebuildFrontendButtonProps = {
   /** Consumer override label. When absent the translation key is used. */

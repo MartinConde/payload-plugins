@@ -4,7 +4,7 @@ import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import { DndContext, DragOverlay, PointerSensor, useDraggable, useDroppable, useSensor, useSensors } from '@dnd-kit/core';
 import { CheckSquare, ChevronRight, File as FileIcon, Folder, FolderPlus, Home, MoreVertical, Pencil, Trash2 } from 'lucide-react';
-import { toast, useLocale, useTranslation } from '../../internal/payloadAdapter.js';
+import { toast, useLocale, useTranslation } from '../../internal/payloadAdapterUI.js';
 import { Button } from 'payload-plugin-shadcn-ui';
 import { Card } from 'payload-plugin-shadcn-ui';
 import { Input } from 'payload-plugin-shadcn-ui';

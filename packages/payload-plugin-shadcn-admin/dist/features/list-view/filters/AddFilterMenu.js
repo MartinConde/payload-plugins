@@ -4,7 +4,7 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
    picker. Selecting a field calls onAdd with the chosen field and its
    default operator, leaving the value empty for the chip editor to fill in. */ import * as React from 'react';
 import { CirclePlusIcon } from 'lucide-react';
-import { useTranslation } from '../../../internal/payloadAdapter.js';
+import { useTranslation } from '../../../internal/payloadAdapterUI.js';
 import { Button } from 'payload-plugin-shadcn-ui';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from 'payload-plugin-shadcn-ui';
 import { Popover, PopoverContent, PopoverTrigger } from 'payload-plugin-shadcn-ui';

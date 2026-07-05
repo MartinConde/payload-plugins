@@ -18,7 +18,7 @@ import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-run
      state machine (debounce + single-flight + path→value snapshot for
      correct dirty cleanup), Version history dialog. */ import * as React from 'react';
 import { useRouter } from 'next/navigation';
-import { toast, useDocumentDrawerContext, useDocumentInfo, useServerFunctions, useTranslation, useUploadHandlers } from '../../internal/payloadAdapter.js';
+import { toast, useDocumentDrawerContext, useDocumentInfo, useServerFunctions, useTranslation, useUploadHandlers } from '../../internal/payloadAdapterUI.js';
 import { arrayMove } from '@dnd-kit/sortable';
 import { Button, cn } from 'payload-plugin-shadcn-ui';
 import { CollectionUploadHeader } from './upload/CollectionUploadHeader.js';

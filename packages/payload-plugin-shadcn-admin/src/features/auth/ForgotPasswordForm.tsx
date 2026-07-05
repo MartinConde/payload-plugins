@@ -8,7 +8,7 @@
    Payload's default reset view — that view isn't overridable in 3.84.1. */
 
 import * as React from 'react'
-import { toast, useConfig, useTranslation } from '../../internal/payloadAdapter.js'
+import { toast, useConfig, useTranslation } from '../../internal/payloadAdapterUI.js'
 import { formatAdminURL } from '../../internal/payloadAdapter.js'
 
 import { AuthShell } from 'payload-plugin-shadcn-ui'

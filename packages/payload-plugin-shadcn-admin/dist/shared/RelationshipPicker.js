@@ -5,7 +5,7 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
    returns one (single) or many (multi) doc IDs upstream. Falls back to a
    plain ID text input when the related collection has no useAsTitle. */ import * as React from 'react';
 import { CheckIcon, XIcon } from 'lucide-react';
-import { useTranslation } from '../internal/payloadAdapter.js';
+import { useTranslation } from '../internal/payloadAdapterUI.js';
 import { Badge } from 'payload-plugin-shadcn-ui';
 import { Button } from 'payload-plugin-shadcn-ui';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from 'payload-plugin-shadcn-ui';

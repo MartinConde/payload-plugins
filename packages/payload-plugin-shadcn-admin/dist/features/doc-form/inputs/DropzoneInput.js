@@ -14,7 +14,7 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
    caller can mount Payload's <EditUpload/> inside whatever modal primitive
    it prefers. */ import * as React from 'react';
 import { FileIcon, ImageIcon, PencilIcon, RefreshCwIcon, XIcon } from 'lucide-react';
-import { useTranslation } from '../../../internal/payloadAdapter.js';
+import { useTranslation } from '../../../internal/payloadAdapterUI.js';
 import { Button } from 'payload-plugin-shadcn-ui';
 import { cn } from 'payload-plugin-shadcn-ui';
 const formatBytes = (n)=>{

@@ -13,7 +13,7 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
    independently and refreshes on success. */ import * as React from 'react';
 import { useRouter } from 'next/navigation.js';
 import { Check, Copy } from 'lucide-react';
-import { toast, useTranslation } from '../../internal/payloadAdapter.js';
+import { toast, useTranslation } from '../../internal/payloadAdapterUI.js';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from 'payload-plugin-shadcn-ui';
 import { Button } from 'payload-plugin-shadcn-ui';
 import { Input } from 'payload-plugin-shadcn-ui';

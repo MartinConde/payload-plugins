@@ -17,7 +17,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { Button } from 'payload-plugin-shadcn-ui';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuTrigger } from 'payload-plugin-shadcn-ui';
 import { cn } from 'payload-plugin-shadcn-ui';
-import { useTranslation } from '../../internal/payloadAdapter.js';
+import { useTranslation } from '../../internal/payloadAdapterUI.js';
 import { useDashboardLayoutPrefs } from './prefs/useDashboardLayoutPrefs.js';
 const DEFAULT_SIZE = 'full';
 const SIZE_KEYS = {

@@ -15,7 +15,7 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
    picked entries (in `hasMany` mode they remain in the chip list). The
    "Upload new" drawer creates into whichever slug is currently active. */ import * as React from 'react';
 import { UploadIcon, XIcon } from 'lucide-react';
-import { useTranslation } from '../../../internal/payloadAdapter.js';
+import { useTranslation } from '../../../internal/payloadAdapterUI.js';
 import { Badge } from 'payload-plugin-shadcn-ui';
 import { Button } from 'payload-plugin-shadcn-ui';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from 'payload-plugin-shadcn-ui';

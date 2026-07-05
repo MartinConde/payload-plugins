@@ -15,7 +15,7 @@ import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-run
      from the incoming value); a footer Confirm button commits the full new
      selection. Cancel discards local changes. */ import * as React from 'react';
 import { CheckIcon, FolderOpenIcon, UploadIcon } from 'lucide-react';
-import { useTranslation } from '../../../internal/payloadAdapter.js';
+import { useTranslation } from '../../../internal/payloadAdapterUI.js';
 import { Button } from 'payload-plugin-shadcn-ui';
 import { Skeleton } from 'payload-plugin-shadcn-ui';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from 'payload-plugin-shadcn-ui';

@@ -9,7 +9,7 @@
 import * as React from 'react'
 import { useRouter } from 'next/navigation'
 import { LoaderIcon, RotateCcwIcon } from 'lucide-react'
-import { useTranslation } from '../../../internal/payloadAdapter.js'
+import { useTranslation } from '../../../internal/payloadAdapterUI.js'
 
 import { Button } from 'payload-plugin-shadcn-ui'
 

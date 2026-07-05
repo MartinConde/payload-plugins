@@ -4,7 +4,7 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
    Keeps both inputs DRY — they import the hook, controls component, and
    preview helper from here rather than duplicating the logic. */ import * as React from 'react';
 import { ChevronsDownUpIcon, ChevronsUpDownIcon } from 'lucide-react';
-import { useTranslation } from '../../../internal/payloadAdapter.js';
+import { useTranslation } from '../../../internal/payloadAdapterUI.js';
 import { Button } from 'payload-plugin-shadcn-ui';
 /**
  * Tracks collapsed/expanded state per stable row id.

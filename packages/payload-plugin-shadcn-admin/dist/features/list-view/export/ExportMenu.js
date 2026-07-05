@@ -5,7 +5,7 @@ import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-run
    filtered (current URL state), all. Each item opens a field-picker
    sheet that drives the paginated CSV download. */ import * as React from 'react';
 import { Download } from 'lucide-react';
-import { useTranslation } from '../../../internal/payloadAdapter.js';
+import { useTranslation } from '../../../internal/payloadAdapterUI.js';
 import { Button } from 'payload-plugin-shadcn-ui';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from 'payload-plugin-shadcn-ui';
 import { FieldPickerSheet } from './FieldPickerSheet.js';

@@ -3,7 +3,7 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import * as React from 'react';
 import Link from 'next/link';
 import { LayoutList, FolderTree } from 'lucide-react';
-import { useListQuery, useTranslation } from '../../internal/payloadAdapter.js';
+import { useListQuery, useTranslation } from '../../internal/payloadAdapterUI.js';
 import { Button } from 'payload-plugin-shadcn-ui';
 import { cn } from 'payload-plugin-shadcn-ui';
 /* List ⇄ Folders toggle rendered in the auto list view's header. Flips a

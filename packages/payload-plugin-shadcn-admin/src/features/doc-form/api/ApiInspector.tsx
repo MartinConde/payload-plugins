@@ -8,7 +8,7 @@ import {
   useDocumentInfo,
   useLocale,
   useTranslation,
-} from '../../../internal/payloadAdapter.js'
+} from '../../../internal/payloadAdapterUI.js'
 import { useSearchParams } from 'next/navigation.js'
 import { formatAdminURL, hasDraftsEnabled } from '../../../internal/payloadAdapter.js'
 

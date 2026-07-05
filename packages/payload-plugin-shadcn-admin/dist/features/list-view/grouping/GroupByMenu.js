@@ -19,7 +19,7 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
    `window.location.search`. */ import * as React from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { Layers } from 'lucide-react';
-import { useTranslation } from '../../../internal/payloadAdapter.js';
+import { useTranslation } from '../../../internal/payloadAdapterUI.js';
 import { Button } from 'payload-plugin-shadcn-ui';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from 'payload-plugin-shadcn-ui';
 export function GroupByMenu({ fields, current }) {

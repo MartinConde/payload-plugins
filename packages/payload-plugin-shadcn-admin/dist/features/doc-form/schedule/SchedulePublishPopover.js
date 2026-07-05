@@ -10,7 +10,7 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
    `getFormState`). Execution at `waitUntil` is the consuming app's jobs queue
    (`jobs.autoRun` / external cron) — see SETUP.md. */ import * as React from 'react';
 import { ArrowUpCircle, CalendarClock, Check, ChevronsUpDown, Clock, Trash2, XCircle } from 'lucide-react';
-import { toast, useConfig, useServerFunctions, useTranslation } from '../../../internal/payloadAdapter.js';
+import { toast, useConfig, useServerFunctions, useTranslation } from '../../../internal/payloadAdapterUI.js';
 import { formatAdminURL } from '../../../internal/payloadAdapter.js';
 import * as qs from 'qs-esm';
 import { Badge } from 'payload-plugin-shadcn-ui';

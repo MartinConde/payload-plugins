@@ -2,7 +2,7 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import * as React from 'react';
 import { ChevronsUpDown, LogOut, User } from 'lucide-react';
-import { useTranslation } from '../../internal/payloadAdapter.js';
+import { useTranslation } from '../../internal/payloadAdapterUI.js';
 import { Avatar, AvatarFallback, AvatarImage } from 'payload-plugin-shadcn-ui';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from 'payload-plugin-shadcn-ui';
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from 'payload-plugin-shadcn-ui';

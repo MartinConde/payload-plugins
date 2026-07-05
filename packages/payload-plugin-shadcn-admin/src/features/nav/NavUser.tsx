@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import { ChevronsUpDown, LogOut, User } from 'lucide-react'
-import { useTranslation } from '../../internal/payloadAdapter.js'
+import { useTranslation } from '../../internal/payloadAdapterUI.js'
 
 import { Avatar, AvatarFallback, AvatarImage } from 'payload-plugin-shadcn-ui'
 import {

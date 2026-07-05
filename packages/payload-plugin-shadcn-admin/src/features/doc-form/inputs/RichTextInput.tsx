@@ -23,8 +23,8 @@
 
 import * as React from 'react'
 
-import { Form } from '../../../internal/payloadAdapter.js'
-import { OperationProvider } from '../../../internal/payloadAdapter.js'
+import { Form } from '../../../internal/payloadAdapterUI.js'
+import { OperationProvider } from '../../../internal/payloadAdapterUI.js'
 
 import type { RichTextRenderedEntry } from '../richtext/extractRichTextRenderedFields.js'
 

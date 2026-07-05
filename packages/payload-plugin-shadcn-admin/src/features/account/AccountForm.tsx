@@ -15,7 +15,7 @@
 import * as React from 'react'
 import { useRouter } from 'next/navigation.js'
 import { Check, Copy } from 'lucide-react'
-import { toast, useTranslation } from '../../internal/payloadAdapter.js'
+import { toast, useTranslation } from '../../internal/payloadAdapterUI.js'
 
 import type { ExtractedField } from 'payload-plugin-shadcn-ui'
 import type { Perms } from '../doc-form/access-control/fieldPermissions.js'

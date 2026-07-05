@@ -1,7 +1,7 @@
 'use client';
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import * as React from 'react';
-import { useDocumentInfo, useTranslation } from '../../internal/payloadAdapter.js';
+import { useDocumentInfo, useTranslation } from '../../internal/payloadAdapterUI.js';
 import { Badge } from 'payload-plugin-shadcn-ui';
 import { buttonVariants } from 'payload-plugin-shadcn-ui';
 import { cn } from 'payload-plugin-shadcn-ui';

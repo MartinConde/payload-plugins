@@ -11,7 +11,7 @@
 
 import * as React from 'react'
 import { useRouter } from 'next/navigation'
-import { EditUpload } from '../../../internal/payloadAdapter.js'
+import { EditUpload } from '../../../internal/payloadAdapterUI.js'
 import type { UploadEdits } from '../../../internal/payloadAdapter.js'
 
 import {

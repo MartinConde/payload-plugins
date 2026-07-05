@@ -8,7 +8,7 @@ import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-run
    flat list. The "Group by" picker lives in the list header (GroupByMenu). */ import * as React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useListDrawerContext } from '../../../internal/payloadAdapter.js';
+import { useListDrawerContext } from '../../../internal/payloadAdapterUI.js';
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from 'payload-plugin-shadcn-ui';
 import { buildColumnsForCollection } from '../columns/autoColumns.js';

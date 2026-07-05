@@ -26,7 +26,7 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Plus, SearchIcon } from 'lucide-react';
-import { useListDrawerContext, useTranslation } from '../../../internal/payloadAdapter.js';
+import { useListDrawerContext, useTranslation } from '../../../internal/payloadAdapterUI.js';
 import { Button, buttonVariants, cn, Input } from 'payload-plugin-shadcn-ui';
 export function GroupedListToolbar({ newDocumentURL, enableCreate, enableSearch, initialSearch, searchPlaceholder, searchDebounceMs = 300 }) {
     const { t } = useTranslation();

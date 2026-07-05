@@ -20,7 +20,7 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
    matters because `RichTextInput` reseeds its editor state on remount — fine
    for an occasional flash, not something we want on every block click. */ import * as React from 'react';
 import { Badge, usePageBuilder } from 'payload-plugin-shadcn-ui';
-import { useTranslation } from '../../../internal/payloadAdapter.js';
+import { useTranslation } from '../../../internal/payloadAdapterUI.js';
 const blockLabelOf = (block)=>{
     if (block.labels?.singular && block.labels.singular.length > 0) return block.labels.singular;
     return block.slug;

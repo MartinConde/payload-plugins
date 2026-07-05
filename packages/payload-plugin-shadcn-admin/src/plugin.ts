@@ -1,4 +1,10 @@
-import type { CollectionConfig, Config, GlobalConfig, Plugin } from './internal/payloadAdapter.js'
+import type {
+  CollectionConfig,
+  Config,
+  GlobalConfig,
+  Plugin,
+  PayloadRequest,
+} from './internal/payloadAdapter.js'
 import { deepMergeSimple } from './internal/payloadAdapter.js'
 
 import type { PluginConfig } from './types.js'
@@ -384,6 +390,12 @@ export const shadcnAdminPlugin =
       // label is optional in the stash — when absent the component falls back
       // to the shadcnAdmin:rebuildFrontend translation key.
       const label = options.rebuildFrontend.label
+      // Default: admin-collection users only — otherwise any authenticated
+      // user of any auth-enabled collection (e.g. a read-only frontend
+      // service user) could trigger production deploy hooks / burn quota.
+      const hasRebuildAccess =
+        options.rebuildFrontend.access ??
+        ((r: PayloadRequest) => r.user?.collection === r.payload.config.admin?.user)
 
       next.endpoints = [
         ...(config.endpoints ?? []),
@@ -393,6 +405,9 @@ export const shadcnAdminPlugin =
           handler: async (req) => {
             if (!req.user) {
               return Response.json({ error: 'Unauthorized' }, { status: 401 })
+            }
+            if (!hasRebuildAccess(req)) {
+              return Response.json({ error: 'Forbidden' }, { status: 403 })
             }
             const url = process.env[deployHookEnv]
             if (!url) {

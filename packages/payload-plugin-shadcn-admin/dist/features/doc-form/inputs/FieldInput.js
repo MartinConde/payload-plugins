@@ -21,7 +21,7 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
      The override must be a client reference exported from a 'use client'
      module in the consumer's source. */ import * as React from 'react';
 import { CheckIcon, ChevronsUpDownIcon, XIcon } from 'lucide-react';
-import { useTranslation } from '../../../internal/payloadAdapter.js';
+import { useTranslation } from '../../../internal/payloadAdapterUI.js';
 import { Badge } from 'payload-plugin-shadcn-ui';
 import { Button } from 'payload-plugin-shadcn-ui';
 import { Checkbox } from 'payload-plugin-shadcn-ui';

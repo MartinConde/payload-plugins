@@ -1,7 +1,16 @@
 #!/usr/bin/env node
-/* Smoke test: import the compiled internals adapter and assert each runtime
+/* Smoke test: import the compiled internals adapters and assert each runtime
    symbol resolves to a non-null value. Catches Payload / @payloadcms/ui
    rename-and-remove breakage at install-time instead of at admin-render time.
+
+   Two adapters, checked separately on purpose:
+   - payloadAdapter.js    — server-safe (payload, payload/shared, translations).
+                            No CSS stub needed to import this one; it's exactly
+                            the module a Payload CLI command's import chain
+                            touches, and proving that stays CSS-free is the
+                            point (see payloadAdapter.ts's header comment).
+   - payloadAdapterUI.js  — @payloadcms/ui only. Needs the CSS stub below,
+                            same as before the split.
 
    Run AFTER `pnpm build` (imports from ./dist/).
    Wire into CI as `pnpm check:internals` or run pre-publish. */
@@ -12,15 +21,14 @@ import { dirname, resolve } from 'node:path'
 
 const here = dirname(fileURLToPath(import.meta.url))
 
-// Stub `.css`/`.scss` imports — @payloadcms/ui transitively imports stylesheets
-// that bundlers handle but bare Node cannot.
-register('./css-stub-loader.mjs', pathToFileURL(here + '/'))
-
-const adapterUrl = pathToFileURL(
+const SERVER_ADAPTER_URL = pathToFileURL(
   resolve(here, '../dist/internal/payloadAdapter.js'),
 ).href
+const UI_ADAPTER_URL = pathToFileURL(
+  resolve(here, '../dist/internal/payloadAdapterUI.js'),
+).href
 
-const RUNTIME_EXPORTED = [
+const SERVER_RUNTIME_EXPORTED = [
   // from 'payload'
   'docAccessOperation',
   'getFolderData',
@@ -29,6 +37,12 @@ const RUNTIME_EXPORTED = [
   'getSafeRedirect',
   'hasDraftsEnabled',
   'mergeListSearchAndWhere',
+  // from '@payloadcms/translations' and subpaths
+  'enTranslations',
+  'deepMergeSimple',
+]
+
+const UI_RUNTIME_EXPORTED = [
   // from '@payloadcms/ui'
   'EditUpload',
   'Form',
@@ -43,39 +57,54 @@ const RUNTIME_EXPORTED = [
   'useServerFunctions',
   'useTranslation',
   'useUploadHandlers',
-  // from '@payloadcms/translations' and subpaths
-  'enTranslations',
-  'deepMergeSimple',
 ]
 
-let mod
-try {
-  mod = await import(adapterUrl)
-} catch (err) {
-  console.error(
-    '[check-payload-internals] FAILED to import the compiled adapter.\n' +
-      `  Resolved URL: ${adapterUrl}\n` +
-      '  Did you run `pnpm build` first?\n' +
-      `  Underlying error: ${err && err.message ? err.message : err}`,
-  )
-  process.exit(1)
+function checkShape(mod, names) {
+  const missing = []
+  const wrongShape = []
+  for (const name of names) {
+    if (!(name in mod)) {
+      missing.push(name)
+      continue
+    }
+    const v = mod[name]
+    const t = typeof v
+    // React components are functions or objects (forwardRef); hooks are functions;
+    // toast may be a function with attached methods. We just require non-null.
+    if (v == null || (t !== 'function' && t !== 'object')) {
+      wrongShape.push(`${name} (typeof = ${t})`)
+    }
+  }
+  return { missing, wrongShape }
 }
 
-const missing = []
-const wrongShape = []
-for (const name of RUNTIME_EXPORTED) {
-  if (!(name in mod)) {
-    missing.push(name)
-    continue
-  }
-  const v = mod[name]
-  const t = typeof v
-  // React components are functions or objects (forwardRef); hooks are functions;
-  // toast may be a function with attached methods. We just require non-null.
-  if (v == null || (t !== 'function' && t !== 'object')) {
-    wrongShape.push(`${name} (typeof = ${t})`)
+async function importOrFail(label, url) {
+  try {
+    return await import(url)
+  } catch (err) {
+    console.error(
+      `[check-payload-internals] FAILED to import ${label}.\n` +
+        `  Resolved URL: ${url}\n` +
+        '  Did you run `pnpm build` first?\n' +
+        `  Underlying error: ${err && err.message ? err.message : err}`,
+    )
+    process.exit(1)
   }
 }
+
+// Deliberately imported BEFORE registering the CSS stub: payloadAdapter.js
+// must load on bare Node with no help — that's the whole point of the split.
+const serverMod = await importOrFail('payloadAdapter.js', SERVER_ADAPTER_URL)
+
+// Stub `.css`/`.scss` imports — @payloadcms/ui transitively imports stylesheets
+// that bundlers handle but bare Node cannot. Only needed for the UI adapter.
+register('./css-stub-loader.mjs', pathToFileURL(here + '/'))
+const uiMod = await importOrFail('payloadAdapterUI.js', UI_ADAPTER_URL)
+
+const serverResult = checkShape(serverMod, SERVER_RUNTIME_EXPORTED)
+const uiResult = checkShape(uiMod, UI_RUNTIME_EXPORTED)
+const missing = [...serverResult.missing, ...uiResult.missing]
+const wrongShape = [...serverResult.wrongShape, ...uiResult.wrongShape]
 
 if (missing.length || wrongShape.length) {
   console.error('[check-payload-internals] FAIL')
@@ -92,11 +121,10 @@ if (missing.length || wrongShape.length) {
     )
   }
   console.error(
-    '\n  Update src/internal/payloadAdapter.ts and consumers, then re-run.',
+    '\n  Update src/internal/payloadAdapter{,UI}.ts and consumers, then re-run.',
   )
   process.exit(1)
 }
 
-console.log(
-  `[check-payload-internals] OK — ${RUNTIME_EXPORTED.length} runtime symbols resolved.`,
-)
+const total = SERVER_RUNTIME_EXPORTED.length + UI_RUNTIME_EXPORTED.length
+console.log(`[check-payload-internals] OK — ${total} runtime symbols resolved.`)

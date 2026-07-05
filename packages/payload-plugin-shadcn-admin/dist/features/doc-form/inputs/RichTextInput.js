@@ -20,8 +20,8 @@ import { jsx as _jsx } from "react/jsx-runtime";
    useEffect (don't bump key for values we ourselves just emitted). Without
    this guard you get: bridge updates → useEffect sees new prop → bumps key
    → Form remounts → onChange fires → bridge updates → loop. */ import * as React from 'react';
-import { Form } from '../../../internal/payloadAdapter.js';
-import { OperationProvider } from '../../../internal/payloadAdapter.js';
+import { Form } from '../../../internal/payloadAdapterUI.js';
+import { OperationProvider } from '../../../internal/payloadAdapterUI.js';
 // JSON-stringify round-trip compare. Lexical state is JSON-safe so this is
 // reliable. Zero new deps (avoid pulling in dequal — only transitively present).
 const sameValue = (a, b)=>{

@@ -10,7 +10,7 @@
    mounted Lexical editor owns its own state, exactly like the doc form). */
 
 import * as React from 'react'
-import { useServerFunctions } from '../../../internal/payloadAdapter.js'
+import { useServerFunctions } from '../../../internal/payloadAdapterUI.js'
 
 import {
   extractRichTextRenderedFields,

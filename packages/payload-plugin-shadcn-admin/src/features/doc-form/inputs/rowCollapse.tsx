@@ -7,7 +7,7 @@
 import * as React from 'react'
 import { ChevronsDownUpIcon, ChevronsUpDownIcon } from 'lucide-react'
 
-import { useTranslation } from '../../../internal/payloadAdapter.js'
+import { useTranslation } from '../../../internal/payloadAdapterUI.js'
 import type {
   ShadcnAdminTranslationsKeys,
   ShadcnAdminTranslationsObject,

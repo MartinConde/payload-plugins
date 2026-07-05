@@ -9,7 +9,7 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
    File / edits state is owned by the bridge and passed in via props; this
    component is the visible surface. */ import * as React from 'react';
 import { useRouter } from 'next/navigation';
-import { EditUpload } from '../../../internal/payloadAdapter.js';
+import { EditUpload } from '../../../internal/payloadAdapterUI.js';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from 'payload-plugin-shadcn-ui';
 import { DropzoneInput } from '../inputs/DropzoneInput.js';
 import { UploadNewDialog } from './UploadNewDialog.js';

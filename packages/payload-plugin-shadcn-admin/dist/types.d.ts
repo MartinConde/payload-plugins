@@ -1,4 +1,5 @@
 import type { AdminBranding, NavGroup } from './features/nav/DefaultAdminSidebar.js';
+import type { PayloadRequest } from './internal/payloadAdapter.js';
 export interface PluginConfig {
     /**
      * Disable the plugin without removing it from the config.
@@ -147,6 +148,17 @@ export interface RebuildFrontendConfig {
      * Default: `'/rebuild-frontend'`.
      */
     endpointPath?: string;
+    /**
+     * Extra access check for the endpoint, evaluated after the built-in
+     * `req.user` (authenticated) check. Return `true` to allow the request.
+     *
+     * Default: restrict to users authenticated against the admin collection
+     * (`req.user.collection === config.admin.user`) — otherwise ANY
+     * authenticated user of ANY auth-enabled collection (e.g. a read-only
+     * frontend service user, or future customer-facing accounts) could trigger
+     * a production deploy hook.
+     */
+    access?: (req: PayloadRequest) => boolean;
 }
 export type DefaultNavConfig = {
     /** Sidebar header branding (name, subtitle, optional icon component, href). */
