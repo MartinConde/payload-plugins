@@ -11,15 +11,7 @@
    (`jobs.autoRun` / external cron) — see SETUP.md. */
 
 import * as React from 'react'
-import {
-  ArrowUpCircle,
-  CalendarClock,
-  Check,
-  ChevronsUpDown,
-  Clock,
-  Trash2,
-  XCircle,
-} from 'lucide-react'
+import { ArrowUpCircle, CalendarClock, Clock, XCircle } from 'lucide-react'
 import {
   toast,
   useConfig,
@@ -37,14 +29,6 @@ import * as qs from 'qs-esm'
 import { Badge } from 'payload-plugin-shadcn-ui'
 import { Button } from 'payload-plugin-shadcn-ui'
 import { Calendar } from 'payload-plugin-shadcn-ui'
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from 'payload-plugin-shadcn-ui'
 import { Input } from 'payload-plugin-shadcn-ui'
 import {
   Popover,
@@ -59,18 +43,19 @@ import {
   SelectValue,
 } from 'payload-plugin-shadcn-ui'
 import { Separator } from 'payload-plugin-shadcn-ui'
-import { cn } from 'payload-plugin-shadcn-ui'
 import type { ExtractedLocale } from '../localization/LocaleSwitcher.js'
 import {
   formatScheduledDate,
   wallClockToInstant,
 } from './scheduleConfig.js'
+import { TimezonePicker } from './TimezonePicker.js'
+import { UpcomingJobsList } from './UpcomingJobsList.js'
 
 const ALL_LOCALES = '__all__'
 
 type ScheduleType = 'publish' | 'unpublish'
 
-type UpcomingJob = {
+export type UpcomingJob = {
   id: number | string
   waitUntil?: string
   input?: {
@@ -144,12 +129,8 @@ export function SchedulePublishPopover({
   )
   const [localeToPublish, setLocaleToPublish] =
     React.useState<string>(ALL_LOCALES)
-  const [tzPickerOpen, setTzPickerOpen] = React.useState(false)
   const [processing, setProcessing] = React.useState(false)
   const [upcoming, setUpcoming] = React.useState<UpcomingJob[] | null>(null)
-
-  const selectedTzLabel =
-    supportedTimezones.find((tz) => tz.value === timezone)?.label ?? timezone
 
   // Preview the absolute instant the picked wall-clock maps to, in the chosen
   // zone — so the user can confirm what they're scheduling before committing.
@@ -367,51 +348,12 @@ export function SchedulePublishPopover({
           {supportedTimezones.length > 0 ? (
             <div className="space-y-1.5">
               <span className="text-sm font-medium">Timezone</span>
-              <Popover open={tzPickerOpen} onOpenChange={setTzPickerOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={tzPickerOpen}
-                    className="h-9 w-full justify-between font-normal"
-                    disabled={processing}
-                  >
-                    <span className="truncate">{selectedTzLabel}</span>
-                    <ChevronsUpDown className="size-4 shrink-0 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
-                  <Command>
-                    <CommandInput placeholder="Search timezone…" />
-                    <CommandList>
-                      <CommandEmpty>No timezone found.</CommandEmpty>
-                      <CommandGroup>
-                        {supportedTimezones.map((tz) => (
-                          <CommandItem
-                            key={tz.value}
-                            value={tz.label}
-                            onSelect={() => {
-                              setTimezone(tz.value)
-                              setTzPickerOpen(false)
-                            }}
-                          >
-                            <Check
-                              className={cn(
-                                'size-4',
-                                timezone === tz.value
-                                  ? 'opacity-100'
-                                  : 'opacity-0',
-                              )}
-                            />
-                            <span className="truncate">{tz.label}</span>
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
+              <TimezonePicker
+                value={timezone}
+                onChange={setTimezone}
+                options={supportedTimezones}
+                disabled={processing}
+              />
             </div>
           ) : null}
 
@@ -463,87 +405,11 @@ export function SchedulePublishPopover({
 
         <Separator />
 
-        <div className="space-y-2 p-3">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium">Upcoming</span>
-            {upcoming && upcoming.length > 0 ? (
-              <Badge variant="secondary" className="px-1.5">
-                {upcoming.length}
-              </Badge>
-            ) : null}
-          </div>
-          {upcoming === null ? (
-            <p className="text-sm text-muted-foreground">Loading…</p>
-          ) : upcoming.length === 0 ? (
-            <div className="flex flex-col items-center gap-1.5 rounded-md border border-dashed py-5 text-center">
-              <CalendarClock className="size-5 text-muted-foreground/60" />
-              <p className="text-sm text-muted-foreground">
-                No scheduled events
-              </p>
-            </div>
-          ) : (
-            <ul className="space-y-1.5">
-              {upcoming.map((job) => {
-                const isUnpublish = job.input?.type === 'unpublish'
-                return (
-                  <li
-                    key={String(job.id)}
-                    className="group flex items-center gap-2.5 rounded-md border bg-card p-2.5 text-sm transition-colors hover:bg-accent/40"
-                  >
-                    <div
-                      className={cn(
-                        'flex size-8 shrink-0 items-center justify-center rounded-full',
-                        isUnpublish
-                          ? 'bg-muted text-muted-foreground'
-                          : 'bg-primary/10 text-primary',
-                      )}
-                    >
-                      {isUnpublish ? (
-                        <XCircle className="size-4" />
-                      ) : (
-                        <ArrowUpCircle className="size-4" />
-                      )}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-medium capitalize">
-                          {job.input?.type ?? 'publish'}
-                        </span>
-                        {job.input?.locale ? (
-                          <Badge
-                            variant="outline"
-                            className="px-1.5 py-0 text-[10px] uppercase tracking-wider"
-                          >
-                            {job.input.locale}
-                          </Badge>
-                        ) : null}
-                      </div>
-                      <div className="truncate text-xs text-muted-foreground">
-                        {job.waitUntil
-                          ? formatScheduledDate(
-                              job.waitUntil,
-                              job.input?.timezone,
-                            )
-                          : '—'}
-                      </div>
-                    </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="size-7 shrink-0 text-muted-foreground opacity-0 transition-opacity hover:text-destructive group-hover:opacity-100 focus-visible:opacity-100"
-                      onClick={() => void handleCancel(job.id)}
-                      disabled={processing}
-                      aria-label="Cancel scheduled event"
-                    >
-                      <Trash2 className="size-4" />
-                    </Button>
-                  </li>
-                )
-              })}
-            </ul>
-          )}
-        </div>
+        <UpcomingJobsList
+          upcoming={upcoming}
+          processing={processing}
+          onCancel={(jobId) => void handleCancel(jobId)}
+        />
       </PopoverContent>
     </Popover>
   )

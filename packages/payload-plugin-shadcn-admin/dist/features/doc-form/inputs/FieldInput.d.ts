@@ -1,5 +1,6 @@
 import * as React from 'react';
 import type { TFunction } from '../../../internal/payloadAdapter.js';
+import { SearchableSelect } from './SelectInputs.js';
 import type { ExtractedBlock, ExtractedCollection, ExtractedField, ExtractedTab } from 'payload-plugin-shadcn-ui';
 import type { RichTextRenderedEntry } from '../richtext/extractRichTextRenderedFields.js';
 export type FieldInputOption = string | {
@@ -70,17 +71,4 @@ export declare const normalizeOptions: (options: FieldInputOption[] | undefined)
     label: string;
 }[];
 export declare function FieldInput(props: FieldInputProps): React.ReactElement;
-/** Searchable single-select combobox (Popover + Command), for long option
- *  lists like a locale picker. Mirrors MultiSelect's chrome but holds one
- *  value and closes on pick. */
-export declare function SearchableSelect({ id, options, value, onChange, invalid, disabled, }: {
-    id: string;
-    options: {
-        value: string;
-        label: string;
-    }[];
-    value: string;
-    onChange: (next: string) => void;
-    invalid?: boolean;
-    disabled?: boolean;
-}): React.ReactElement;
+export { SearchableSelect };

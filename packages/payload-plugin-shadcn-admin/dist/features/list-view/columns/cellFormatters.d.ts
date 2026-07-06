@@ -1,0 +1,16 @@
+import type { AutoField } from './autoColumns.js';
+export declare const EM_DASH = "\u2014";
+export declare const stringifyLabel: (value: unknown) => string | null;
+export declare const titleCase: (name: string) => string;
+export declare const labelFor: (field: AutoField, fallback: string) => string;
+export declare const truncate: (s: string, n: number) => string;
+export declare const isEmpty: (v: unknown) => boolean;
+export declare const formatDate: (value: unknown, displayFormat?: string) => string;
+export declare const formatNumber: (value: unknown) => string;
+export declare const optionLabel: (options: AutoField["options"], value: unknown) => string;
+export declare const relatedTitle: (related: unknown, useAsTitle: string | undefined) => string;
+export declare const extractLexicalText: (value: unknown, maxChars: number) => string;
+export declare const summarizeArray: (value: unknown, field: AutoField) => string;
+export declare const summarizeBlocks: (value: unknown) => string;
+export declare const summarizeGroup: (value: unknown) => string;
+export declare const formatPoint: (value: unknown) => string;

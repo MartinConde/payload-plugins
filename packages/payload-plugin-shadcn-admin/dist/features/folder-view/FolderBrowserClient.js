@@ -2,17 +2,15 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
-import { DndContext, DragOverlay, PointerSensor, useDraggable, useDroppable, useSensor, useSensors } from '@dnd-kit/core';
-import { CheckSquare, ChevronRight, File as FileIcon, Folder, FolderPlus, Home, MoreVertical, Pencil, Trash2 } from 'lucide-react';
+import { DndContext, DragOverlay, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { CheckSquare, File as FileIcon, Folder, FolderPlus } from 'lucide-react';
 import { toast, useLocale, useTranslation } from '../../internal/payloadAdapterUI.js';
 import { Button } from 'payload-plugin-shadcn-ui';
-import { Card } from 'payload-plugin-shadcn-ui';
 import { Input } from 'payload-plugin-shadcn-ui';
 import { Label } from 'payload-plugin-shadcn-ui';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from 'payload-plugin-shadcn-ui';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from 'payload-plugin-shadcn-ui';
-import { cn } from 'payload-plugin-shadcn-ui';
-const DROP_ROOT = 'crumb:__root__';
+import { Breadcrumbs, DROP_ROOT } from './FolderBreadcrumbs.js';
+import { DocCard, FolderCard } from './FolderCards.js';
 export function FolderBrowserClient({ basePath, adminRoute, foldersSlug, folderFieldName, currentFolderID, breadcrumbs, subfolders, documents, extraQuery, rootLabel = 'Folders' }) {
     const router = useRouter();
     const { t } = useTranslation();
@@ -514,181 +512,6 @@ export function FolderBrowserClient({ basePath, adminRoute, foldersSlug, folderF
                         })
                     ]
                 })
-            })
-        ]
-    });
-}
-function Breadcrumbs({ rootLabel, breadcrumbs, currentFolderID, onNavigate }) {
-    return /*#__PURE__*/ _jsxs("nav", {
-        className: "flex flex-wrap items-center gap-1 text-sm text-muted-foreground",
-        children: [
-            /*#__PURE__*/ _jsx(CrumbDropTarget, {
-                id: DROP_ROOT,
-                children: /*#__PURE__*/ _jsxs("button", {
-                    type: "button",
-                    onClick: ()=>onNavigate(null),
-                    className: cn('inline-flex items-center gap-1 rounded px-1.5 py-0.5 hover:bg-accent hover:text-accent-foreground', currentFolderID == null && 'text-foreground'),
-                    children: [
-                        /*#__PURE__*/ _jsx(Home, {
-                            className: "h-3.5 w-3.5"
-                        }),
-                        rootLabel
-                    ]
-                })
-            }),
-            breadcrumbs.map((crumb, i)=>{
-                const isLast = i === breadcrumbs.length - 1;
-                return /*#__PURE__*/ _jsxs(React.Fragment, {
-                    children: [
-                        /*#__PURE__*/ _jsx(ChevronRight, {
-                            className: "h-3.5 w-3.5 opacity-50"
-                        }),
-                        isLast ? /*#__PURE__*/ _jsx("span", {
-                            className: "px-1.5 py-0.5 font-medium text-foreground",
-                            children: crumb.name
-                        }) : /*#__PURE__*/ _jsx(CrumbDropTarget, {
-                            id: `crumb:${crumb.id}`,
-                            children: /*#__PURE__*/ _jsx("button", {
-                                type: "button",
-                                onClick: ()=>onNavigate(crumb.id),
-                                className: "rounded px-1.5 py-0.5 hover:bg-accent hover:text-accent-foreground",
-                                children: crumb.name
-                            })
-                        })
-                    ]
-                }, crumb.id);
-            })
-        ]
-    });
-}
-function CrumbDropTarget({ id, children }) {
-    const { setNodeRef, isOver } = useDroppable({
-        id
-    });
-    return /*#__PURE__*/ _jsx("span", {
-        ref: setNodeRef,
-        className: cn('rounded', isOver && 'bg-primary/20 ring-1 ring-primary'),
-        children: children
-    });
-}
-function FolderCard({ item, selected, selectMode, onActivate, onRename, onDelete, renameLabel, deleteLabel }) {
-    const { setNodeRef: setDropRef, isOver } = useDroppable({
-        id: `folder:${item.value.id}`
-    });
-    const { setNodeRef: setDragRef, listeners, attributes, isDragging } = useDraggable({
-        id: item.itemKey
-    });
-    return /*#__PURE__*/ _jsxs(Card, {
-        ref: (node)=>{
-            setDropRef(node);
-            setDragRef(node);
-        },
-        ...attributes,
-        ...listeners,
-        role: "button",
-        tabIndex: 0,
-        "aria-pressed": selectMode ? selected : undefined,
-        onClick: (e)=>onActivate(item, {
-                shiftKey: e.shiftKey
-            }),
-        onKeyDown: (e)=>{
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                onActivate(item, {
-                    shiftKey: e.shiftKey
-                });
-            }
-        },
-        className: cn('relative flex cursor-pointer items-center gap-3 p-3 transition-colors hover:bg-accent', isOver && 'bg-primary/10 ring-2 ring-primary', selected && 'ring-2 ring-primary', isDragging && 'opacity-40'),
-        children: [
-            /*#__PURE__*/ _jsx(Folder, {
-                className: "h-8 w-8 shrink-0 text-muted-foreground"
-            }),
-            /*#__PURE__*/ _jsx("span", {
-                className: "truncate text-sm",
-                children: item.value._folderOrDocumentTitle
-            }),
-            /*#__PURE__*/ _jsxs(DropdownMenu, {
-                children: [
-                    /*#__PURE__*/ _jsx(DropdownMenuTrigger, {
-                        asChild: true,
-                        onClick: (e)=>e.stopPropagation(),
-                        children: /*#__PURE__*/ _jsx(Button, {
-                            variant: "ghost",
-                            size: "icon",
-                            className: "ml-auto h-7 w-7 shrink-0",
-                            onPointerDown: (e)=>e.stopPropagation(),
-                            children: /*#__PURE__*/ _jsx(MoreVertical, {
-                                className: "h-4 w-4"
-                            })
-                        })
-                    }),
-                    /*#__PURE__*/ _jsxs(DropdownMenuContent, {
-                        align: "end",
-                        onClick: (e)=>e.stopPropagation(),
-                        children: [
-                            /*#__PURE__*/ _jsxs(DropdownMenuItem, {
-                                onSelect: ()=>onRename(),
-                                children: [
-                                    /*#__PURE__*/ _jsx(Pencil, {
-                                        className: "mr-2 h-4 w-4"
-                                    }),
-                                    renameLabel
-                                ]
-                            }),
-                            /*#__PURE__*/ _jsxs(DropdownMenuItem, {
-                                onSelect: ()=>onDelete(),
-                                className: "text-destructive",
-                                children: [
-                                    /*#__PURE__*/ _jsx(Trash2, {
-                                        className: "mr-2 h-4 w-4"
-                                    }),
-                                    deleteLabel
-                                ]
-                            })
-                        ]
-                    })
-                ]
-            })
-        ]
-    });
-}
-function DocCard({ item, selected, selectMode, onActivate }) {
-    const { setNodeRef, listeners, attributes, isDragging } = useDraggable({
-        id: item.itemKey
-    });
-    const { url, filename, _folderOrDocumentTitle } = item.value;
-    return /*#__PURE__*/ _jsxs(Card, {
-        ref: setNodeRef,
-        ...attributes,
-        ...listeners,
-        role: "button",
-        tabIndex: 0,
-        "aria-pressed": selectMode ? selected : undefined,
-        onClick: (e)=>onActivate(item, {
-                shiftKey: e.shiftKey
-            }),
-        onKeyDown: (e)=>{
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                onActivate(item, {
-                    shiftKey: e.shiftKey
-                });
-            }
-        },
-        className: cn('flex cursor-pointer items-center gap-3 p-3 transition-colors hover:bg-accent', selected && 'ring-2 ring-primary', isDragging && 'opacity-40'),
-        children: [
-            url ? // eslint-disable-next-line @next/next/no-img-element
-            /*#__PURE__*/ _jsx("img", {
-                src: url,
-                alt: filename ?? '',
-                className: "h-8 w-8 shrink-0 rounded object-cover"
-            }) : /*#__PURE__*/ _jsx(FileIcon, {
-                className: "h-8 w-8 shrink-0 text-muted-foreground"
-            }),
-            /*#__PURE__*/ _jsx("span", {
-                className: "truncate text-sm",
-                children: _folderOrDocumentTitle
             })
         ]
     });

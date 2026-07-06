@@ -1,5 +1,15 @@
 import * as React from 'react';
 import type { ExtractedLocale } from '../localization/LocaleSwitcher.js';
+type ScheduleType = 'publish' | 'unpublish';
+export type UpcomingJob = {
+    id: number | string;
+    waitUntil?: string;
+    input?: {
+        type?: ScheduleType;
+        locale?: string;
+        timezone?: string;
+    };
+};
 export type SchedulePublishPopoverProps = {
     /** Set for collection docs. */
     collectionSlug?: string;
@@ -13,3 +23,4 @@ export type SchedulePublishPopoverProps = {
     disabled?: boolean;
 };
 export declare function SchedulePublishPopover({ collectionSlug, globalSlug, docId, isGlobal, locales, timeIntervals, disabled, }: SchedulePublishPopoverProps): React.ReactElement;
+export {};

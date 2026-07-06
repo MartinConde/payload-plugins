@@ -9,20 +9,20 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
    server function (same `useServerFunctions()` seam the bridge uses for
    `getFormState`). Execution at `waitUntil` is the consuming app's jobs queue
    (`jobs.autoRun` / external cron) — see SETUP.md. */ import * as React from 'react';
-import { ArrowUpCircle, CalendarClock, Check, ChevronsUpDown, Clock, Trash2, XCircle } from 'lucide-react';
+import { ArrowUpCircle, CalendarClock, Clock, XCircle } from 'lucide-react';
 import { toast, useConfig, useServerFunctions, useTranslation } from '../../../internal/payloadAdapterUI.js';
 import { formatAdminURL } from '../../../internal/payloadAdapter.js';
 import * as qs from 'qs-esm';
 import { Badge } from 'payload-plugin-shadcn-ui';
 import { Button } from 'payload-plugin-shadcn-ui';
 import { Calendar } from 'payload-plugin-shadcn-ui';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from 'payload-plugin-shadcn-ui';
 import { Input } from 'payload-plugin-shadcn-ui';
 import { Popover, PopoverContent, PopoverTrigger } from 'payload-plugin-shadcn-ui';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from 'payload-plugin-shadcn-ui';
 import { Separator } from 'payload-plugin-shadcn-ui';
-import { cn } from 'payload-plugin-shadcn-ui';
 import { formatScheduledDate, wallClockToInstant } from './scheduleConfig.js';
+import { TimezonePicker } from './TimezonePicker.js';
+import { UpcomingJobsList } from './UpcomingJobsList.js';
 const ALL_LOCALES = '__all__';
 /* Local "HH:mm" from a Date's local hours/minutes — mirrors DateInput.tsx. */ const toTimeString = (d)=>{
     const hh = String(d.getHours()).padStart(2, '0');
@@ -42,10 +42,8 @@ export function SchedulePublishPopover({ collectionSlug, globalSlug, docId, isGl
     const [pickedDate, setPickedDate] = React.useState(null);
     const [timezone, setTimezone] = React.useState(tzConfig?.defaultTimezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone);
     const [localeToPublish, setLocaleToPublish] = React.useState(ALL_LOCALES);
-    const [tzPickerOpen, setTzPickerOpen] = React.useState(false);
     const [processing, setProcessing] = React.useState(false);
     const [upcoming, setUpcoming] = React.useState(null);
-    const selectedTzLabel = supportedTimezones.find((tz)=>tz.value === timezone)?.label ?? timezone;
     // Preview the absolute instant the picked wall-clock maps to, in the chosen
     // zone — so the user can confirm what they're scheduling before committing.
     const scheduledSummary = pickedDate ? formatScheduledDate(wallClockToInstant(pickedDate, timezone).toISOString(), timezone) : null;
@@ -321,67 +319,11 @@ export function SchedulePublishPopover({ collectionSlug, globalSlug, docId, isGl
                                         className: "text-sm font-medium",
                                         children: "Timezone"
                                     }),
-                                    /*#__PURE__*/ _jsxs(Popover, {
-                                        open: tzPickerOpen,
-                                        onOpenChange: setTzPickerOpen,
-                                        children: [
-                                            /*#__PURE__*/ _jsx(PopoverTrigger, {
-                                                asChild: true,
-                                                children: /*#__PURE__*/ _jsxs(Button, {
-                                                    type: "button",
-                                                    variant: "outline",
-                                                    role: "combobox",
-                                                    "aria-expanded": tzPickerOpen,
-                                                    className: "h-9 w-full justify-between font-normal",
-                                                    disabled: processing,
-                                                    children: [
-                                                        /*#__PURE__*/ _jsx("span", {
-                                                            className: "truncate",
-                                                            children: selectedTzLabel
-                                                        }),
-                                                        /*#__PURE__*/ _jsx(ChevronsUpDown, {
-                                                            className: "size-4 shrink-0 opacity-50"
-                                                        })
-                                                    ]
-                                                })
-                                            }),
-                                            /*#__PURE__*/ _jsx(PopoverContent, {
-                                                className: "w-[var(--radix-popover-trigger-width)] p-0",
-                                                align: "start",
-                                                children: /*#__PURE__*/ _jsxs(Command, {
-                                                    children: [
-                                                        /*#__PURE__*/ _jsx(CommandInput, {
-                                                            placeholder: "Search timezone…"
-                                                        }),
-                                                        /*#__PURE__*/ _jsxs(CommandList, {
-                                                            children: [
-                                                                /*#__PURE__*/ _jsx(CommandEmpty, {
-                                                                    children: "No timezone found."
-                                                                }),
-                                                                /*#__PURE__*/ _jsx(CommandGroup, {
-                                                                    children: supportedTimezones.map((tz)=>/*#__PURE__*/ _jsxs(CommandItem, {
-                                                                            value: tz.label,
-                                                                            onSelect: ()=>{
-                                                                                setTimezone(tz.value);
-                                                                                setTzPickerOpen(false);
-                                                                            },
-                                                                            children: [
-                                                                                /*#__PURE__*/ _jsx(Check, {
-                                                                                    className: cn('size-4', timezone === tz.value ? 'opacity-100' : 'opacity-0')
-                                                                                }),
-                                                                                /*#__PURE__*/ _jsx("span", {
-                                                                                    className: "truncate",
-                                                                                    children: tz.label
-                                                                                })
-                                                                            ]
-                                                                        }, tz.value))
-                                                                })
-                                                            ]
-                                                        })
-                                                    ]
-                                                })
-                                            })
-                                        ]
+                                    /*#__PURE__*/ _jsx(TimezonePicker, {
+                                        value: timezone,
+                                        onChange: setTimezone,
+                                        options: supportedTimezones,
+                                        disabled: processing
                                     })
                                 ]
                             }) : null,
@@ -447,92 +389,10 @@ export function SchedulePublishPopover({ collectionSlug, globalSlug, docId, isGl
                         ]
                     }),
                     /*#__PURE__*/ _jsx(Separator, {}),
-                    /*#__PURE__*/ _jsxs("div", {
-                        className: "space-y-2 p-3",
-                        children: [
-                            /*#__PURE__*/ _jsxs("div", {
-                                className: "flex items-center justify-between",
-                                children: [
-                                    /*#__PURE__*/ _jsx("span", {
-                                        className: "text-sm font-medium",
-                                        children: "Upcoming"
-                                    }),
-                                    upcoming && upcoming.length > 0 ? /*#__PURE__*/ _jsx(Badge, {
-                                        variant: "secondary",
-                                        className: "px-1.5",
-                                        children: upcoming.length
-                                    }) : null
-                                ]
-                            }),
-                            upcoming === null ? /*#__PURE__*/ _jsx("p", {
-                                className: "text-sm text-muted-foreground",
-                                children: "Loading…"
-                            }) : upcoming.length === 0 ? /*#__PURE__*/ _jsxs("div", {
-                                className: "flex flex-col items-center gap-1.5 rounded-md border border-dashed py-5 text-center",
-                                children: [
-                                    /*#__PURE__*/ _jsx(CalendarClock, {
-                                        className: "size-5 text-muted-foreground/60"
-                                    }),
-                                    /*#__PURE__*/ _jsx("p", {
-                                        className: "text-sm text-muted-foreground",
-                                        children: "No scheduled events"
-                                    })
-                                ]
-                            }) : /*#__PURE__*/ _jsx("ul", {
-                                className: "space-y-1.5",
-                                children: upcoming.map((job)=>{
-                                    const isUnpublish = job.input?.type === 'unpublish';
-                                    return /*#__PURE__*/ _jsxs("li", {
-                                        className: "group flex items-center gap-2.5 rounded-md border bg-card p-2.5 text-sm transition-colors hover:bg-accent/40",
-                                        children: [
-                                            /*#__PURE__*/ _jsx("div", {
-                                                className: cn('flex size-8 shrink-0 items-center justify-center rounded-full', isUnpublish ? 'bg-muted text-muted-foreground' : 'bg-primary/10 text-primary'),
-                                                children: isUnpublish ? /*#__PURE__*/ _jsx(XCircle, {
-                                                    className: "size-4"
-                                                }) : /*#__PURE__*/ _jsx(ArrowUpCircle, {
-                                                    className: "size-4"
-                                                })
-                                            }),
-                                            /*#__PURE__*/ _jsxs("div", {
-                                                className: "min-w-0 flex-1",
-                                                children: [
-                                                    /*#__PURE__*/ _jsxs("div", {
-                                                        className: "flex items-center gap-1.5",
-                                                        children: [
-                                                            /*#__PURE__*/ _jsx("span", {
-                                                                className: "font-medium capitalize",
-                                                                children: job.input?.type ?? 'publish'
-                                                            }),
-                                                            job.input?.locale ? /*#__PURE__*/ _jsx(Badge, {
-                                                                variant: "outline",
-                                                                className: "px-1.5 py-0 text-[10px] uppercase tracking-wider",
-                                                                children: job.input.locale
-                                                            }) : null
-                                                        ]
-                                                    }),
-                                                    /*#__PURE__*/ _jsx("div", {
-                                                        className: "truncate text-xs text-muted-foreground",
-                                                        children: job.waitUntil ? formatScheduledDate(job.waitUntil, job.input?.timezone) : '—'
-                                                    })
-                                                ]
-                                            }),
-                                            /*#__PURE__*/ _jsx(Button, {
-                                                type: "button",
-                                                variant: "ghost",
-                                                size: "icon",
-                                                className: "size-7 shrink-0 text-muted-foreground opacity-0 transition-opacity hover:text-destructive group-hover:opacity-100 focus-visible:opacity-100",
-                                                onClick: ()=>void handleCancel(job.id),
-                                                disabled: processing,
-                                                "aria-label": "Cancel scheduled event",
-                                                children: /*#__PURE__*/ _jsx(Trash2, {
-                                                    className: "size-4"
-                                                })
-                                            })
-                                        ]
-                                    }, String(job.id));
-                                })
-                            })
-                        ]
+                    /*#__PURE__*/ _jsx(UpcomingJobsList, {
+                        upcoming: upcoming,
+                        processing: processing,
+                        onCancel: (jobId)=>void handleCancel(jobId)
                     })
                 ]
             })

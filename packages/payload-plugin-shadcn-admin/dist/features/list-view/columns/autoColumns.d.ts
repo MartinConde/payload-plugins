@@ -1,7 +1,7 @@
 import type { ColumnDef } from '@tanstack/react-table';
 import * as React from 'react';
 import { type CollectionMeta, type FieldMeta } from './fieldPicker.js';
-type AutoField = FieldMeta & {
+export type AutoField = FieldMeta & {
     options?: ReadonlyArray<string | {
         label?: unknown;
         value: string | number;
@@ -22,7 +22,7 @@ type AutoField = FieldMeta & {
     } | null;
     custom?: Record<string, any> | null;
 };
-type AutoCollection = CollectionMeta & {
+export type AutoCollection = CollectionMeta & {
     fields: ReadonlyArray<AutoField>;
 };
 export type BuildColumnsOptions = {
@@ -38,4 +38,3 @@ export type BuildColumnsOptions = {
     nativeCellsByRow?: Record<string, Record<string, React.ReactNode>>;
 };
 export declare function buildColumnsForCollection({ collection, useAsTitleBySlug, nativeCellFieldNames, nativeCellsByRow, }: BuildColumnsOptions): ColumnDef<any, any>[];
-export {};

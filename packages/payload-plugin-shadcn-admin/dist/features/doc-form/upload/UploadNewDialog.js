@@ -25,51 +25,11 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from 'payload-plugin-shadcn-ui';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from 'payload-plugin-shadcn-ui';
 import { cn } from 'payload-plugin-shadcn-ui';
-import { collectLocalizedSchemaPaths, getByPath, isFieldRenderable, isObject, isRenderableHere, projectLocaleAtLeaves, setByPath, stripPathIndices } from '../fieldTree/sharedHelpers.js';
-import { makeFieldTreeRenderer } from '../fieldTree/FieldTreeRenderer.js';
-import { useDocFormRichText } from '../richtext/useDocFormRichText.js';
+import { collectLocalizedSchemaPaths, getByPath, projectLocaleAtLeaves } from '../fieldTree/sharedHelpers.js';
 import { DropzoneInput } from '../inputs/DropzoneInput.js';
 import { buildUploadFormData, parsePayloadErrorResponse } from './uploadWireFormat.js';
-/* Field types whose presence means a getFormState round-trip is needed to
-   render their (possibly richText-bearing) inner content. Mirrors bulk-edit. */ const FORM_STATE_TYPES = new Set([
-    'richText',
-    'array',
-    'blocks'
-]);
-const schemaHasFormStateFields = (fields)=>{
-    for (const f of fields){
-        if (FORM_STATE_TYPES.has(f.type)) return true;
-        if (f.fields && schemaHasFormStateFields(f.fields)) return true;
-        if (f.tabs && f.tabs.some((t)=>schemaHasFormStateFields(t.fields))) return true;
-        if (f.blocks && f.blocks.some((b)=>schemaHasFormStateFields(b.fields))) return true;
-    }
-    return false;
-};
-/* Top-level required scalar leaves (flattening only the transparent row /
-   collapsible wrappers). Required fields nested inside named group/tabs or
-   complex containers are validated by the server (their dotted-path errors map
-   back into the renderer). */ const topLevelRequiredLeafNames = (fields)=>{
-    const out = [];
-    const walk = (list)=>{
-        for (const f of list){
-            if (f.type === 'row' || f.type === 'collapsible') {
-                if (f.fields) walk(f.fields);
-                continue;
-            }
-            if (f.name && f.required && isFieldRenderable(f) && !FORM_STATE_TYPES.has(f.type) && f.type !== 'group' && f.type !== 'tabs') {
-                out.push(f.name);
-            }
-        }
-    };
-    walk(fields);
-    return out;
-};
-const isEmptyValue = (v)=>v === undefined || v === null || v === '' || Array.isArray(v) && v.length === 0;
-let rowCounter = 0;
-const nextRowId = ()=>{
-    rowCounter += 1;
-    return `row-${rowCounter}-${Date.now()}`;
-};
+import { isEmptyValue, nextRowId, topLevelRequiredLeafNames } from './uploadRowHelpers.js';
+import { UploadRowForm } from './UploadRowForm.js';
 export function UploadNewDialog({ open, onOpenChange, collectionSlug, uploadCollectionsBySlug, useAsTitleBySlug, maxFiles, initialFiles, onSuccess }) {
     const { t } = useTranslation();
     const { getUploadHandler } = useUploadHandlers();
@@ -403,85 +363,5 @@ export function UploadNewDialog({ open, onOpenChange, collectionSlug, uploadColl
                 })
             ]
         })
-    });
-}
-/* One file's create form, rendered through the shared field-tree renderer so
-   every field type (incl. group/tabs/array/blocks/richText) is supported.
-   Owns its own richText fetch + locale-aware writes; the parent holds the
-   row's value tree and orchestrates submit. A standalone component (not an
-   inline map callback) so the per-row hooks obey the rules of hooks. */ function UploadRowForm({ rowId, collectionSlug, collectionFields, values, errors, onValuesChange, onErrorClear, useAsTitleBySlug, uploadCollectionsBySlug, activeLocale, localizationEnabled, disabled }) {
-    const valuesRef = React.useRef(values);
-    valuesRef.current = values;
-    const localizedSchemaPaths = React.useMemo(()=>{
-        const out = new Set();
-        collectLocalizedSchemaPaths(collectionFields, '', out);
-        return out;
-    }, [
-        collectionFields
-    ]);
-    const isPathLocalized = React.useCallback((path)=>localizationEnabled && localizedSchemaPaths.has(stripPathIndices(path)), [
-        localizationEnabled,
-        localizedSchemaPaths
-    ]);
-    const setValueAtPath = React.useCallback((path, next)=>{
-        const prev = valuesRef.current;
-        let updated;
-        if (isPathLocalized(path) && activeLocale) {
-            const cur = getByPath(prev, path);
-            const merged = isObject(cur) ? {
-                ...cur,
-                [activeLocale]: next
-            } : {
-                [activeLocale]: next
-            };
-            updated = setByPath(prev, path, merged);
-        } else {
-            updated = setByPath(prev, path, next);
-        }
-        onValuesChange(updated);
-        onErrorClear(path);
-    }, [
-        isPathLocalized,
-        activeLocale,
-        onValuesChange,
-        onErrorClear
-    ]);
-    const getProjectedData = React.useCallback(()=>localizationEnabled && activeLocale ? projectLocaleAtLeaves(valuesRef.current, collectionFields, activeLocale) : valuesRef.current, [
-        localizationEnabled,
-        activeLocale,
-        collectionFields
-    ]);
-    // Fetch richText editors once when the schema has form-state fields; refetch
-    // on locale change (handled inside the hook's deps).
-    const richTextTrigger = React.useMemo(()=>schemaHasFormStateFields(collectionFields) ? 'on' : '', [
-        collectionFields
-    ]);
-    const richTextRendered = useDocFormRichText({
-        collectionFields,
-        collectionSlug,
-        getProjectedData,
-        trigger: richTextTrigger,
-        activeLocale,
-        operation: 'create'
-    });
-    const renderer = makeFieldTreeRenderer({
-        values,
-        errors,
-        activeLocale,
-        localizationEnabled,
-        disabled,
-        setValueAtPath,
-        richTextRendered,
-        useAsTitleBySlug,
-        uploadCollectionsBySlug,
-        operation: 'create',
-        idPrefix: `upload-${rowId}-`
-    });
-    const topLevel = React.useMemo(()=>collectionFields.filter(isRenderableHere), [
-        collectionFields
-    ]);
-    return /*#__PURE__*/ _jsx("div", {
-        className: "flex flex-col gap-4",
-        children: topLevel.map((f)=>renderer.renderChild(f, ''))
     });
 }
