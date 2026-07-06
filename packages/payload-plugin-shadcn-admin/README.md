@@ -42,9 +42,77 @@ export default function Nav(props: ServerProps) {
 @import 'payload-plugin-shadcn-admin/styles.css';
 ```
 
+## Register order
+
+Register `shadcnAdminPlugin` **after** any feature plugin whose collections/globals it
+should auto-view (`payload-plugin-seo`, `payload-plugin-menus`, `payload-plugin-products`).
+Plugins are `(config) => config` functions applied in `plugins: []` array order — this
+plugin's `defaultListView`/`defaultDocView`/`defaultGlobalView` walk `config.collections`/
+`config.globals` at the moment it runs, installing an auto view only where one isn't
+already set. Register it first and those collections/globals simply won't exist yet to
+walk.
+
 ## Options
 
 All plugin options are optional. Pass them to `shadcnAdminPlugin({ ... })`.
+
+| Option | Type | Default | Notes |
+|---|---|---|---|
+| `disabled` | `boolean` | `false` | Skip the whole plugin — config passes through untouched. |
+| `defaultListView` | `'all' \| string[] \| false` | `false` | Auto-installs the shadcn list view on matching collections. A collection's own `admin.components.views.list` always wins. |
+| `defaultDocView` | `'all' \| string[] \| false` | `false` | Auto-installs the shadcn create/edit doc view. Skips collections whose fields fall outside the supported field-type matrix (or unsupported upload cases), falling back to Payload's default view with a `console.warn`. Also wires `edit.versions`/`edit.version` when `collection.versions` is set, and `edit.api` unconditionally. |
+| `defaultGlobalView` | `'all' \| string[] \| false` | `false` | Global-twin of `defaultDocView` — no list view or create mode, since a global is a singleton upsert. |
+| `defaultNav` | `DefaultNavConfig \| false` | `false` | Installs the shadcn sidebar Nav — see below. Only takes effect if you haven't already set your own `admin.components.Nav`. |
+| `defaultAuthViews` | `boolean` | `false` | Installs shadcn replacements for account/login/create-first-user/forgot-password/logout/inactivity/unauthorized — see below. |
+| `defaultFolderView` | `boolean` | `false` | Installs a shadcn Browse-by-Folder view at the root (requires root `folders` enabled in your Payload config). Per-collection folder browsing is instead a List⇄Folders toggle inside the auto list view. |
+| `defaultDashboard` | `boolean` | `false` | Installs a zero-config dashboard (widgets, arrangeable/resizable, persisted per-user) as the `/admin` landing page. A consumer-defined dashboard view wins. |
+| `livePreview` | `LivePreviewConfig` | `{ blocksFieldName: 'layout' }` | Configures the page-builder overlay — see below. |
+| `rebuildFrontend` | `RebuildFrontendConfig \| false` | `false` | Adds a "Rebuild Frontend" sidebar button that triggers a deploy hook — see below. |
+
+### `defaultNav`
+
+```ts
+shadcnAdminPlugin({
+  defaultNav: {
+    branding: { name: 'CMS', subtitle: 'Payload admin', icon: 'Rocket', href: '/admin' },
+    sidebar: {
+      groups: [
+        { label: 'Content', items: [{ label: 'Pages', collectionSlug: 'pages' }] },
+      ],
+    },
+  },
+})
+```
+
+`branding.name` is the only required field; `subtitle` defaults to `'Payload admin'`,
+`icon` accepts a lucide PascalCase name string (recommended, serializable) or a
+component reference, `href` defaults to `/admin`. Omitting `sidebar` falls back to a
+flat auto-list of every non-hidden collection. Each `NavItem` in `sidebar.groups[].items`
+takes `label` + either `href` (wins if set) or `collectionSlug`/`globalSlug`, plus a
+nested `items` array to render as a collapsible group.
+
+### `defaultAuthViews`
+
+A single on/off flag, not a per-view object — when `true` it wires shadcn replacements
+for `account`, `login`, `createFirstUser`, `forgot`, `logout`, `inactivity`, and
+`unauthorized`, filling only the keys you haven't already set yourself. **Not covered**:
+password-reset (`/reset/:token`) and email-verify (`/:collection/verify/:token`) —
+Payload resolves those two routes before any custom-view lookup runs, so they always
+fall through to Payload's stock view regardless of this option.
+
+### `livePreview`
+
+```ts
+shadcnAdminPlugin({
+  livePreview: { blocksFieldName: 'sections' }, // default: 'layout'
+})
+```
+
+The page-builder overlay (resizable live-preview pane + block outline/selection) auto-
+activates per collection when that collection has both `admin.livePreview` enabled and a
+`blocks` field named `blocksFieldName`. There's no separate collection allowlist —
+`admin.livePreview` is itself the per-collection opt-in. See `LIVE-PREVIEW.md` in the
+starter repo for the full mechanism.
 
 ### `rebuildFrontend`
 
@@ -62,11 +130,18 @@ shadcnAdminPlugin({
     deployHookEnv: 'FRONTEND_DEPLOY_HOOK_URL', // default — name of the env var
     label: 'Rebuild Frontend',                 // default — button label
     endpointPath: '/rebuild-frontend',         // default — Payload API path
+    access: (req) => Boolean(req.user?.roles?.includes('admin')), // custom override
   },
 })
 ```
 
-All sub-options are optional; the defaults shown above apply when the key is omitted.
+All sub-options are optional. `deployHookEnv`/`label`/`endpointPath` default to the
+values shown above when omitted. `access` gates the endpoint beyond plain
+authentication — by default it restricts the button/endpoint to users in the
+admin-panel's own auth collection (`req.user?.collection === config.admin?.user`), so
+e.g. a read-only frontend service user (an authenticated user of some *other*
+auth-enabled collection) can't trigger a deploy. Pass your own function only if that
+default is wrong for your setup, e.g. to further restrict by role.
 
 **Required env var on the consuming app's deployment environment:**
 

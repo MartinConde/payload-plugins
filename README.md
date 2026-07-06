@@ -19,6 +19,9 @@ pnpm build        # builds all packages
 pnpm typecheck
 ```
 
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the pre-commit checklist and
+[`RELEASING.md`](RELEASING.md) for cutting a new tag.
+
 ## Install in a Payload project (from git, pnpm only)
 
 These are private and not on npm. Install a single package from a subdirectory using
