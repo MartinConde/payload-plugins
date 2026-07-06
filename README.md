@@ -5,9 +5,11 @@ workspace. Each package is published/installed independently.
 
 | Package | Description |
 | --- | --- |
-| [`payload-plugin-shadcn-admin`](packages/payload-plugin-shadcn-admin) | shadcn/ui-themed admin UI (base — the others depend on it). |
+| [`payload-plugin-shadcn-ui`](packages/payload-plugin-shadcn-ui) | shadcn/ui primitives + doc-form extension hooks (base — every other package depends on it). |
+| [`payload-plugin-shadcn-admin`](packages/payload-plugin-shadcn-admin) | shadcn/ui-themed admin chrome (nav/list/doc/dashboard views) + server-driven DataTable. |
 | [`payload-plugin-seo`](packages/payload-plugin-seo) | Per-document meta + SERP preview, SEO defaults global, redirects collection. |
 | [`payload-plugin-menus`](packages/payload-plugin-menus) | dnd-kit nested-tree menu builder. |
+| [`payload-plugin-products`](packages/payload-plugin-products) | Product catalog with a Fabric.js print-area designer. |
 
 ## Develop
 
@@ -23,21 +25,27 @@ These are private and not on npm. Install a single package from a subdirectory u
 pnpm's `path:` git syntax (pnpm v9+; npm/Yarn do not support this). Always pin a tag.
 
 ```jsonc
-// package.json
+// package.json — installing shadcn-admin + seo + menus (shadcn-ui is a required peer of all three)
 {
   "dependencies": {
-    "payload-plugin-shadcn-admin": "github:MartinConde/payload-plugins#v0.1.0&path:/packages/payload-plugin-shadcn-admin",
-    "payload-plugin-seo": "github:MartinConde/payload-plugins#v0.1.0&path:/packages/payload-plugin-seo",
-    "payload-plugin-menus": "github:MartinConde/payload-plugins#v0.1.0&path:/packages/payload-plugin-menus"
+    "payload-plugin-shadcn-ui": "github:MartinConde/payload-plugins#v0.0.1&path:/packages/payload-plugin-shadcn-ui",
+    "payload-plugin-shadcn-admin": "github:MartinConde/payload-plugins#v0.0.1&path:/packages/payload-plugin-shadcn-admin",
+    "payload-plugin-seo": "github:MartinConde/payload-plugins#v0.0.1&path:/packages/payload-plugin-seo",
+    "payload-plugin-menus": "github:MartinConde/payload-plugins#v0.0.1&path:/packages/payload-plugin-menus"
   }
 }
 ```
 
-`menus` requires `payload-plugin-shadcn-ui` (peer); `products` requires both
-`payload-plugin-shadcn-ui` and `payload-plugin-shadcn-admin` (peers). These are marked
-optional in `peerDependenciesMeta` so the install itself doesn't fail without them, but
-they're required at runtime — add their GitHub pins alongside `menus`/`products`. Each
-package's built `dist/` is committed to git; there is no `prepare`/build-on-install step.
+`payload-plugin-shadcn-ui` is a **required** (non-optional) peer of `shadcn-admin`. `seo`,
+`menus`, and `products` each declare it as an *optional* peer too (so the install itself
+won't fail without it), but their custom field UIs (SERP preview, tree editor,
+print-area designer) render through it — it's required at runtime regardless. `products`
+additionally has an optional-but-runtime-required peer on `shadcn-admin` for its doc-view
+integration. In practice: always pin `shadcn-ui` alongside any of these four packages,
+and pin `shadcn-admin` too if you're using `products`.
+
+Each package's built `dist/` is committed to git; there is no `prepare`/build-on-install
+step — the install just fetches the tag's tree as-is.
 
 Since the repo is private, installs use your local git auth (SSH key or credential
 helper / a PAT in CI).

@@ -1,6 +1,6 @@
 # Setup guide
 
-This walks through dropping `payload-plugin-shadcn-admin` into a fresh Payload 3 + Next 15 app and getting the shadcn admin chrome rendering. Total work: ~10 minutes if you already have a Payload app running.
+This walks through dropping `payload-plugin-shadcn-admin` into a fresh Payload 3 + Next.js app (peer range `>=15 <17`; the starter itself runs Next 16) and getting the shadcn admin chrome rendering. Total work: ~10 minutes if you already have a Payload app running.
 
 For a high-level overview of what the plugin handles and what's intentionally deferred, see [FEATURES.md](./FEATURES.md).
 

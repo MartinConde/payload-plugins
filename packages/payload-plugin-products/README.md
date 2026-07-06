@@ -12,7 +12,10 @@ checks.
 
 > **Stability:** v0.2 is the first multi-view/multi-color release. The data
 > shape changed substantially from v0.1; a forward-only migration helper is
-> shipped — see [Migration](#migration-v011--v020).
+> shipped — see [Migration](#migration-v011--v020). (These `v0.1`/`v0.2` labels
+> track the **data shape**, not the package's own version — see the root
+> [`payload-plugins/README.md`](../../README.md) for how the package itself is
+> versioned/tagged.)
 
 ## Concepts
 

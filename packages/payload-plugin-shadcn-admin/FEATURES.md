@@ -2,6 +2,11 @@
 
 Living high-level overview of what the plugin handles and what it deliberately doesn't (yet). See [SETUP.md](./SETUP.md) for install and wire-shape details, and [MEMORY.md notes] for the load-bearing architecture patterns.
 
+> The `v3.x` tags scattered through this doc (`v3.9`, `v3.25`, …) are internal development
+> milestones for this feature set, unrelated to the package's own version (currently
+> `0.0.1` — see the root [`payload-plugins/README.md`](../../README.md)) and unrelated to
+> the `payload`/`@payloadcms/*` peer version range (`>=3.84 <3.90`).
+
 ---
 
 ## Overview
@@ -32,8 +37,12 @@ Living high-level overview of what the plugin handles and what it deliberately d
   `Boolean(collection.admin?.livePreview)` (surfaced from the raw config via
   `extractCollection.ts` — nothing forwarded this before). Opens an iframe panel
   (`LivePreviewPanel.tsx`) that reads doc state via the bridge's existing
-  `useDocFormValues()`/`useDocIdentity()` context (no prop drilling) and nudges the iframe
-  to refetch via `postMessage` on every form change. **Not** built on Payload's own
+  `useDocFormValues()`/`useDocIdentity()` context (no prop drilling) and drives two
+  parallel `postMessage` channels: the canonical `payload-live-preview` message,
+  carrying the current (unsaved) doc data on every form change for a receiver's
+  `@payloadcms/live-preview` `subscribe()`/merge path, plus a `payload-live-preview-refetch`
+  backstop nudge sent only on persisted changes (save/autosave/error), for receivers
+  that can't do an in-browser field merge. **Not** built on Payload's own
   `LivePreviewProvider`/`Toggler`/`Window` (`@payloadcms/ui`) — those depend on Payload's
   `<Form>` context, which this bridge doesn't use (it manages its own independent form
   state). Consumers resolve the iframe URL themselves via a collection endpoint (e.g.
