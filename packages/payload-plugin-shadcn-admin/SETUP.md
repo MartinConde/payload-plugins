@@ -10,8 +10,18 @@ The plugin owns: sidebar, view shell, breadcrumbs header, `DataTable`, `useDataT
 
 ## 1. Install
 
+These packages aren't published to npm — install from a GitHub tag pin (pnpm v9+
+`path:` syntax; see the root [`payload-plugins/README.md`](../../README.md)). The base
+`payload-plugin-shadcn-ui` package is required alongside:
+
+```jsonc
+// package.json → dependencies
+"payload-plugin-shadcn-ui": "github:MartinConde/payload-plugins#v0.0.1&path:/packages/payload-plugin-shadcn-ui",
+"payload-plugin-shadcn-admin": "github:MartinConde/payload-plugins#v0.0.1&path:/packages/payload-plugin-shadcn-admin",
+```
+
 ```bash
-pnpm add payload-plugin-shadcn-admin
+pnpm install
 pnpm add -D tailwindcss @tailwindcss/postcss tw-animate-css
 ```
 
@@ -44,7 +54,7 @@ Create `src/app/(payload)/custom.css` (path can differ — match wherever your `
    Tailwind v4 ignores node_modules by default. Adjust the relative path
    for your repo layout. In a pnpm workspace this is typically:
      ../../../../../packages/payload-plugin-shadcn-admin/src
-   In a single-package app installing from npm:
+   In an app installing from the GitHub pin (package in node_modules):
      ../../../node_modules/payload-plugin-shadcn-admin/dist  */
 @source '../../../../../packages/payload-plugin-shadcn-admin/src';
 
@@ -170,7 +180,7 @@ Create `src/app/(payload)/custom.css` (path can differ — match wherever your `
 @import '../../../../../packages/payload-plugin-shadcn-admin/src/styles.css';
 ```
 
-**The two relative paths** (`@source` and the trailing `@import`) need to match your repo layout. In a pnpm workspace they point at `packages/payload-plugin-shadcn-admin/src`; in a single-package app installing from npm they point at `node_modules/payload-plugin-shadcn-admin/dist` (Tailwind needs source files, so the source-shipped layout is friendlier — see "If you can't use the source" below).
+**The two relative paths** (`@source` and the trailing `@import`) need to match your repo layout. In a pnpm workspace (dev mode) they point at `packages/payload-plugin-shadcn-admin/src`; in an app installing from the GitHub pin they point at `node_modules/payload-plugin-shadcn-admin/dist` (Tailwind needs source files, so the source-shipped layout is friendlier — see "If you can't use the source" below).
 
 Then import `custom.css` once from your admin layout (`src/app/(payload)/layout.tsx`):
 
@@ -1155,7 +1165,7 @@ If you really want a component that lives only in the consumer (project-specific
 
 ## 9. If you can't use the source layout
 
-When installing from a registry (rather than from a pnpm workspace), the plugin's source is at `node_modules/payload-plugin-shadcn-admin/dist`. Tailwind v4's `@source` directive works against compiled JS too — point `@source` and the trailing `@import` of `styles.css` at the `dist` paths instead. Everything else is unchanged.
+When installing from the GitHub pin (rather than from a pnpm workspace), the plugin's shipped code is at `node_modules/payload-plugin-shadcn-admin/dist`. Tailwind v4's `@source` directive works against compiled JS too — point `@source` and the trailing `@import` of `styles.css` at the `dist` paths instead. Everything else is unchanged.
 
 ---
 

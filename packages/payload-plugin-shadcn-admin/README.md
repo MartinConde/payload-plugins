@@ -111,8 +111,8 @@ shadcnAdminPlugin({
 The page-builder overlay (resizable live-preview pane + block outline/selection) auto-
 activates per collection when that collection has both `admin.livePreview` enabled and a
 `blocks` field named `blocksFieldName`. There's no separate collection allowlist —
-`admin.livePreview` is itself the per-collection opt-in. See `LIVE-PREVIEW.md` in the
-starter repo for the full mechanism.
+`admin.livePreview` is itself the per-collection opt-in. See `docs/LIVE-PREVIEW.md` in
+the starter repo for the full mechanism.
 
 ### `rebuildFrontend`
 

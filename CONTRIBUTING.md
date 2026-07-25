@@ -12,7 +12,7 @@ Working against a real consumer app (recommended over testing packages in isolat
 clone [`cf-payload-astro-starter`](https://github.com/MartinConde/cf-payload-astro-starter)
 as a sibling of this repo and run `pnpm mode dev` there — it links these packages via
 `workspace:*` instead of the GitHub-tag pins, with a full symlink/CSS-depth dance handled
-for you. See that repo's [`DEV-MODE.md`](https://github.com/MartinConde/cf-payload-astro-starter/blob/main/DEV-MODE.md)
+for you. See that repo's [`docs/DEV-MODE.md`](https://github.com/MartinConde/cf-payload-astro-starter/blob/main/docs/DEV-MODE.md)
 for the full contract: switch steps, the sibling-repo `node_modules` resolution gotcha,
 the re-link rule, and failure modes.
 

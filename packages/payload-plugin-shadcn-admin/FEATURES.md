@@ -1,6 +1,6 @@
 # `payload-plugin-shadcn-admin` — Features & Gaps
 
-Living high-level overview of what the plugin handles and what it deliberately doesn't (yet). See [SETUP.md](./SETUP.md) for install and wire-shape details, and [MEMORY.md notes] for the load-bearing architecture patterns.
+Living high-level overview of what the plugin handles and what it deliberately doesn't (yet). See [SETUP.md](./SETUP.md) for install and wire-shape details.
 
 > The `v3.x` tags scattered through this doc (`v3.9`, `v3.25`, …) are internal development
 > milestones for this feature set, unrelated to the package's own version (currently
@@ -49,7 +49,7 @@ Living high-level overview of what the plugin handles and what it deliberately d
   `Pages.ts`'s `/:id/preview-url` in `cf-payload-astro-starter`) rather than a plugin-side
   one, since the plugin doesn't own the consumer's collections. Edit-mode only (matches
   Payload's own `handleLivePreview`, which also skips `operation === 'create'`). See
-  `cf-payload-astro-starter/LIVE-PREVIEW.md` for the full design writeup.
+  `cf-payload-astro-starter/docs/LIVE-PREVIEW.md` for the full design writeup.
 
 ### `defaultGlobalView` — auto doc form for globals (v3.14)
 
@@ -186,7 +186,7 @@ Inventory of Payload's admin views (from `@payloadcms/next/dist/views/`) and the
 - ✅ **Edit / Create** (`edit.default`)
 - ✅ **Versions** list (`edit.versions`) + **Version** diff (`edit.version`) — v3.9
 - ✅ **API** (`edit.api`) — v3.10
-- ⬜ **Live Preview** (`edit.livePreview`) — needs `@payloadcms/live-preview`; only meaningful with a frontend wired for it. (Tracked under Doc form gaps.)
+- ✅ **Live Preview** (`edit.livePreview`) — hand-rolled (no `@payloadcms/live-preview` dependency): resizable preview pane + page-builder overlay inside the doc form, auto-activating per collection on `admin.livePreview`. See the Live Preview entry above and `cf-payload-astro-starter/docs/LIVE-PREVIEW.md`.
 
 ### Collection-level (list area)
 
@@ -215,7 +215,7 @@ Opt in with `defaultAuthViews: true` (see the feature subsection above). Full-pa
 ### Globals
 
 - ✅ **Global document views** (global `edit.default` / `versions` / `version` / `api`) — v3.14. Opt in with `defaultGlobalView` (see the feature subsection below). The collection doc-form + versions + API machinery is reused wholesale against `globalConfig` — the RSC entry points branch on `globalConfig`, the bridge upserts via `POST /api/globals/{slug}`, and the version views use `findGlobalVersions` / `findGlobalVersionByID` / `restoreGlobalVersion`. Non-versioned globals get no Versions tab.
-- ⬜ **Global Live Preview** (`edit.livePreview`) — **deferred**, same as collections (needs `@payloadcms/live-preview`). Tracked under Doc form gaps.
+- ⬜ **Global Live Preview** (`edit.livePreview`) — **deferred**: the hand-rolled collection Live Preview panel hasn't been extended to globals yet. Tracked under Doc form gaps.
 
 ---
 

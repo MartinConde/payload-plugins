@@ -148,9 +148,6 @@ dropped one statement earlier in the same file.
 - Cart / checkout / order integration
 - Storefront / Astro UI
 
-See the master plan (`we-have-a-payload-unified-kahn.md`) for the long
-roadmap.
-
 ## Known limitations (0.2.0)
 
 - Destructive operations (remove view, remove colour) use Payload's default
