@@ -6,7 +6,7 @@ blocks, and a setup wizard at `/admin/seo-wizard`. In-house replacement for
 `@payloadcms/plugin-seo` + `plugin-redirects` (don't co-register those).
 
 ```jsonc
-"payload-plugin-seo": "github:MartinConde/payload-plugins#v0.0.1&path:/packages/payload-plugin-seo"
+"payload-plugin-seo": "github:MartinConde/payload-plugins#v0.1.0&path:/packages/payload-plugin-seo"
 ```
 
 Requires `payload-plugin-shadcn-ui` (and in practice `shadcn-admin`) alongside — they're

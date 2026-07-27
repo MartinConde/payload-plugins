@@ -6,7 +6,7 @@ shadcn/ui primitives, view shells, and doc-form extension hooks for Payload CMS 
 plugin stack ships (`themes.css` + `styles.css`).
 
 ```jsonc
-"payload-plugin-shadcn-ui": "github:MartinConde/payload-plugins#v0.0.1&path:/packages/payload-plugin-shadcn-ui"
+"payload-plugin-shadcn-ui": "github:MartinConde/payload-plugins#v0.1.0&path:/packages/payload-plugin-shadcn-ui"
 ```
 
 Full docs (CSS/`@source` wiring, primitives list, doc-form hooks, extraction utils,

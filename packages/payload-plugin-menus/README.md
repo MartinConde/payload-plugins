@@ -5,7 +5,7 @@ navigation tree is edited through a dnd-kit sortable-tree UI, with an `afterRead
 that denormalizes `{ url, label }` per item so a frontend renders a menu in one fetch.
 
 ```jsonc
-"payload-plugin-menus": "github:MartinConde/payload-plugins#v0.0.1&path:/packages/payload-plugin-menus"
+"payload-plugin-menus": "github:MartinConde/payload-plugins#v0.1.0&path:/packages/payload-plugin-menus"
 ```
 
 Requires `payload-plugin-shadcn-ui` (and in practice `shadcn-admin`) alongside for the

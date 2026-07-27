@@ -5,6 +5,13 @@
    `meta.jsonLdComputed` virtual field (server, afterRead) and the Astro
    frontend. Keep it dependency-free.
 
+   Output is ONE connected graph — `{ '@context', '@graph': [...] }` — with
+   stable `@id`s so Organization / WebSite / WebPage / BreadcrumbList and the
+   content nodes reference each other instead of sitting as unrelated siblings.
+   Consumers (and AI agents) can then walk the relationships. Only the outermost
+   object carries `@context`; a nested one inside `@graph` is invalid, so every
+   node's own context is stripped on the way in.
+
    Each stored block carries a `blockType` discriminator (the block slug) plus
    its own fields. We map only the curated types defined in
    `fields/schemaBlocks.ts`; an unknown `blockType` is skipped. Localized text
@@ -13,6 +20,8 @@
    empty. Upload fields (`image`) may be a string URL, a populated object with a
    `url`, or a bare id — only the first two yield a value (read with enough
    `depth` to populate). */
+
+import { buildBreadcrumbList, type BreadcrumbItem } from './buildBreadcrumbList.js'
 
 export type SchemaBlock = {
   blockType?: string
@@ -26,11 +35,52 @@ export type OrganizationData = {
   logo?: unknown
   /** `sameAs` social profiles, as stored by the settings global. */
   sameAs?: Array<{ url?: string }> | string[]
+  /** URL of the editorial policy — a trust signal for search + AI agents. */
+  publishingPrinciples?: string
+  /** Year the site's content is copyrighted. */
+  copyrightYear?: number | string
+  /** Topical authority: subjects this organization is authoritative on. */
+  knowsAbout?: Array<{ topic?: string }> | string[]
 }
 
 export type BuildJsonLdOptions = {
-  /** When provided, an Organization node is prepended (site-wide identity). */
+  /** Curated `meta.schema` blocks for this document. */
+  blocks?: SchemaBlock[] | null
+  /** Site-wide identity. Emitted as the `Organization` node. */
   organization?: OrganizationData
+  /**
+   * Absolute site origin, WITHOUT a trailing slash. Anchors the site-level
+   * `@id`s. Omit it and the site-level nodes (Organization / WebSite / WebPage)
+   * are all skipped — see the note on partial graphs in `buildJsonLd`.
+   */
+  siteUrl?: string
+  /** Absolute URL of the current page. Anchors the page-level `@id`s. */
+  pageUrl?: string
+  /** Site name → `WebSite.name`. */
+  siteName?: string
+  /**
+   * Site-wide description → `WebSite.description`. MUST NOT be the per-page
+   * description: the WebSite `@id` is origin-keyed and therefore identical on
+   * every page, so a per-page value here makes one entity whose description
+   * mutates per URL — worse than omitting it. Feed this the site-wide default.
+   */
+  siteDescription?: string
+  /** Page title → `WebPage.name`. */
+  title?: string
+  /** Page description → `WebPage.description`. */
+  description?: string
+  /** Absolute URL of the page's primary image → `WebPage.primaryImageOfPage`. */
+  image?: string
+  /** Locale code → `inLanguage` on `WebSite` / `WebPage`. */
+  locale?: string
+  /** Breadcrumb trail. Emitted only when it has at least two entries. */
+  breadcrumbs?: BreadcrumbItem[] | null
+}
+
+/** A single connected JSON-LD graph, ready to `JSON.stringify` into a script tag. */
+export type JsonLdGraph = {
+  '@context': string
+  '@graph': Record<string, unknown>[]
 }
 
 /** schema.org context attached to every top-level node we build. */
@@ -80,18 +130,36 @@ const enumUrl = (v: unknown): string | undefined =>
 
 const arr = (v: unknown): unknown[] => (Array.isArray(v) ? v : [])
 
-function organizationNode(org: OrganizationData): Record<string, unknown> {
+function organizationNode(org: OrganizationData, id?: string): Record<string, unknown> {
   const sameAs = arr(org.sameAs)
     .map((s) => (typeof s === 'string' ? s : str((s as { url?: unknown })?.url)))
     .filter(Boolean)
+  const knowsAbout = arr(org.knowsAbout)
+    .map((k) => (typeof k === 'string' ? k : str((k as { topic?: unknown })?.topic)))
+    .filter(Boolean)
   return {
     '@type': 'Organization',
+    '@id': id,
     name: str(org.name),
     url: str(org.url),
     logo: imageUrl(org.logo),
     sameAs: sameAs.length ? sameAs : undefined,
+    publishingPrinciples: str(org.publishingPrinciples),
+    copyrightYear: str(org.copyrightYear),
+    knowsAbout: knowsAbout.length ? knowsAbout : undefined,
   }
 }
+
+/** A node's `@context` is only valid at the graph root — drop it on the way in. */
+function stripContext(node: Record<string, unknown>): Record<string, unknown> {
+  if (!('@context' in node)) return node
+  const { '@context': _dropped, ...rest } = node
+  return rest
+}
+
+/** `{ '@id': … }` reference, or undefined when the target isn't in the graph. */
+const ref = (id: string | undefined): { '@id': string } | undefined =>
+  id ? { '@id': id } : undefined
 
 /** Maps a single curated block to a JSON-LD node (without @context). */
 function blockNode(b: SchemaBlock): Record<string, unknown> | undefined {
@@ -248,32 +316,103 @@ function blockNode(b: SchemaBlock): Record<string, unknown> | undefined {
 }
 
 /**
- * Build an array of JSON-LD nodes from the stored `meta.schema` blocks. Each
- * node carries its own `@context`, so a frontend can emit them as separate
- * `<script>` tags or merge them into a single `@graph`. The `custom` block is
- * passed through verbatim (assumed to already be valid JSON-LD).
+ * Assemble one connected JSON-LD graph for a page.
+ *
+ * Node layout and the references between them:
+ *
+ *   Organization    `${siteUrl}/#organization`
+ *   WebSite         `${siteUrl}/#website`     publisher → Organization
+ *   WebPage         `${pageUrl}#webpage`      isPartOf → WebSite,
+ *                                             breadcrumb → BreadcrumbList,
+ *                                             copyrightHolder → Organization
+ *   BreadcrumbList  `${pageUrl}#breadcrumb`   (only with ≥2 crumbs)
+ *   content nodes   `${pageUrl}#article` …    mainEntityOfPage → WebPage
+ *
+ * PARTIAL GRAPHS: the site-level nodes need absolute URLs to key their `@id`s.
+ * Called without `siteUrl`/`pageUrl` — as the server-side `meta.jsonLdComputed`
+ * virtual field does, since it has no request context — this returns just the
+ * content-block nodes, unkeyed and unlinked. That's a valid but partial graph;
+ * a frontend rendering the real `<head>` should always pass both URLs.
  */
-export function buildJsonLd(
-  blocks: SchemaBlock[] | null | undefined,
-  options: BuildJsonLdOptions = {},
-): Record<string, unknown>[] {
-  const nodes: Record<string, unknown>[] = []
+export function buildJsonLd(options: BuildJsonLdOptions = {}): JsonLdGraph {
+  const { blocks, organization, siteUrl, pageUrl, breadcrumbs } = options
+  const graph: Record<string, unknown>[] = []
 
-  if (options.organization) {
-    const org = prune(organizationNode(options.organization))
-    if (org) nodes.push({ '@context': CONTEXT, ...org })
+  // Site-level @ids are keyed off the origin so they're identical on every page
+  // — that's what lets a crawler collapse the Organization into one entity
+  // instead of treating each page's copy as a new one.
+  const orgId = siteUrl && organization ? `${siteUrl}/#organization` : undefined
+  const siteId = siteUrl ? `${siteUrl}/#website` : undefined
+  const pageId = pageUrl ? `${pageUrl}#webpage` : undefined
+  const crumbList = arr(breadcrumbs) as BreadcrumbItem[]
+  // Google ignores single-item lists, so a lone "Home" crumb earns no node.
+  const crumbId = pageUrl && crumbList.length >= 2 ? `${pageUrl}#breadcrumb` : undefined
+
+  if (organization && orgId) {
+    const node = prune(organizationNode(organization, orgId))
+    if (node) graph.push(node)
   }
 
+  if (siteId) {
+    const node = prune({
+      '@type': 'WebSite',
+      '@id': siteId,
+      url: `${siteUrl}/`,
+      name: str(options.siteName),
+      // Site-wide only — see the `siteDescription` doc comment.
+      description: str(options.siteDescription),
+      inLanguage: str(options.locale),
+      publisher: ref(orgId),
+    })
+    if (node) graph.push(node)
+  }
+
+  if (pageId) {
+    const node = prune({
+      '@type': 'WebPage',
+      '@id': pageId,
+      url: pageUrl,
+      name: str(options.title),
+      description: str(options.description),
+      inLanguage: str(options.locale),
+      isPartOf: ref(siteId),
+      breadcrumb: ref(crumbId),
+      primaryImageOfPage: options.image
+        ? { '@type': 'ImageObject', url: options.image }
+        : undefined,
+      copyrightHolder: ref(orgId),
+    })
+    if (node) graph.push(node)
+  }
+
+  if (crumbId) {
+    graph.push({ ...stripContext(buildBreadcrumbList(crumbList)), '@id': crumbId })
+  }
+
+  // Content nodes. A page may carry two blocks of the same type, so suffix the
+  // @id after the first to keep every key in the graph unique.
+  const seenTypes = new Map<string, number>()
   for (const block of arr(blocks) as SchemaBlock[]) {
-    if (block?.blockType === 'custom') {
+    const type = block?.blockType
+    if (type === 'custom') {
+      // Trusted verbatim — but its `@context` must go, or the graph is invalid.
       const node = blockNode(block)
-      // Custom JSON-LD is trusted as-is; only ensure a context is present.
-      if (node) nodes.push('@context' in node ? node : { '@context': CONTEXT, ...node })
+      if (node) graph.push(stripContext(node))
       continue
     }
     const node = prune(blockNode(block))
-    if (node) nodes.push({ '@context': CONTEXT, ...node })
+    if (!node) continue
+    if (pageUrl && type) {
+      const n = (seenTypes.get(type) ?? 0) + 1
+      seenTypes.set(type, n)
+      node['@id'] = `${pageUrl}#${type}${n > 1 ? `-${n}` : ''}`
+      node.mainEntityOfPage = ref(pageId)
+      // Only an Article has a publisher in schema.org's sense.
+      if (type === 'article') node.isPartOf = ref(pageId)
+      if (type === 'article' && orgId) node.publisher = ref(orgId)
+    }
+    graph.push(node)
   }
 
-  return nodes
+  return { '@context': CONTEXT, '@graph': graph }
 }

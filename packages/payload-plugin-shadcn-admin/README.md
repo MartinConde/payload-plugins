@@ -6,7 +6,7 @@ nav sidebar, auth views, dashboard, and a server-driven DataTable, all opt-in vi
 collections it should auto-view.
 
 ```jsonc
-"payload-plugin-shadcn-admin": "github:MartinConde/payload-plugins#v0.0.1&path:/packages/payload-plugin-shadcn-admin"
+"payload-plugin-shadcn-admin": "github:MartinConde/payload-plugins#v0.1.0&path:/packages/payload-plugin-shadcn-admin"
 ```
 
 Requires `payload-plugin-shadcn-ui` alongside — this package ships **no CSS** of its

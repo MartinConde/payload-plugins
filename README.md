@@ -14,7 +14,7 @@ workspace. Each package is published/installed independently.
 ## Install (from git, pnpm only)
 
 ```jsonc
-"payload-plugin-seo": "github:MartinConde/payload-plugins#v0.0.1&path:/packages/payload-plugin-seo"
+"payload-plugin-seo": "github:MartinConde/payload-plugins#v0.1.0&path:/packages/payload-plugin-seo"
 ```
 
 Always pin `payload-plugin-shadcn-ui` alongside any other package — the feature

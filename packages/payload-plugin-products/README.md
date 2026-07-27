@@ -5,7 +5,7 @@ designer — `products`, `print-templates`, and `color-swatches` collections, wi
 mm-based aspect-locked print rects for downstream DPI checks.
 
 ```jsonc
-"payload-plugin-products": "github:MartinConde/payload-plugins#v0.0.1&path:/packages/payload-plugin-products"
+"payload-plugin-products": "github:MartinConde/payload-plugins#v0.1.0&path:/packages/payload-plugin-products"
 ```
 
 Requires `payload-plugin-shadcn-ui` and `payload-plugin-shadcn-admin` alongside

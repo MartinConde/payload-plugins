@@ -8,6 +8,7 @@ export {
   type SchemaBlock,
   type OrganizationData,
   type BuildJsonLdOptions,
+  type JsonLdGraph,
 } from './schema/buildJsonLd.js'
 export {
   buildBreadcrumbList,

@@ -151,6 +151,23 @@ export const buildSeoSettingsGlobal = ({
               type: 'row',
               fields: [
                 {
+                  name: 'twitterSite',
+                  type: 'text',
+                  label: seoT('pluginSeo:twitterSiteLabel'),
+                  admin: { description: seoT('pluginSeo:twitterSiteDesc') },
+                },
+                {
+                  name: 'twitterCreator',
+                  type: 'text',
+                  label: seoT('pluginSeo:twitterCreatorLabel'),
+                  admin: { description: seoT('pluginSeo:twitterCreatorDesc') },
+                },
+              ],
+            },
+            {
+              type: 'row',
+              fields: [
+                {
                   name: 'defaultNoindex',
                   type: 'checkbox',
                   label: seoT('pluginSeo:noindex'),
@@ -254,6 +271,27 @@ export const buildSeoSettingsGlobal = ({
                   type: 'array',
                   label: seoT('pluginSeo:sameAsLabel'),
                   fields: [{ name: 'url', type: 'text', required: true }],
+                },
+                // Trust signals. Search engines and AI agents weight these when
+                // deciding whether a site is an authority on a topic; they cost
+                // nothing to fill in and are otherwise unrecoverable from content.
+                {
+                  name: 'publishingPrinciples',
+                  type: 'text',
+                  label: seoT('pluginSeo:publishingPrinciplesLabel'),
+                  admin: { description: seoT('pluginSeo:publishingPrinciplesDesc') },
+                },
+                {
+                  name: 'copyrightYear',
+                  type: 'number',
+                  label: seoT('pluginSeo:copyrightYearLabel'),
+                },
+                {
+                  name: 'knowsAbout',
+                  type: 'array',
+                  label: seoT('pluginSeo:knowsAboutLabel'),
+                  admin: { description: seoT('pluginSeo:knowsAboutDesc') },
+                  fields: [{ name: 'topic', type: 'text', required: true }],
                 },
               ],
             },

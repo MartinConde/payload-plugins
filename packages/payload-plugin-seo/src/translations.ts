@@ -77,6 +77,10 @@ export const seoTranslations = {
         'Fallback meta description, used when a page omits its own.',
       defaultOgImageDesc: 'Fallback Open Graph image when a page omits one.',
       defaultTwitterCardDesc: 'Default Twitter / X card style.',
+      twitterSiteLabel: 'Site @handle',
+      twitterSiteDesc: 'The X / Twitter account for the site (with or without @).',
+      twitterCreatorLabel: 'Creator @handle',
+      twitterCreatorDesc: 'Default X / Twitter account for content authors.',
       defaultLocaleDesc: 'Default `og:locale` / `html lang` (e.g. en_US).',
       tabOrganization: 'Organization',
       tabOrganizationDesc: 'Site-wide Organization structured data (JSON-LD).',
@@ -84,6 +88,12 @@ export const seoTranslations = {
       organizationDesc:
         'Used to build the site-wide Organization structured data on the frontend.',
       sameAsLabel: 'Social profiles (sameAs)',
+      publishingPrinciplesLabel: 'Editorial policy URL',
+      publishingPrinciplesDesc:
+        'Link to your editorial / publishing standards. A trust signal for search engines and AI agents.',
+      copyrightYearLabel: 'Copyright year',
+      knowsAboutLabel: 'Topical authority (knowsAbout)',
+      knowsAboutDesc: 'Subjects this organization is authoritative on.',
       tabSitemap: 'Sitemap',
       tabSitemapDesc: 'Defaults applied to generated sitemap entries.',
       sitemapLabel: 'Sitemap defaults',
@@ -242,6 +252,10 @@ export const seoTranslations = {
       defaultOgImageDesc:
         'Image Open Graph de repli lorsqu’une page n’en fournit pas.',
       defaultTwitterCardDesc: 'Style de carte Twitter / X par défaut.',
+      twitterSiteLabel: '@compte du site',
+      twitterSiteDesc: 'Le compte X / Twitter du site (avec ou sans @).',
+      twitterCreatorLabel: '@compte du créateur',
+      twitterCreatorDesc: 'Compte X / Twitter par défaut des auteurs.',
       defaultLocaleDesc:
         'Valeur par défaut de `og:locale` / `html lang` (par ex. en_US).',
       tabOrganization: 'Organisation',
@@ -251,6 +265,12 @@ export const seoTranslations = {
       organizationDesc:
         'Utilisé pour construire les données structurées Organization du site sur le frontend.',
       sameAsLabel: 'Profils sociaux (sameAs)',
+      publishingPrinciplesLabel: 'URL de la politique éditoriale',
+      publishingPrinciplesDesc:
+        'Lien vers vos standards éditoriaux. Un signal de confiance pour les moteurs de recherche et les agents IA.',
+      copyrightYearLabel: 'Année de copyright',
+      knowsAboutLabel: 'Autorité thématique (knowsAbout)',
+      knowsAboutDesc: 'Sujets sur lesquels cette organisation fait autorité.',
       tabSitemap: 'Plan du site',
       tabSitemapDesc:
         'Valeurs par défaut appliquées aux entrées du plan du site généré.',
@@ -406,6 +426,10 @@ export const seoTranslations = {
       defaultOgImageDesc:
         'Fallback-Open-Graph-Bild, wenn eine Seite keines angibt.',
       defaultTwitterCardDesc: 'Standard-Twitter-/X-Kartenstil.',
+      twitterSiteLabel: 'Site-@handle',
+      twitterSiteDesc: 'Das X-/Twitter-Konto der Website (mit oder ohne @).',
+      twitterCreatorLabel: 'Ersteller-@handle',
+      twitterCreatorDesc: 'Standard-X-/Twitter-Konto für Autoren.',
       defaultLocaleDesc: 'Standard-`og:locale` / `html lang` (z. B. en_US).',
       tabOrganization: 'Organisation',
       tabOrganizationDesc:
@@ -414,6 +438,12 @@ export const seoTranslations = {
       organizationDesc:
         'Wird verwendet, um die websiteweiten strukturierten Organisationsdaten im Frontend zu erstellen.',
       sameAsLabel: 'Soziale Profile (sameAs)',
+      publishingPrinciplesLabel: 'URL der Redaktionsrichtlinien',
+      publishingPrinciplesDesc:
+        'Link zu Ihren redaktionellen Standards. Ein Vertrauenssignal für Suchmaschinen und KI-Agenten.',
+      copyrightYearLabel: 'Copyright-Jahr',
+      knowsAboutLabel: 'Thematische Autorität (knowsAbout)',
+      knowsAboutDesc: 'Themen, für die diese Organisation maßgeblich ist.',
       tabSitemap: 'Sitemap',
       tabSitemapDesc: 'Standardwerte für generierte Sitemap-Einträge.',
       sitemapLabel: 'Sitemap-Standardwerte',
@@ -569,6 +599,10 @@ export const seoTranslations = {
       defaultOgImageDesc:
         'Imagen de Open Graph de reserva cuando una página no aporta una.',
       defaultTwitterCardDesc: 'Estilo de tarjeta de Twitter / X predeterminado.',
+      twitterSiteLabel: '@cuenta del sitio',
+      twitterSiteDesc: 'La cuenta de X / Twitter del sitio (con o sin @).',
+      twitterCreatorLabel: '@cuenta del creador',
+      twitterCreatorDesc: 'Cuenta de X / Twitter predeterminada para autores.',
       defaultLocaleDesc:
         'Valor predeterminado de `og:locale` / `html lang` (p. ej. en_US).',
       tabOrganization: 'Organización',
@@ -578,6 +612,12 @@ export const seoTranslations = {
       organizationDesc:
         'Se usa para construir los datos estructurados de Organization del sitio en el frontend.',
       sameAsLabel: 'Perfiles sociales (sameAs)',
+      publishingPrinciplesLabel: 'URL de la política editorial',
+      publishingPrinciplesDesc:
+        'Enlace a sus estándares editoriales. Una señal de confianza para buscadores y agentes de IA.',
+      copyrightYearLabel: 'Año de copyright',
+      knowsAboutLabel: 'Autoridad temática (knowsAbout)',
+      knowsAboutDesc: 'Temas sobre los que esta organización es autoridad.',
       tabSitemap: 'Mapa del sitio',
       tabSitemapDesc:
         'Valores predeterminados aplicados a las entradas del mapa del sitio generado.',

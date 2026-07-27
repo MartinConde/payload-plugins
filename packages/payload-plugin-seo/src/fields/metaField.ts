@@ -160,19 +160,29 @@ export const buildMetaField = ({
     // Opt-in: pre-assembled JSON-LD, computed on read from the `schema` blocks.
     // Virtual (no DB column); kept out of the admin form by `SeoGroupInput`
     // (its `known` set lists `jsonLdComputed` but never renders it).
+    //
+    // PARTIAL BY CONSTRUCTION: a read hook has no request URL, so it can't key
+    // the site-level @ids and emits ONLY the content-block nodes — no
+    // Organization / WebSite / WebPage, and no breadcrumb. The frontend calls
+    // `buildJsonLd` itself with `siteUrl`/`pageUrl` to get the full graph; this
+    // field is for consumers that just want the block data pre-mapped.
     ...(jsonLdVirtualField
       ? [
           {
             name: 'jsonLdComputed',
             type: 'json' as const,
             virtual: true,
-            admin: { readOnly: true },
+            admin: {
+              readOnly: true,
+              description:
+                'Content-block JSON-LD only. The full linked @graph (Organization, WebSite, WebPage, breadcrumbs) is assembled by the frontend, which knows the page URL.',
+            },
             hooks: {
               afterRead: [
                 ({ siblingData }: { siblingData?: Record<string, unknown> }) =>
-                  buildJsonLd(
-                    (siblingData?.schema as SchemaBlock[] | undefined) ?? [],
-                  ),
+                  buildJsonLd({
+                    blocks: (siblingData?.schema as SchemaBlock[] | undefined) ?? [],
+                  }),
               ],
             },
           },

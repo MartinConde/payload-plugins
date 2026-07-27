@@ -1,6 +1,6 @@
 {
   "name": "payload-plugin-seo",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "shadcn/ui-themed SEO plugin for Payload CMS — per-document meta + SERP preview, site-wide SEO defaults global, and a redirects collection",
   "license": "MIT",
   "private": true,
@@ -61,8 +61,12 @@
     "react-dom": ">=19 <20"
   },
   "peerDependenciesMeta": {
-    "payload-plugin-shadcn-admin": { "optional": true },
-    "payload-plugin-shadcn-ui": { "optional": true }
+    "payload-plugin-shadcn-admin": {
+      "optional": true
+    },
+    "payload-plugin-shadcn-ui": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@payloadcms/translations": "^3.85.1",
