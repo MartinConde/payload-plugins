@@ -184,6 +184,22 @@ export const seoTranslations = {
       healthAllGood: 'All documents have meta',
       healthMissingSuffix: 'missing meta',
       healthOf: 'of',
+      healthDuplicatesTitle: 'Duplicate titles & descriptions',
+      healthNoDuplicates: 'No duplicate titles or descriptions found',
+      healthDuplicateFieldTitle: 'Title',
+      healthDuplicateFieldDescription: 'Description',
+      healthDuplicateShared: 'Shared by {{count}} documents',
+      healthDuplicatesMore: '+{{count}} more',
+      healthDuplicatesMoreGroups: '{{count}} further duplicate values not shown.',
+      healthSweepIncomplete:
+        'Scanned {{scanned}} of {{total}} documents — a capped scan can miss duplicates, never invent them.',
+      healthSweepFailed: 'Some collections could not be scanned.',
+      healthLengthTitle: 'Length',
+      healthLengthAllGood:
+        'All titles and descriptions are within the ideal length',
+      healthLongTitles: 'Titles over {{ideal}} characters: {{count}}',
+      healthLongDescriptions:
+        'Descriptions over {{ideal}} characters: {{count}}',
       checkTitleTemplate: 'Title template configured',
       checkDefaultDescription: 'Default meta description set',
       checkOgImage: 'Default social image set',
@@ -359,6 +375,23 @@ export const seoTranslations = {
       healthAllGood: 'Tous les documents ont des métadonnées',
       healthMissingSuffix: 'sans métadonnées',
       healthOf: 'sur',
+      healthDuplicatesTitle: 'Titres et descriptions en double',
+      healthNoDuplicates: 'Aucun titre ni description en double',
+      healthDuplicateFieldTitle: 'Titre',
+      healthDuplicateFieldDescription: 'Description',
+      healthDuplicateShared: 'Partagé par {{count}} documents',
+      healthDuplicatesMore: '+{{count}} autres',
+      healthDuplicatesMoreGroups:
+        '{{count}} autres valeurs en double non affichées.',
+      healthSweepIncomplete:
+        '{{scanned}} documents analysés sur {{total}} — une analyse plafonnée peut manquer des doublons, jamais en inventer.',
+      healthSweepFailed: 'Certaines collections n’ont pas pu être analysées.',
+      healthLengthTitle: 'Longueur',
+      healthLengthAllGood:
+        'Tous les titres et descriptions respectent la longueur idéale',
+      healthLongTitles: 'Titres de plus de {{ideal}} caractères : {{count}}',
+      healthLongDescriptions:
+        'Descriptions de plus de {{ideal}} caractères : {{count}}',
       checkTitleTemplate: 'Modèle de titre configuré',
       checkDefaultDescription: 'Description meta par défaut définie',
       checkOgImage: 'Image sociale par défaut définie',
@@ -531,6 +564,22 @@ export const seoTranslations = {
       healthAllGood: 'Alle Dokumente haben Metadaten',
       healthMissingSuffix: 'ohne Metadaten',
       healthOf: 'von',
+      healthDuplicatesTitle: 'Doppelte Titel & Beschreibungen',
+      healthNoDuplicates: 'Keine doppelten Titel oder Beschreibungen gefunden',
+      healthDuplicateFieldTitle: 'Titel',
+      healthDuplicateFieldDescription: 'Beschreibung',
+      healthDuplicateShared: 'Von {{count}} Dokumenten verwendet',
+      healthDuplicatesMore: '+{{count}} weitere',
+      healthDuplicatesMoreGroups:
+        '{{count}} weitere doppelte Werte nicht angezeigt.',
+      healthSweepIncomplete:
+        '{{scanned}} von {{total}} Dokumenten geprüft — eine begrenzte Prüfung kann Duplikate übersehen, aber niemals welche erfinden.',
+      healthSweepFailed: 'Einige Sammlungen konnten nicht geprüft werden.',
+      healthLengthTitle: 'Länge',
+      healthLengthAllGood:
+        'Alle Titel und Beschreibungen liegen in der idealen Länge',
+      healthLongTitles: 'Titel über {{ideal}} Zeichen: {{count}}',
+      healthLongDescriptions: 'Beschreibungen über {{ideal}} Zeichen: {{count}}',
       checkTitleTemplate: 'Titelvorlage konfiguriert',
       checkDefaultDescription: 'Standard-Meta-Beschreibung gesetzt',
       checkOgImage: 'Standard-Social-Bild gesetzt',
@@ -706,6 +755,24 @@ export const seoTranslations = {
       healthAllGood: 'Todos los documentos tienen metadatos',
       healthMissingSuffix: 'sin metadatos',
       healthOf: 'de',
+      healthDuplicatesTitle: 'Títulos y descripciones duplicados',
+      healthNoDuplicates:
+        'No se encontraron títulos ni descripciones duplicados',
+      healthDuplicateFieldTitle: 'Título',
+      healthDuplicateFieldDescription: 'Descripción',
+      healthDuplicateShared: 'Compartido por {{count}} documentos',
+      healthDuplicatesMore: '+{{count}} más',
+      healthDuplicatesMoreGroups:
+        '{{count}} valores duplicados más sin mostrar.',
+      healthSweepIncomplete:
+        '{{scanned}} de {{total}} documentos analizados — un análisis limitado puede omitir duplicados, nunca inventarlos.',
+      healthSweepFailed: 'Algunas colecciones no se pudieron analizar.',
+      healthLengthTitle: 'Longitud',
+      healthLengthAllGood:
+        'Todos los títulos y descripciones están dentro de la longitud ideal',
+      healthLongTitles: 'Títulos de más de {{ideal}} caracteres: {{count}}',
+      healthLongDescriptions:
+        'Descripciones de más de {{ideal}} caracteres: {{count}}',
       checkTitleTemplate: 'Plantilla de título configurada',
       checkDefaultDescription: 'Descripción meta predeterminada establecida',
       checkOgImage: 'Imagen social predeterminada establecida',

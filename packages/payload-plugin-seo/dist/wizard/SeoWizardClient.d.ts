@@ -1,11 +1,14 @@
 import * as React from 'react';
 import { type ExtractedCollection } from 'payload-plugin-shadcn-ui';
-import { type CollectionHealth } from './audit.js';
+import { type CollectionHealth, type DuplicateReport } from './audit.js';
 type Props = {
     settingsSlug: string;
     mediaSlug: string;
     initialData: Record<string, unknown>;
     collections: CollectionHealth[];
+    /** Site-wide duplicate/length sweep — deliberately NOT per-collection like
+     *  `collections` above: a duplicate title is a site-wide SERP problem. */
+    duplicates: DuplicateReport;
     collectionSlugs: string[];
     /** Default locale the wizard reads/writes/audits against (null = no
      *  localization). Pinning all three to one locale keeps the health panel in
@@ -18,5 +21,5 @@ type Props = {
      *  "Upload new" dialog. */
     uploadCollectionsBySlug: Record<string, ExtractedCollection>;
 };
-export declare function SeoWizardClient({ settingsSlug, mediaSlug, initialData, collections, collectionSlugs, defaultLocale, useAsTitleBySlug, uploadCollectionsBySlug, }: Props): React.ReactElement;
+export declare function SeoWizardClient({ settingsSlug, mediaSlug, initialData, collections, duplicates, collectionSlugs, defaultLocale, useAsTitleBySlug, uploadCollectionsBySlug, }: Props): React.ReactElement;
 export {};

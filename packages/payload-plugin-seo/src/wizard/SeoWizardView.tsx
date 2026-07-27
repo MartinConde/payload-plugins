@@ -1,4 +1,4 @@
-import type { AdminViewServerProps, Field } from 'payload'
+import type { AdminViewServerProps, Field, SelectType } from 'payload'
 import { getTranslation } from '@payloadcms/translations'
 import { XIcon } from 'lucide-react'
 
@@ -9,7 +9,7 @@ import {
 } from 'payload-plugin-shadcn-ui'
 
 import { SeoWizardClient } from './SeoWizardClient.js'
-import type { CollectionHealth } from './audit.js'
+import { buildDuplicateReport, type AuditRow, type CollectionHealth } from './audit.js'
 
 /* Resolved plugin config stashed on `config.custom['plugin-seo']` by
    `seoPlugin` (the view is registered by string path, so options can't be
@@ -28,6 +28,15 @@ const DEFAULTS: SeoPluginCustom = {
 }
 
 const MAX_AUDITED_COLLECTIONS = 8
+
+/* Ceiling for the duplicate/length sweep, PER COLLECTION — a shared budget
+   consumed in config order would let the last collection get zero rows while
+   the panel still implied it was checked. Rows are walked by `id` so the
+   truncation point is deterministic rather than "whatever was newest". Both
+   the scanned and the total count reach the UI: a capped sweep can miss a
+   duplicate, it can never invent one, and the panel has to say so. */
+const MAX_AUDITED_ROWS = 500
+const SWEEP_PAGE_SIZE = 250
 
 /** Same detection shape as `hasMetaField` in plugin.ts: a group field named
  *  `fieldName` at the top level, or one level inside a top-level tabs field. */
@@ -147,6 +156,77 @@ export async function SeoWizardView(
     )
   ).filter((c): c is CollectionHealth => c !== null)
 
+  // Site-wide duplicate/length sweep. Deliberately a SEPARATE pass from the
+  // health counts above, with its own try/catch per collection: folding it into
+  // that block would let a sweep failure blank a collection's health row, and
+  // the two panels are supposed to fail independently. Payload has no group-by,
+  // so the rows come back paginated and the grouping happens in `audit.ts`.
+  const auditRows: AuditRow[] = []
+  let sweptRows = 0
+  let sweptTotal = 0
+  let failedCollections = 0
+
+  await Promise.all(
+    seoCollections.map(async (c): Promise<void> => {
+      try {
+        const titleField = c.admin?.useAsTitle
+        const select: SelectType = {
+          [fieldName]: { title: true, description: true },
+        }
+        // `id` always comes back; asking for it explicitly isn't meaningful.
+        if (titleField && titleField !== 'id') select[titleField] = true
+
+        let page = 1
+        let scanned = 0
+        while (scanned < MAX_AUDITED_ROWS) {
+          const res = await payload.find({
+            collection: c.slug,
+            depth: 0,
+            limit: SWEEP_PAGE_SIZE,
+            page,
+            sort: 'id',
+            locale: defaultLocale,
+            overrideAccess: false,
+            req,
+            user,
+            select,
+          })
+          if (page === 1) sweptTotal += res.totalDocs
+          for (const raw of res.docs as unknown as Record<string, unknown>[]) {
+            if (scanned >= MAX_AUDITED_ROWS) break
+            const meta = (raw[fieldName] ?? {}) as Record<string, unknown>
+            const docTitle = titleField ? raw[titleField] : undefined
+            auditRows.push({
+              collection: c.slug,
+              id: raw.id as string | number,
+              label:
+                typeof docTitle === 'string' && docTitle.trim().length > 0
+                  ? docTitle
+                  : `#${String(raw.id)}`,
+              title: typeof meta.title === 'string' ? meta.title : '',
+              description:
+                typeof meta.description === 'string' ? meta.description : '',
+            })
+            scanned += 1
+          }
+          if (!res.hasNextPage) break
+          page += 1
+        }
+        sweptRows += scanned
+      } catch {
+        // Unreadable collection — counted, so the panel can say the sweep was
+        // incomplete instead of implying a clean bill of health.
+        failedCollections += 1
+      }
+    }),
+  )
+
+  const duplicates = buildDuplicateReport(auditRows, {
+    scanned: sweptRows,
+    total: sweptTotal,
+    failedCollections,
+  })
+
   return (
     <ViewShell
       breadcrumbs={[
@@ -167,6 +247,7 @@ export async function SeoWizardView(
         mediaSlug={uploadsCollection}
         initialData={initialData}
         collections={collections}
+        duplicates={duplicates}
         collectionSlugs={seoCollections.map((c) => c.slug)}
         defaultLocale={defaultLocale ?? null}
         useAsTitleBySlug={useAsTitleBySlug}

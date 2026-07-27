@@ -21,6 +21,10 @@ import { ChevronDown, Globe, ImageIcon, Search } from 'lucide-react'
 import type { TFunction } from '@payloadcms/translations'
 import type { ExtractedField, FieldInputProps } from './adminTypes.js'
 import type { SeoTranslationsKeys } from '../translations.js'
+// Node-safe: `audit.ts` exports only numbers and pure functions, and itself
+// imports nothing but types — so pulling it in here doesn't widen the server
+// config graph.
+import { DESC_IDEAL, TITLE_IDEAL } from '../wizard/audit.js'
 
 /* Translate a `pluginSeo:` key via the threaded `t` prop, falling back to the
    English literal when `t` is absent (e.g. the component rendered outside the
@@ -31,9 +35,6 @@ const makeTr = (t: FieldInputProps['t']): Tr => {
   const tt = t as TFunction<SeoTranslationsKeys> | undefined
   return (key, fallback) => (tt ? tt(key) : fallback)
 }
-
-const TITLE_IDEAL = 60
-const DESC_IDEAL = 160
 
 /** Reads a leaf that may be a localized `{ [locale]: value }` object. */
 function readLeaf(raw: unknown, locale: string | null | undefined): string {

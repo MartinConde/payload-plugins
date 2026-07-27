@@ -10,6 +10,16 @@ import type { SeoTranslationsKeys } from '../translations.js'
 
 export type CheckStatus = 'ok' | 'warn' | 'missing'
 
+/** Ideal meta lengths. Single-sourced here so the per-field counters in
+ *  `SeoGroupInput` and the wizard's site-wide roll-up can't drift apart. */
+export const TITLE_IDEAL = 60
+export const DESC_IDEAL = 160
+
+/** Display ceilings for the duplicates panel — the counts they hide are
+ *  reported alongside them, never swallowed. */
+const MAX_DUPLICATE_GROUPS = 10
+const MAX_DUPLICATE_DOCS_PER_GROUP = 5
+
 export type ChecklistItem = {
   id: string
   labelKey: SeoTranslationsKeys
@@ -24,6 +34,46 @@ export type CollectionHealth = {
   label: string
   total: number
   missing: number
+}
+
+/** A document that carries a duplicated meta value. */
+export type DuplicateDoc = {
+  collection: string
+  id: string | number
+  label: string
+}
+
+/** One row of the wizard's meta sweep — the two strings we compare, plus enough
+ *  identity to link back into the admin. Gathered in `SeoWizardView` (it needs
+ *  `payload`) and only grouped here. */
+export type AuditRow = DuplicateDoc & {
+  title: string
+  description: string
+}
+
+export type DuplicateField = 'title' | 'description'
+
+/** A meta value shared by two or more documents. `count` is the real number of
+ *  documents; `docs` is capped for display. */
+export type DuplicateGroup = {
+  field: DuplicateField
+  value: string
+  count: number
+  docs: DuplicateDoc[]
+}
+
+/** Result of the sweep. `scanned`/`total`/`failedCollections` exist so the UI
+ *  can say what it did NOT look at: a capped sweep produces false negatives
+ *  only — it can miss a duplicate, it can never invent one. */
+export type DuplicateReport = {
+  groups: DuplicateGroup[]
+  hiddenGroups: number
+  longTitles: number
+  longDescriptions: number
+  scanned: number
+  total: number
+  truncated: boolean
+  failedCollections: number
 }
 
 /** The subset of `seo-settings` global fields the checklist inspects. Localized
@@ -109,4 +159,76 @@ export function completionPercent(items: ChecklistItem[]): number {
     0,
   )
   return Math.round((score / items.length) * 100)
+}
+
+/** Comparison key for two meta strings: trimmed, internal whitespace collapsed,
+ *  lowercased. "Welcome  Home " and "welcome home" are the same title as far as
+ *  a SERP is concerned. */
+const normalize = (v: string): string =>
+  v.trim().replace(/\s+/g, ' ').toLowerCase()
+
+/** Group swept rows into duplicate title/description sets and count over-length
+ *  values. Pure — Payload has no group-by, so the sweep pages rows out of the
+ *  database and the grouping happens here.
+ *
+ *  Empty values are deliberately NOT grouped: they are already reported by the
+ *  per-collection missing-meta panel, and counting them here would report the
+ *  same documents twice under two different problems. Note this treats a
+ *  whitespace-only value as empty, which is wider than that panel's
+ *  `exists: false` — see the SEO plugin docs. */
+export function buildDuplicateReport(
+  rows: AuditRow[],
+  meta: { scanned: number; total: number; failedCollections: number },
+): DuplicateReport {
+  const byKey = new Map<string, DuplicateGroup>()
+
+  const collect = (
+    field: DuplicateField,
+    raw: string,
+    doc: DuplicateDoc,
+  ): void => {
+    const key = normalize(raw)
+    if (key.length === 0) return
+    const group = byKey.get(`${field} ${key}`)
+    if (!group) {
+      byKey.set(`${field} ${key}`, { field, value: raw.trim(), count: 1, docs: [doc] })
+      return
+    }
+    group.count += 1
+    if (group.docs.length < MAX_DUPLICATE_DOCS_PER_GROUP) group.docs.push(doc)
+  }
+
+  let longTitles = 0
+  let longDescriptions = 0
+
+  for (const row of rows) {
+    const doc: DuplicateDoc = {
+      collection: row.collection,
+      id: row.id,
+      label: row.label,
+    }
+    collect('title', row.title, doc)
+    collect('description', row.description, doc)
+    if (row.title.trim().length > TITLE_IDEAL) longTitles += 1
+    if (row.description.trim().length > DESC_IDEAL) longDescriptions += 1
+  }
+
+  // Worst first; ties broken on the value itself so the order is deterministic
+  // across renders (no locale-sensitive localeCompare).
+  const duplicates = [...byKey.values()]
+    .filter((g) => g.count > 1)
+    .sort((a, b) =>
+      b.count !== a.count ? b.count - a.count : a.value < b.value ? -1 : a.value > b.value ? 1 : 0,
+    )
+
+  return {
+    groups: duplicates.slice(0, MAX_DUPLICATE_GROUPS),
+    hiddenGroups: Math.max(0, duplicates.length - MAX_DUPLICATE_GROUPS),
+    longTitles,
+    longDescriptions,
+    scanned: meta.scanned,
+    total: meta.total,
+    truncated: meta.scanned < meta.total,
+    failedCollections: meta.failedCollections,
+  }
 }

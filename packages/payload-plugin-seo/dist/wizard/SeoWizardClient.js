@@ -17,7 +17,7 @@ import { Badge, Button, Card, CardContent, CardDescription, CardHeader, CardTitl
 // bridge-internal hooks (relationship picker, multipart upload handler).
 import { SearchableSelect, UploadFieldInput } from 'payload-plugin-shadcn-admin/client';
 import { OG_LOCALE_OPTIONS } from '../fields/seoSettingsGlobal.js';
-import { computeSettingsChecklist, completionPercent } from './audit.js';
+import { computeSettingsChecklist, completionPercent, DESC_IDEAL, TITLE_IDEAL } from './audit.js';
 const CHANGEFREQS = [
     {
         value: 'always',
@@ -53,10 +53,10 @@ const idOf = (v)=>{
     if (typeof v === 'object') return v.id ?? null;
     return v;
 };
-export function SeoWizardClient({ settingsSlug, mediaSlug, initialData, collections, collectionSlugs, defaultLocale, useAsTitleBySlug, uploadCollectionsBySlug }) {
+export function SeoWizardClient({ settingsSlug, mediaSlug, initialData, collections, duplicates, collectionSlugs, defaultLocale, useAsTitleBySlug, uploadCollectionsBySlug }) {
     const { t } = useTranslation();
     const router = useRouter();
-    const tr = React.useCallback((k)=>t(k), [
+    const tr = React.useCallback((k, vars)=>t(k, vars), [
         t
     ]);
     const [data, setData] = React.useState(()=>({
@@ -584,6 +584,138 @@ export function SeoWizardClient({ settingsSlug, mediaSlug, initialData, collecti
                                         })
                                     ]
                                 }, c.slug))
+                        })
+                    ]
+                }),
+                /*#__PURE__*/ _jsx(Separator, {}),
+                /*#__PURE__*/ _jsxs("div", {
+                    children: [
+                        /*#__PURE__*/ _jsx("h3", {
+                            className: "mb-2 text-sm font-medium",
+                            children: tr('pluginSeo:healthDuplicatesTitle')
+                        }),
+                        duplicates.groups.length === 0 ? /*#__PURE__*/ _jsxs("p", {
+                            className: "flex items-center gap-2 text-sm text-muted-foreground",
+                            children: [
+                                /*#__PURE__*/ _jsx(StatusIcon, {
+                                    status: "ok"
+                                }),
+                                tr('pluginSeo:healthNoDuplicates')
+                            ]
+                        }) : /*#__PURE__*/ _jsx("ul", {
+                            className: "space-y-3",
+                            children: duplicates.groups.map((g)=>/*#__PURE__*/ _jsxs("li", {
+                                    className: "space-y-1 text-sm",
+                                    children: [
+                                        /*#__PURE__*/ _jsxs("span", {
+                                            className: "flex flex-wrap items-center gap-2",
+                                            children: [
+                                                /*#__PURE__*/ _jsx(StatusIcon, {
+                                                    status: "warn"
+                                                }),
+                                                /*#__PURE__*/ _jsx("span", {
+                                                    className: "max-w-md truncate font-medium",
+                                                    title: g.value,
+                                                    children: g.value
+                                                }),
+                                                /*#__PURE__*/ _jsx(Badge, {
+                                                    variant: "secondary",
+                                                    children: tr(g.field === 'title' ? 'pluginSeo:healthDuplicateFieldTitle' : 'pluginSeo:healthDuplicateFieldDescription')
+                                                }),
+                                                /*#__PURE__*/ _jsx(Badge, {
+                                                    variant: "outline",
+                                                    children: tr('pluginSeo:healthDuplicateShared', {
+                                                        count: g.count
+                                                    })
+                                                })
+                                            ]
+                                        }),
+                                        /*#__PURE__*/ _jsxs("span", {
+                                            className: "flex flex-wrap items-center gap-x-3 gap-y-1 pl-6",
+                                            children: [
+                                                g.docs.map((d)=>/*#__PURE__*/ _jsxs("a", {
+                                                        className: "inline-flex items-center gap-1 text-primary hover:underline",
+                                                        href: `/admin/collections/${d.collection}/${d.id}`,
+                                                        children: [
+                                                            d.label,
+                                                            /*#__PURE__*/ _jsx(ExternalLink, {
+                                                                className: "size-3"
+                                                            })
+                                                        ]
+                                                    }, `${d.collection}:${d.id}`)),
+                                                g.count > g.docs.length ? /*#__PURE__*/ _jsx("span", {
+                                                    className: "text-muted-foreground",
+                                                    children: tr('pluginSeo:healthDuplicatesMore', {
+                                                        count: g.count - g.docs.length
+                                                    })
+                                                }) : null
+                                            ]
+                                        })
+                                    ]
+                                }, `${g.field}:${g.value}`))
+                        }),
+                        duplicates.hiddenGroups > 0 ? /*#__PURE__*/ _jsx("p", {
+                            className: "mt-2 text-xs text-muted-foreground",
+                            children: tr('pluginSeo:healthDuplicatesMoreGroups', {
+                                count: duplicates.hiddenGroups
+                            })
+                        }) : null,
+                        duplicates.truncated ? /*#__PURE__*/ _jsx("p", {
+                            className: "mt-2 text-xs text-muted-foreground",
+                            children: tr('pluginSeo:healthSweepIncomplete', {
+                                scanned: duplicates.scanned,
+                                total: duplicates.total
+                            })
+                        }) : null,
+                        duplicates.failedCollections > 0 ? /*#__PURE__*/ _jsx("p", {
+                            className: "mt-1 text-xs text-muted-foreground",
+                            children: tr('pluginSeo:healthSweepFailed')
+                        }) : null
+                    ]
+                }),
+                /*#__PURE__*/ _jsx(Separator, {}),
+                /*#__PURE__*/ _jsxs("div", {
+                    children: [
+                        /*#__PURE__*/ _jsx("h3", {
+                            className: "mb-2 text-sm font-medium",
+                            children: tr('pluginSeo:healthLengthTitle')
+                        }),
+                        duplicates.longTitles === 0 && duplicates.longDescriptions === 0 ? /*#__PURE__*/ _jsxs("p", {
+                            className: "flex items-center gap-2 text-sm text-muted-foreground",
+                            children: [
+                                /*#__PURE__*/ _jsx(StatusIcon, {
+                                    status: "ok"
+                                }),
+                                tr('pluginSeo:healthLengthAllGood')
+                            ]
+                        }) : /*#__PURE__*/ _jsxs("ul", {
+                            className: "space-y-2 text-sm",
+                            children: [
+                                /*#__PURE__*/ _jsxs("li", {
+                                    className: "flex items-center gap-2",
+                                    children: [
+                                        /*#__PURE__*/ _jsx(StatusIcon, {
+                                            status: duplicates.longTitles === 0 ? 'ok' : 'warn'
+                                        }),
+                                        tr('pluginSeo:healthLongTitles', {
+                                            count: duplicates.longTitles,
+                                            ideal: TITLE_IDEAL
+                                        })
+                                    ]
+                                }),
+                                /*#__PURE__*/ _jsxs("li", {
+                                    className: "flex items-center gap-2",
+                                    children: [
+                                        /*#__PURE__*/ _jsx(StatusIcon, {
+                                            status: duplicates.longDescriptions === 0 ? 'ok' : 'warn'
+                                        }),
+                                        tr('pluginSeo:healthLongDescriptions', {
+                                            count: duplicates.longDescriptions,
+                                            ideal: DESC_IDEAL
+                                        })
+                                    ]
+                                })
+                            ]
                         })
                     ]
                 }),

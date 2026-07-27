@@ -54,8 +54,11 @@ import type { SeoTranslationsKeys } from '../translations.js'
 import {
   computeSettingsChecklist,
   completionPercent,
+  DESC_IDEAL,
+  TITLE_IDEAL,
   type CheckStatus,
   type CollectionHealth,
+  type DuplicateReport,
   type SeoSettingsData,
 } from './audit.js'
 
@@ -92,6 +95,9 @@ type Props = {
   mediaSlug: string
   initialData: Record<string, unknown>
   collections: CollectionHealth[]
+  /** Site-wide duplicate/length sweep — deliberately NOT per-collection like
+   *  `collections` above: a duplicate title is a site-wide SERP problem. */
+  duplicates: DuplicateReport
   collectionSlugs: string[]
   /** Default locale the wizard reads/writes/audits against (null = no
    *  localization). Pinning all three to one locale keeps the health panel in
@@ -118,6 +124,7 @@ export function SeoWizardClient({
   mediaSlug,
   initialData,
   collections,
+  duplicates,
   collectionSlugs,
   defaultLocale,
   useAsTitleBySlug,
@@ -126,7 +133,8 @@ export function SeoWizardClient({
   const { t } = useTranslation()
   const router = useRouter()
   const tr = React.useCallback(
-    (k: SeoTranslationsKeys): string => (t as (key: string) => string)(k),
+    (k: SeoTranslationsKeys, vars?: Record<string, unknown>): string =>
+      (t as (key: string, vars?: Record<string, unknown>) => string)(k, vars),
     [t],
   )
 
@@ -541,6 +549,117 @@ export function SeoWizardClient({
                   </a>
                 </li>
               ))}
+            </ul>
+          )}
+        </div>
+
+        <Separator />
+
+        <div>
+          <h3 className="mb-2 text-sm font-medium">
+            {tr('pluginSeo:healthDuplicatesTitle')}
+          </h3>
+          {duplicates.groups.length === 0 ? (
+            <p className="flex items-center gap-2 text-sm text-muted-foreground">
+              <StatusIcon status="ok" />
+              {tr('pluginSeo:healthNoDuplicates')}
+            </p>
+          ) : (
+            <ul className="space-y-3">
+              {duplicates.groups.map((g) => (
+                <li key={`${g.field}:${g.value}`} className="space-y-1 text-sm">
+                  <span className="flex flex-wrap items-center gap-2">
+                    <StatusIcon status="warn" />
+                    <span className="max-w-md truncate font-medium" title={g.value}>
+                      {g.value}
+                    </span>
+                    <Badge variant="secondary">
+                      {tr(
+                        g.field === 'title'
+                          ? 'pluginSeo:healthDuplicateFieldTitle'
+                          : 'pluginSeo:healthDuplicateFieldDescription',
+                      )}
+                    </Badge>
+                    <Badge variant="outline">
+                      {tr('pluginSeo:healthDuplicateShared', { count: g.count })}
+                    </Badge>
+                  </span>
+                  <span className="flex flex-wrap items-center gap-x-3 gap-y-1 pl-6">
+                    {g.docs.map((d) => (
+                      <a
+                        key={`${d.collection}:${d.id}`}
+                        className="inline-flex items-center gap-1 text-primary hover:underline"
+                        href={`/admin/collections/${d.collection}/${d.id}`}
+                      >
+                        {d.label}
+                        <ExternalLink className="size-3" />
+                      </a>
+                    ))}
+                    {g.count > g.docs.length ? (
+                      <span className="text-muted-foreground">
+                        {tr('pluginSeo:healthDuplicatesMore', {
+                          count: g.count - g.docs.length,
+                        })}
+                      </span>
+                    ) : null}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+          {/* Everything the sweep did NOT look at is stated outright — a silent
+              ceiling reads as "no more duplicates", the worst possible failure. */}
+          {duplicates.hiddenGroups > 0 ? (
+            <p className="mt-2 text-xs text-muted-foreground">
+              {tr('pluginSeo:healthDuplicatesMoreGroups', {
+                count: duplicates.hiddenGroups,
+              })}
+            </p>
+          ) : null}
+          {duplicates.truncated ? (
+            <p className="mt-2 text-xs text-muted-foreground">
+              {tr('pluginSeo:healthSweepIncomplete', {
+                scanned: duplicates.scanned,
+                total: duplicates.total,
+              })}
+            </p>
+          ) : null}
+          {duplicates.failedCollections > 0 ? (
+            <p className="mt-1 text-xs text-muted-foreground">
+              {tr('pluginSeo:healthSweepFailed')}
+            </p>
+          ) : null}
+        </div>
+
+        <Separator />
+
+        <div>
+          <h3 className="mb-2 text-sm font-medium">
+            {tr('pluginSeo:healthLengthTitle')}
+          </h3>
+          {duplicates.longTitles === 0 && duplicates.longDescriptions === 0 ? (
+            <p className="flex items-center gap-2 text-sm text-muted-foreground">
+              <StatusIcon status="ok" />
+              {tr('pluginSeo:healthLengthAllGood')}
+            </p>
+          ) : (
+            <ul className="space-y-2 text-sm">
+              <li className="flex items-center gap-2">
+                <StatusIcon status={duplicates.longTitles === 0 ? 'ok' : 'warn'} />
+                {tr('pluginSeo:healthLongTitles', {
+                  count: duplicates.longTitles,
+                  ideal: TITLE_IDEAL,
+                })}
+              </li>
+              <li className="flex items-center gap-2">
+                <StatusIcon
+                  status={duplicates.longDescriptions === 0 ? 'ok' : 'warn'}
+                />
+                {tr('pluginSeo:healthLongDescriptions', {
+                  count: duplicates.longDescriptions,
+                  ideal: DESC_IDEAL,
+                })}
+              </li>
             </ul>
           )}
         </div>

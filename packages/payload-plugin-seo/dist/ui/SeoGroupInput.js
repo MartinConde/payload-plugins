@@ -15,12 +15,14 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
    imports that crash Node). Types are `import type` (erased); visuals are plain
    token-classed divs; the active locale arrives as a prop. */ import * as React from 'react';
 import { ChevronDown, Globe, ImageIcon, Search } from 'lucide-react';
+// Node-safe: `audit.ts` exports only numbers and pure functions, and itself
+// imports nothing but types — so pulling it in here doesn't widen the server
+// config graph.
+import { DESC_IDEAL, TITLE_IDEAL } from '../wizard/audit.js';
 const makeTr = (t)=>{
     const tt = t;
     return (key, fallback)=>tt ? tt(key) : fallback;
 };
-const TITLE_IDEAL = 60;
-const DESC_IDEAL = 160;
 /** Reads a leaf that may be a localized `{ [locale]: value }` object. */ function readLeaf(raw, locale) {
     if (raw == null) return '';
     if (typeof raw === 'string') return raw;
