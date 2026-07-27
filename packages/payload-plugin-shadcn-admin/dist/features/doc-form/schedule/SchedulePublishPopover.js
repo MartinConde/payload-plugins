@@ -8,7 +8,8 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
    The UI only QUEUES / LISTS / CANCELS jobs through Payload's `schedulePublish`
    server function (same `useServerFunctions()` seam the bridge uses for
    `getFormState`). Execution at `waitUntil` is the consuming app's jobs queue
-   (`jobs.autoRun` / external cron) — see SETUP.md. */ import * as React from 'react';
+   (`jobs.autoRun` / external cron) — see the shadcn-admin docs
+   (plugins/shadcn-admin/doc-views in the starter's docs app). */ import * as React from 'react';
 import { ArrowUpCircle, CalendarClock, Clock, XCircle } from 'lucide-react';
 import { toast, useConfig, useServerFunctions, useTranslation } from '../../../internal/payloadAdapterUI.js';
 import { formatAdminURL } from '../../../internal/payloadAdapter.js';

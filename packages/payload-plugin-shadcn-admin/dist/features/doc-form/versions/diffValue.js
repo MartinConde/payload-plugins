@@ -4,7 +4,8 @@
    React, no DOM). v3.9.
 
    richText is serialized to plain text (Lexical root walk) — this is a known
-   fidelity trade vs Payload's dedicated richText differ; see FEATURES.md. */ /** Escape a plain string so `getHTMLDiffComponents` (which diffs HTML) treats
+   fidelity trade vs Payload's dedicated richText differ; see the shadcn-admin
+   docs (plugins/shadcn-admin/features in the starter's docs app). */ /** Escape a plain string so `getHTMLDiffComponents` (which diffs HTML) treats
  *  it as literal text rather than markup. */ export const escapeForDiff = (s)=>s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const optionLabel = (options, value)=>{
     const v = String(value);

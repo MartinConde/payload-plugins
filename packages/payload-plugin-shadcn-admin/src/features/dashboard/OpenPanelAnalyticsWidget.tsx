@@ -1,5 +1,6 @@
-/* OpenPanel analytics widget — see DASHBOARD-WIDGETS.md's "external API"
-   example, which this follows: an async Server Component that fetches its own
+/* OpenPanel analytics widget — see the "external API" example in the widget
+   docs (contributing/dashboard-widgets-internals in the starter's docs app),
+   which this follows: an async Server Component that fetches its own
    data and quietly omits itself (returns null) if the fetch fails or isn't
    configured. Uses the older `/insights/:projectId/metrics` route rather than
    `/overview` — `/overview` was only added upstream in April 2026, so

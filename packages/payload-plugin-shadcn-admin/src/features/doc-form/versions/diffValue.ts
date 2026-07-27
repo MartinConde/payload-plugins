@@ -4,7 +4,8 @@
    React, no DOM). v3.9.
 
    richText is serialized to plain text (Lexical root walk) — this is a known
-   fidelity trade vs Payload's dedicated richText differ; see FEATURES.md. */
+   fidelity trade vs Payload's dedicated richText differ; see the shadcn-admin
+   docs (plugins/shadcn-admin/features in the starter's docs app). */
 
 import type { ExtractedField, ExtractedFieldOption } from 'payload-plugin-shadcn-ui'
 

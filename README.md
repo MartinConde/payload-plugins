@@ -11,44 +11,20 @@ workspace. Each package is published/installed independently.
 | [`payload-plugin-menus`](packages/payload-plugin-menus) | dnd-kit nested-tree menu builder. |
 | [`payload-plugin-products`](packages/payload-plugin-products) | Product catalog with a Fabric.js print-area designer. |
 
-## Develop
-
-```bash
-pnpm install
-pnpm build        # builds all packages
-pnpm typecheck
-```
-
-See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the pre-commit checklist and
-[`RELEASING.md`](RELEASING.md) for cutting a new tag.
-
-## Install in a Payload project (from git, pnpm only)
-
-These are private and not on npm. Install a single package from a subdirectory using
-pnpm's `path:` git syntax (pnpm v9+; npm/Yarn do not support this). Always pin a tag.
+## Install (from git, pnpm only)
 
 ```jsonc
-// package.json — installing shadcn-admin + seo + menus (shadcn-ui is a required peer of all three)
-{
-  "dependencies": {
-    "payload-plugin-shadcn-ui": "github:MartinConde/payload-plugins#v0.0.1&path:/packages/payload-plugin-shadcn-ui",
-    "payload-plugin-shadcn-admin": "github:MartinConde/payload-plugins#v0.0.1&path:/packages/payload-plugin-shadcn-admin",
-    "payload-plugin-seo": "github:MartinConde/payload-plugins#v0.0.1&path:/packages/payload-plugin-seo",
-    "payload-plugin-menus": "github:MartinConde/payload-plugins#v0.0.1&path:/packages/payload-plugin-menus"
-  }
-}
+"payload-plugin-seo": "github:MartinConde/payload-plugins#v0.0.1&path:/packages/payload-plugin-seo"
 ```
 
-`payload-plugin-shadcn-ui` is a **required** (non-optional) peer of `shadcn-admin`. `seo`,
-`menus`, and `products` each declare it as an *optional* peer too (so the install itself
-won't fail without it), but their custom field UIs (SERP preview, tree editor,
-print-area designer) render through it — it's required at runtime regardless. `products`
-additionally has an optional-but-runtime-required peer on `shadcn-admin` for its doc-view
-integration. In practice: always pin `shadcn-ui` alongside any of these four packages,
-and pin `shadcn-admin` too if you're using `products`.
+Always pin `payload-plugin-shadcn-ui` alongside any other package — the feature
+plugins render their custom field UIs through it.
 
-Each package's built `dist/` is committed to git; there is no `prepare`/build-on-install
-step — the install just fetches the tag's tree as-is.
+## Documentation
 
-Since the repo is private, installs use your local git auth (SSH key or credential
-helper / a PAT in CI).
+Full docs (installation, peers, per-plugin options and `payload.config.ts` wiring,
+CSS/importmap setup, contributing, releasing) live in the starter repo's docs app:
+**<https://cf-payload-astro-starter-docs.holy-dawn-2337.workers.dev/plugins/overview/>** —
+source in [`cf-payload-astro-starter`](https://github.com/MartinConde/cf-payload-astro-starter)
+→ `apps/docs/src/content/docs/plugins/` (browse locally with `pnpm docs dev` there).
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the dev loop.
